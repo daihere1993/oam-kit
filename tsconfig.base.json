@@ -1,0 +1,28 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2017", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@electron/*": ["apps/electron/src/*"],
+      "@electron/types": ["apps/electron/src/app/constants/types"],
+      "@oam-kit/utility": ["libs/utility/src/index.ts"],
+      "@oam-kit/store": ["libs/store/src/index.ts"],
+      "@oam-kit/store/*": ["libs/store/src/lib/*"],
+      "@oam-kit/ipc": ["libs/ipc/src/index.ts"],
+      "@oam-kit/sync-code": ["libs/sync-code/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}
