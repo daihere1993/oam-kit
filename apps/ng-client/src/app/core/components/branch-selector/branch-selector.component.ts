@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { NzModalService } from 'ng-zorro-antd/modal';
-import { BranchInfo } from '@oam-kit/store/types';
+import { Branch } from '@oam-kit/store/types';
 import { BranchSettingComponent, DialogRes, DialogAction } from './branch-setting.component';
 import { BranchService } from '../../services/branch.service';
 
@@ -71,9 +71,9 @@ export class BranchSelectorComponent implements OnInit {
   @Input() disabled = false;
   @Output() branchChange = new EventEmitter();
 
-  // branches$: Observable<BranchInfo[]>;
-  branches: BranchInfo[];
-  public selectedBranch: BranchInfo;
+  // branches$: Observable<Branch[]>;
+  branches: Branch[];
+  public selectedBranch: Branch;
 
   constructor(private modalService: NzModalService, private branchService: BranchService) {}
 
@@ -88,12 +88,12 @@ export class BranchSelectorComponent implements OnInit {
       });
   }
 
-  public setSelection(value: BranchInfo) {
+  public setSelection(value: Branch) {
     this.selectedBranch = value;
     this.branchChange.emit(value);
   }
 
-  public editBranch(e: Event, branch: BranchInfo): void {
+  public editBranch(e: Event, branch: Branch): void {
     const isEditSelectedBranch = this.selectedBranch.name === branch.name;
     this.modalService
       .create({

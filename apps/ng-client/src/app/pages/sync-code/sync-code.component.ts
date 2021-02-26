@@ -6,7 +6,7 @@ import {
   ChangeDetectorRef,
 } from '@angular/core';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import { BranchInfo } from '@oam-kit/store/types';
+import { Branch } from '@oam-kit/store/types';
 import { SyncCodeStep } from '@oam-kit/sync-code';
 import { IpcChannel } from '@oam-kit/ipc';
 import { IpcService,  } from '../../core/services/ipc.service';
@@ -51,7 +51,7 @@ import { ProfileService } from '../../core/services/profile.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SyncCodeComponent implements OnInit, OnDestroy {
-  private currentBranch: BranchInfo;
+  private currentBranch: Branch;
   public syncStepper: Stepper;
   public lastSyncDate: Date;
   public get isSyncOnGoing(): boolean {
@@ -99,7 +99,7 @@ export class SyncCodeComponent implements OnInit, OnDestroy {
     if (this.isReady) {
       this.syncStepper.start();
 
-      this.ipcService.send$<BranchInfo, SyncCodeStep>(IpcChannel.SYNC_CODE_REQ, {
+      this.ipcService.send$<Branch, SyncCodeStep>(IpcChannel.SYNC_CODE_REQ, {
         data: this.currentBranch,
         responseChannel: IpcChannel.SYNC_CODE_RES
       }).subscribe(response => {
@@ -118,7 +118,7 @@ export class SyncCodeComponent implements OnInit, OnDestroy {
     }
   }
 
-  public onBranchChange(branch: BranchInfo) {
+  public onBranchChange(branch: Branch) {
     this.currentBranch = branch;
   }
 

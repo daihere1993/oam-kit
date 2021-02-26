@@ -1,4 +1,4 @@
-import { BranchInfo, Profile } from '@oam-kit/store/types';
+import { Branch, Profile } from '@oam-kit/store/types';
 import { SyncCodeStep } from '@oam-kit/sync-code';
 import { IpcChannel } from '@oam-kit/ipc';
 import { MainFixture } from '../fixtures/mainFixture';
@@ -36,17 +36,19 @@ function finishSyncStep(
 }
 
 function addBranchAndExpectTheResult(
-  branch: BranchInfo = {
+  branch: Branch = {
     name: 'TRUNK',
-    target: '/var/fpwork/zowu/moam/trunk',
-    source: '/moam/trunk',
+    directory: {
+      target: '/var/fpwork/zowu/moam/trunk',
+      source: '/moam/trunk',
+    },
   }
 ) {
   cy.get('nz-select').as('select').click();
   cy.get('a[data-btn-type="addBranch"]').click().wait(500);
   cy.get('input[name="branchName"]').type(branch.name);
-  cy.get('input[name="target"]').type(branch.target);
-  cy.get('input[name="source"]').type(branch.source);
+  cy.get('input[name="target"]').type(branch.directory.target);
+  cy.get('input[name="source"]').type(branch.directory.source);
   // Must wait some time when click save button to make sure corresponding code got execute then to update data.
   return cy
     .get('button')

@@ -1,20 +1,20 @@
-import { Model } from './Model'
+import { Model } from './Model';
 import { Solid } from './solid';
 import { ElectronSolid } from './solid/electron-solid';
-import { APPData, BranchInfo, Profile } from './types';
+import { APPData, Branch, Profile } from './types';
 
 const BRANCH_MODEL = 'branches';
 const PROFILE_MODEL = 'profile';
 
 describe('Model()', () => {
   const source: APPData = {
-    branches: [{ id: 1, name: 'test name', source: 'test source', target: 'test target' }],
+    branches: [{ id: 1, name: 'test name', directory: { source: 'test source', target: 'test target' } }],
     profile: { remote: 'test remote', username: 'test username', password: 'test password' },
   };
 
   describe('setup()', () => {
     const solid = new ElectronSolid('');
-    const model = new Model<BranchInfo>(BRANCH_MODEL);
+    const model = new Model<Branch>(BRANCH_MODEL);
     beforeAll(() => {
       model.setup(solid);
     });
@@ -29,14 +29,16 @@ describe('Model()', () => {
   });
 
   describe('create$()', () => {
-    const model = new Model<BranchInfo>(BRANCH_MODEL);
+    const model = new Model<Branch>(BRANCH_MODEL);
     it('should be successful', () => {
-      const addItem$ = ElectronSolid.prototype.addItem$ = jest.fn();
+      const addItem$ = (ElectronSolid.prototype.addItem$ = jest.fn());
       const solid = new ElectronSolid('');
-      const content: BranchInfo = {
+      const content: Branch = {
         name: 'new name',
-        source: 'new source',
-        target: 'new target'
+        directory: {
+          source: 'new source',
+          target: 'new target',
+        },
       };
       model.setup(solid);
       model.create$(content);
@@ -63,7 +65,7 @@ describe('Model()', () => {
     it('edit array model by id', () => {
       const id = 1;
       const content = { name: 'test' };
-      const model = new Model<BranchInfo>(PROFILE_MODEL);
+      const model = new Model<Branch>(PROFILE_MODEL);
       model.setup(solid);
       model.edit$(id, content);
       expect(editItem$).toHaveBeenCalledWith(PROFILE_MODEL, { name: 'test', id: 1 });
@@ -77,7 +79,7 @@ describe('Model()', () => {
     });
     it('edit plane model by content only', () => {
       const content = { id: 1, name: 'test' };
-      const model = new Model<BranchInfo>(PROFILE_MODEL);
+      const model = new Model<Branch>(PROFILE_MODEL);
       model.setup(solid);
       model.edit$(content);
       expect(editItem$).toHaveBeenCalledWith(PROFILE_MODEL, { id: 1, name: 'test' });
@@ -102,7 +104,7 @@ describe('Model()', () => {
 
     it('delete array model', () => {
       const id = 1;
-      const model = new Model<BranchInfo>(BRANCH_MODEL);
+      const model = new Model<Branch>(BRANCH_MODEL);
       model.setup(solid);
       model.delete$(id);
       expect(deleteItem$).toBeCalledWith(BRANCH_MODEL, id);

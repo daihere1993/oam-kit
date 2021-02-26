@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { ElectronSolid } from './electron-solid';
-import { APPData, BranchInfo, Profile } from '../types';
+import { APPData, Branch, Profile } from '../types';
 
 const BRANCH_MODEL = 'branches';
 const PROFILE_MODEL = 'profile';
@@ -9,7 +9,7 @@ const PROFILE_MODEL = 'profile';
 describe('Solid()', () => {
   const targetPath = path.join(__dirname, '../../__test__/mockedData.json');
   const source: APPData = {
-    branches: [{ id: 1, name: 'test name', source: 'test source', target: 'test target' }],
+    branches: [{ id: 1, name: 'test name', directory: { source: 'test source', target: 'test target' } }],
     profile: { id: 1, remote: 'test remote', username: 'test username', password: 'test password' },
   };
 
@@ -33,14 +33,16 @@ describe('Solid()', () => {
   });
 
   describe('addItem$()', () => {
-    let newBranch: BranchInfo;
+    let newBranch: Branch;
     const solid = new ElectronSolid(targetPath);
     beforeEach(async () => {
       await startup(solid);
       newBranch = {
         name: 'branchName',
-        source: 'branchSource',
-        target: 'branchTarget',
+        directory: {
+          source: 'branchSource',
+          target: 'branchTarget',
+        },
       };
       await solid.addItem$(BRANCH_MODEL, newBranch);
     });
@@ -71,7 +73,7 @@ describe('Solid()', () => {
     });
 
     it('should be successful when edit array model', async () => {
-      const content: Partial<BranchInfo> = { id: 1, name: 'test' };
+      const content: Partial<Branch> = { id: 1, name: 'test' };
       await solid.editItem$(BRANCH_MODEL, content);
       const sourceBranch = solid.data.branches[0];
       expect(sourceBranch.name).toBe(content.name);
@@ -90,7 +92,7 @@ describe('Solid()', () => {
     });
 
     it('should throw error when edit array but no id included', async () => {
-      const content: Partial<BranchInfo> = { name: 'test' };
+      const content: Partial<Branch> = { name: 'test' };
       await expect(solid.editItem$(BRANCH_MODEL, content)).rejects.toThrow();
     });
   });

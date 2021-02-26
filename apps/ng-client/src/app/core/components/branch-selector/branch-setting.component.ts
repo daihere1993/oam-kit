@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { BranchInfo } from '@oam-kit/store/types';
+import { Branch } from '@oam-kit/store/types';
 import { NzModalRef } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
@@ -12,7 +12,7 @@ export enum DialogAction {
 
 export interface DialogRes {
   action: DialogAction;
-  content?: BranchInfo;
+  content?: Branch;
 }
 
 @Component({
@@ -35,7 +35,7 @@ export interface DialogRes {
         <nz-form-item>
           <nz-form-label [nzSm]="8" nzRequired nzFor="target">MOAM DIR of server</nz-form-label>
           <nz-form-control [nzSm]="13">
-            <input name="target" nz-input formControlName="target" [(ngModel)]="branch.target" />
+            <input name="target" nz-input formControlName="target" [(ngModel)]="branch.directory.target" />
           </nz-form-control>
         </nz-form-item>
 
@@ -43,10 +43,10 @@ export interface DialogRes {
           <nz-form-label [nzSm]="8" nzRequired nzFor="source">MOAM DIR of PC</nz-form-label>
           <nz-form-control [nzSm]="13">
             <nz-input-group [nzSuffix]="folderSelector">
-              <input name="source" nz-input formControlName="source" [(ngModel)]="branch.source" />
+              <input name="source" nz-input formControlName="source" [(ngModel)]="branch.directory.source" />
             </nz-input-group>
             <ng-template #folderSelector>
-              <oam-path-field [(value)]="branch.source"></oam-path-field>
+              <oam-path-field [(value)]="branch.directory.source"></oam-path-field>
             </ng-template>
           </nz-form-control>
         </nz-form-item>
@@ -73,10 +73,9 @@ export interface DialogRes {
 export class BranchSettingComponent implements OnInit {
   public validateForm: FormGroup;
 
-  public branch: BranchInfo = {
+  public branch: Branch = {
     name: '',
-    source: '',
-    target: '',
+    directory: { source: '', target: '' },
   };
 
   public isEdit: boolean;

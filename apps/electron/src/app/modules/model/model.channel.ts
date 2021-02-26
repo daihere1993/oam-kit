@@ -1,6 +1,6 @@
 import { IpcChannelInterface } from '@electron/app/interfaces';
 import { Model, Store } from '@oam-kit/store';
-import { ModelType, StoreData, StoreAction, BranchInfo, Profile } from '@oam-kit/store/types';
+import { ModelType, StoreData, StoreAction, Branch, Profile } from '@oam-kit/store/types';
 import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
 import { IpcMainEvent } from 'electron/main';
 
@@ -61,7 +61,7 @@ export class ModelChannel implements IpcChannelInterface {
 
   public async startup$() {
     // init all models
-    await this.store.add$(new Model<BranchInfo>(BRANCH_MODEL));
+    await this.store.add$(new Model<Branch>(BRANCH_MODEL));
     await this.store.add$(new Model<Profile>(PROFILE_MODEL, { type: ModelType.PLANE }));
   }
 }
