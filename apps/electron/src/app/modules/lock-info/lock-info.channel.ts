@@ -2,13 +2,13 @@ import { IpcChannelInterface } from '@electron/app/interfaces';
 import { IPCRequest, IPCResponse } from '@oam-kit/ipc';
 import { Model, Store, modelConfig } from '@oam-kit/store';
 import { IpcMainEvent } from 'electron';
-import { module } from '@electron/app/constants/config';
+import { modules } from '@electron/app/constants/config';
 import { Branch, Profile, Repo } from '@oam-kit/store/types';
 import * as branchLockParser from '@electron/app/utils/branchLockParser'
 import * as fetcher from '@electron/app/utils/fetcher';
 
 
-const config = module.lockInfo;
+const config = modules.lockInfo;
 const defaultBranchesToDisplay: Branch[] = [{ name: 'trunk' }, { name: '5G21A' }];
 const defaultRepos: Repo[] = [
   { name: 'moam', repository: 'BTS_SC_MOAM_LTE', locked: false, reason: '' },

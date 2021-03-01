@@ -5,7 +5,7 @@ export const updateServerUrl = 'https://deployment-server-url.com'; // TODO: ins
 export const storeName = 'test.json';
 
 /** Modules */
-export const module = {
+export const modules = {
   syncCode: { diffName: 'moamkit.diff' },
   lockInfo: {
     svnroot: 'https://svne1.access.nsn.com/isource/svnroot',

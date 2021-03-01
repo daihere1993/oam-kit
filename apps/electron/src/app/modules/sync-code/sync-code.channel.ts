@@ -10,9 +10,9 @@ import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
 import { SyncCodeStep } from '@oam-kit/sync-code';
 import { IpcMainEvent } from 'electron';
 import { getUserDataPath } from '@electron/app/utils';
-import { module } from '@electron/app/constants/config';
+import { modules } from '@electron/app/constants/config';
 
-const config = module.syncCode;
+const config = modules.syncCode;
 const userDataPath = getUserDataPath();
 const DIFF_PATH = path.join(userDataPath, config.diffName);
 
