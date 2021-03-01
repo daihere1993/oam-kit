@@ -87,6 +87,7 @@ export default class App {
 
   private static async initChannels$() {
     const targetPath = join(utils.getUserDataPath(), storeName);
+    console.debug(`data file: ${targetPath}`);
     const store = new Store({ solid: new ElectronSolid(targetPath) });
     await store.startup$();
     const modelChannel = new ModelChannel(store);

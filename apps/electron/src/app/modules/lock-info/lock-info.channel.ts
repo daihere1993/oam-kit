@@ -12,8 +12,8 @@ const defaultRepos: Repo[] = [
   { name: 'has', repository: 'BTS_SC_HAS_OAM', locked: false, reason: '' },
 ];
 export const defaultBranchesToDisplay: Branch[] = [
-  { name: 'trunk', lock: { locked: false, repos: defaultRepos } },
-  { name: '5G21A', lock: { locked: false, repos: defaultRepos } },
+  { id: 1, name: 'trunk', lock: { locked: false, repos: defaultRepos } },
+  { id: 2, name: '5G21A', lock: { locked: false, repos: defaultRepos } },
 ];
 
 const config = modules.lockInfo;
