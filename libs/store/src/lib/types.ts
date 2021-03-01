@@ -65,5 +65,6 @@ export enum ModelType {
   }
 
   export interface ModelOptions {
-    type: ModelType;
+    type?: ModelType;
+    initContent?: any
   }

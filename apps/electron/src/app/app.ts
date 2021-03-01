@@ -11,6 +11,7 @@ import { KitChannel } from './modules/kit';
 import { ModelChannel } from './modules/model';
 import { SyncCodeChannel } from './modules/sync-code';
 import { ElectronSolid } from '@oam-kit/store/solid/electron-solid';
+import { LockInfoChannel } from './modules/lock-info';
 
 export default class App {
   // Keep a global reference of the window object, if you don't, the window will
@@ -93,7 +94,8 @@ export default class App {
     const channels: any[] = [
       modelChannel,
       new KitChannel({ mainWindow: App.mainWindow }),
-      new SyncCodeChannel(store)
+      new SyncCodeChannel(store),
+      new LockInfoChannel(store)
     ];
     for (const channel of channels) {
       for (const handler of channel.handlers) {
