@@ -1,3 +1,12 @@
 {
-    "$schema": "../../../../../node_modules/nx-electron/src/validation/maker.schema.json"
-}   
+  "$schema": "../../../../../node_modules/nx-electron/src/validation/maker.schema.json",
+  "appId": "com.electron.oamkit",
+  "productName": "oam-kit",
+  "copyright": "Copyright © 2020 Luke Wu",
+  "electronCompile": false,
+  "npmRebuild": false,
+  "asar": true,
+  "win": {
+    "publisherName": "Luke Wu"
+  }
+}

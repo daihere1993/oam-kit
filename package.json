@@ -2,6 +2,14 @@
   "name": "oam-kit",
   "version": "0.0.0",
   "license": "MIT",
+  "author": {
+    "name": "Luke Wu",
+    "email": "luke.wu@nokia-sbell.com"
+  },
+  "build": {
+    "appId": "com.electron.oamkit"
+  },
+  "description": "A tool platform for Nokia oam.",
   "scripts": {
     "ng": "nx",
     "postinstall": "exitzero electron-builder install-app-deps && husky install",
@@ -10,6 +18,8 @@
     "build": "ng build",
     "build:main": "nx build electron",
     "e2e": "ng e2e",
+    "make": "nx run electron:make --platform windows --arch x64 --publishPolicy never",
+    "package": "nx run electron:package --platform windows --arch x64 --publishPolicy never",
     "ut": "nx run-many --all --target=test",
     "lint": "nx workspace-lint && ng lint",
     "precommit": "npm run lint && npm run ut && npm run e2e",
