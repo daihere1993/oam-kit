@@ -6,7 +6,7 @@ import { ProfileService } from '../../core/services/profile.service';
 import { cloneDeep } from 'lodash';
 
 @Component({
-  selector: 'oam-profile',
+  selector: 'app-profile',
   template: `
     <div class="container">
       <form nz-form [formGroup]="validateForm">

@@ -5,7 +5,7 @@
       "projectType": "application",
       "root": "apps/ng-client",
       "sourceRoot": "apps/ng-client/src",
-      "prefix": "oam-kit",
+      "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",

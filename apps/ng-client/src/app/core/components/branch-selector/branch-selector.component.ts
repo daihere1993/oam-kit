@@ -6,7 +6,7 @@ import { BranchService } from '../../services/branch.service';
 import { cloneDeep } from 'lodash';
 
 @Component({
-  selector: 'oam-branch-selector',
+  selector: 'app-branch-selector',
   template: `
     <style>
       :host(branch-selector) {

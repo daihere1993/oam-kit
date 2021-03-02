@@ -14,11 +14,11 @@ import { Stepper, StepStatus, StepperStatus } from '@oam-kit/utility';
 import { ProfileService } from '../../core/services/profile.service';
 
 @Component({
-  selector: 'oam-sync-code',
+  selector: 'app-sync-code',
   template: `
     <div class="container">
       <div class="sync_form">
-        <oam-branch-selector (branchChange)="onBranchChange($event)"></oam-branch-selector>
+        <app-branch-selector (branchChange)="onBranchChange($event)"></app-branch-selector>
 
         <div class="sync_containner">
           <button

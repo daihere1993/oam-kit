@@ -3,19 +3,20 @@ import { Branch, modelConfig } from '@oam-kit/store';
 import { StoreService } from '../../core/services/store.service';
 
 @Component({
-  selector: 'oam-kit-dashboard',
+  selector: 'app-dashboard',
   template: `
     <style>
-      .wrapper {
+      .dashboard-wrapper {
         display: flex;
+        justify-content: space-around;
       }
-      .container:not(:last-of-type) {
+      .dashboard-brach-lock-container:not(:last-of-type) {
         margin-right: 10px;
       }
     </style>
-    <div class="wrapper">
-      <div class="container" *ngFor="let branch of branches">
-        <oam-kit-panel [branch]="branch"></oam-kit-panel>
+    <div class="dashboard-wrapper">
+      <div class="dashboard-brach-lock-container" *ngFor="let branch of branches">
+        <app-branch-lock-panel [branch]="branch"></app-branch-lock-panel>
       </div>
     </div>
   `
