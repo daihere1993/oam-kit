@@ -111,17 +111,6 @@ export default class App {
     const height = Math.min(720, workAreaSize.height || 720);
 
     // Create the browser window.
-    // App.mainWindow = new BrowserWindow({
-    //   width: width,
-    //   height: height,
-    //   show: false,
-    //   webPreferences: {
-    //     nodeIntegration: true,
-    //     contextIsolation: true,
-    //     backgroundThrottling: false,
-    //     preload: join(__dirname, 'preload.js'),
-    //   },
-    // });
     App.mainWindow = new BrowserWindow({
       width: width,
       height: height,
@@ -137,7 +126,10 @@ export default class App {
     // if main window is ready to show, close the splash window and show the main window
     App.mainWindow.once('ready-to-show', () => {
       App.mainWindow.show();
-      App.mainWindow.webContents.toggleDevTools();
+      const enableChromeDebugger = App.application.isPackaged? false : true;
+      if (enableChromeDebugger) {
+        App.mainWindow.webContents.toggleDevTools();
+      }
     });
 
     // handle all external redirects in a new browser window
