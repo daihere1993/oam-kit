@@ -1,9 +1,10 @@
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
+import { AppRoute } from '@ng-client/app-routing.module';
 
 import { ProfileComponent } from './profile.component';
 
-export const routes: Routes = [
+export const routes: AppRoute[] = [
   {
     path: 'profile',
     component: ProfileComponent,

@@ -1,17 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Profile } from '@oam-kit/store/types';
-import { IpcService } from './ipc.service';
 import { StoreService } from './store.service';
 
 const MODEL = 'profile';
-
+const emptyData = { remote: '', username: '', password: '' };
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
-  data: Profile = { remote: '', username: '', password: '' };
+  data: Profile;
 
-  constructor(private store: StoreService, private ipcService: IpcService) {
+  constructor(private store: StoreService) {
     this.store.data$.subscribe((data) => {
-      this.data = data?.profile;
+      this.data = data?.profile || emptyData;
     });
     this.store.startup();
   }

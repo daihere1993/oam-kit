@@ -3,6 +3,7 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { Branch } from '@oam-kit/store/types';
 import { BranchSettingComponent, DialogRes, DialogAction } from './branch-setting.component';
 import { BranchService } from '../../services/branch.service';
+import { cloneDeep } from 'lodash';
 
 @Component({
   selector: 'oam-branch-selector',
@@ -120,11 +121,11 @@ export class BranchSelectorComponent implements OnInit {
     // To get data initiatively
     this.branchService.branches$.subscribe((branches) => {
       if (branches?.length) {
-        this.branches = branches;
+        this.branches = cloneDeep(branches);
         if (!this.selectedBranch) {
-          this.setSelection(branches[0]);
+          this.setSelection(this.branches[0]);
         } else {
-          this.setSelection(branches.find((item) => item.name === this.selectedBranch.name));
+          this.setSelection(this.branches.find((item) => item.name === this.selectedBranch.name));
         }
       } else {
         this.branches = [];

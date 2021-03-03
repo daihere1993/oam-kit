@@ -11,10 +11,10 @@
 // ***********************************************
 declare namespace Cypress {
   interface Chainable<Subject> {
-    setStepStatus(stepAlias: string, status: string): void;
+    assertStepStatus(stepAlias: string, status: string): void;
   }
 }
 
-Cypress.Commands.add('setStepStatus', (stepAlias: string, status: string) => {
+Cypress.Commands.add('assertStepStatus', (stepAlias: string, status: string) => {
   cy.get(stepAlias).invoke('attr', 'ng-reflect-nz-status').should('contain', status);
 });

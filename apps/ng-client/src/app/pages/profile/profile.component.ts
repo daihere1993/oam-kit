@@ -3,6 +3,7 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { Profile } from '@oam-kit/store/types';
 import { ProfileService } from '../../core/services/profile.service';
+import { cloneDeep } from 'lodash';
 
 @Component({
   selector: 'oam-profile',
@@ -60,7 +61,9 @@ export class ProfileComponent implements OnInit {
   ) {}
 
   public ngOnInit(): void {
-    this.profile = this.profileService.data;
+    // profile should be a local variable, couldn't have a reference link 
+    // with a variable of service which is global variable
+    this.profile = cloneDeep(this.profileService.data);
     this.validateForm = this.fb.group({
       remote: [null, [Validators.required]],
       username: [null, [Validators.required]],

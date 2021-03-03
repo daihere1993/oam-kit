@@ -11,6 +11,8 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { AppRoutingModule } from './app-routing.module';
 import { SyncCodeModule } from './pages/sync-code/sync-code.module';
 import { ProfileModule } from './pages/profile/profile.module';
+import { RouteReuseStrategy } from '@angular/router';
+import { CacheRouteStrategy } from './core/services/cache-page-strategy.service';
 
 @NgModule({
   declarations: [AppComponent],
@@ -25,7 +27,10 @@ import { ProfileModule } from './pages/profile/profile.module';
     SyncCodeModule,
     ProfileModule
   ],
-  providers: [],
+  providers: [{
+    provide: RouteReuseStrategy,
+    useClass: CacheRouteStrategy
+  }],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

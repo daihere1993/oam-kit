@@ -50,6 +50,7 @@ export class MainFixture {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     removeListener: () => {},
   };
+
   constructor() {
     const store = new Store({ solid: new BrowserSolid() });
     store.add(new Model('branches'));
@@ -82,7 +83,7 @@ export class MainFixture {
     const res: IPCResponse<APPData> = { isSuccessed: true, data: store.getAllData() };
     cb(null, res);
   }
-  
+
   public simulateBackendResToClient<T>(channel: IpcChannel, data: T): any;
   public simulateBackendResToClient(channel: IpcChannel, error: any): void;
   public simulateBackendResToClient<T>(channel: IpcChannel, res: IPCResponse<T>): void;
@@ -105,6 +106,11 @@ export class MainFixture {
     }
     this.ipcResponseCallbackMap[channel](null, res);
   }
+
+  /**
+   * Go to a specific page with page reloading.
+   * @param route route name
+   */
   public visit(route: string) {
     const partialWindow = {
       process: { type: 'render' },
@@ -118,6 +124,15 @@ export class MainFixture {
       },
     });
   }
+
+  /**
+   * Go to a specific navigation page without reload page.
+   * @param text text of a specific nav item
+   */
+  public navigate(text: string) {
+    return cy.get('.ant-menu-item').contains(text).click();
+  }
+
   public destroy() {
     this.onPullData.unsubscribe();
     this.onCreateData.unsubscribe();

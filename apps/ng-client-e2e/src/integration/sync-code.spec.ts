@@ -1,7 +1,8 @@
-import { Branch, Profile } from '@oam-kit/store/types';
 import { SyncCodeStep } from '@oam-kit/sync-code';
 import { IpcChannel } from '@oam-kit/ipc';
 import { MainFixture } from '../fixtures/mainFixture';
+import { addBranchAndExpectTheResult } from '../fixtures/sycnCodeFixture';
+import { fullProfileInfoAndExpected } from '../fixtures/profileFixture';
 
 function finishSyncStep(
   fixture: MainFixture,
@@ -35,41 +36,6 @@ function finishSyncStep(
   }
 }
 
-function addBranchAndExpectTheResult(
-  branch: Branch = {
-    name: 'TRUNK',
-    directory: {
-      target: '/var/fpwork/zowu/moam/trunk',
-      source: '/moam/trunk',
-    },
-  }
-) {
-  cy.get('nz-select').as('select').click();
-  cy.get('a[data-btn-type="addBranch"]').click().wait(500);
-  cy.get('input[name="branchName"]').type(branch.name);
-  cy.get('input[name="target"]').type(branch.directory.target);
-  cy.get('input[name="source"]').type(branch.directory.source);
-  // Must wait some time when click save button to make sure corresponding code got execute then to update data.
-  return cy
-    .get('button')
-    .contains('Save')
-    .click()
-    .wait(500)
-    .then(() => {
-      cy.get('@select').find('nz-select-item').should('contain.text', 'TRUNK');
-    });
-}
-
-function fullAllProfileInfo() {
-  const profile: Profile = { remote: 'test remote', username: 'test username', password: 'test password' };
-  cy.get('input[name="remote"]').as('remote').type(profile.remote);
-  cy.get('input[name="username"]').as('username').type(profile.username);
-  cy.get('input[name="password"]').as('password').type(profile.password);
-  cy.get('button[data-btn-type="save"]').click();
-  cy.get('[ng-reflect-nz-type=check-circle]').should('exist');
-  cy.get('.ant-notification-notice-message').should('have.text', 'Success');
-}
-
 describe('Normal case', () => {
   let fixture: MainFixture;
   before(() => {
@@ -82,7 +48,7 @@ describe('Normal case', () => {
 
   it('Setup profile', () => {
     fixture.visit('profile');
-    fullAllProfileInfo();
+    fullProfileInfoAndExpected();
   });
 
   it('Add a new branch', function () {
@@ -109,29 +75,29 @@ describe('Normal case', () => {
         cy.get('nz-step').eq(1).as('second');
         cy.get('nz-step').eq(2).as('third');
         cy.get('nz-step').eq(3).as('fourth');
-        cy.setStepStatus('@first', 'process');
+        cy.assertStepStatus('@first', 'process');
         cy.wait(1000)
           .then(finishSyncStep.bind(this, fixture, 1))
           .then(() => {
-            cy.setStepStatus('@first', 'finish');
-            cy.setStepStatus('@second', 'process');
+            cy.assertStepStatus('@first', 'finish');
+            cy.assertStepStatus('@second', 'process');
           });
         cy.wait(1000)
           .then(finishSyncStep.bind(this, fixture, 2))
           .then(() => {
-            cy.setStepStatus('@second', 'finish');
-            cy.setStepStatus('@third', 'process');
+            cy.assertStepStatus('@second', 'finish');
+            cy.assertStepStatus('@third', 'process');
           });
         cy.wait(1000)
           .then(finishSyncStep.bind(this, fixture, 3))
           .then(() => {
-            cy.setStepStatus('@third', 'finish');
-            cy.setStepStatus('@fourth', 'process');
+            cy.assertStepStatus('@third', 'finish');
+            cy.assertStepStatus('@fourth', 'process');
           });
         cy.wait(1000)
           .then(finishSyncStep.bind(this, fixture, 4))
           .then(() => {
-            cy.setStepStatus('@fourth', 'finish');
+            cy.assertStepStatus('@fourth', 'finish');
           });
       });
     cy.get('nz-select').find('nz-select-item').should('contain.text', 'TRUNK');
@@ -167,7 +133,7 @@ describe('Edge cases', () => {
     });
     it("Shouldn't work when no branch selected", () => {
       fixture.visit('profile');
-      fullAllProfileInfo();
+      fullProfileInfoAndExpected();
       fixture.visit('sync-code');
       cy.get('[data-btn-type=sync]').click();
       cy.get('[ng-reflect-nz-type=close-circle]').should('exist');
@@ -184,7 +150,7 @@ describe('Edge cases', () => {
     const fixture = new MainFixture();
     before(() => {
       fixture.visit('profile');
-      fullAllProfileInfo();
+      fullProfileInfoAndExpected();
       fixture.visit('sync-code');
       addBranchAndExpectTheResult();
     });
