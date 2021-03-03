@@ -11,6 +11,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { AppRoutingModule } from './app-routing.module';
 import { SyncCodeModule } from './pages/sync-code/sync-code.module';
 import { ProfileModule } from './pages/profile/profile.module';
+import { DashboardModule } from './pages/dashboard/dashboard.module';
 import { RouteReuseStrategy } from '@angular/router';
 import { CacheRouteStrategy } from './core/services/cache-page-strategy.service';
 
@@ -24,6 +25,7 @@ import { CacheRouteStrategy } from './core/services/cache-page-strategy.service'
     NzLayoutModule,
     NzMenuModule,
     NzIconModule,
+    DashboardModule,
     SyncCodeModule,
     ProfileModule
   ],

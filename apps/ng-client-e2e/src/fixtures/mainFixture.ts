@@ -1,7 +1,7 @@
 import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
 import { Model, Store, modelConfig } from '@oam-kit/store';
 import { BrowserSolid } from '@oam-kit/store/solid/browser-solid';
-import { APPData, ModelType, StoreAction, StoreData } from '@oam-kit/store/types';
+import { APPData, Branch, ModelType, Repo, StoreAction, StoreData } from '@oam-kit/store/types';
 import { merge } from 'lodash';
 import { Subject } from 'rxjs';
 
@@ -52,8 +52,11 @@ export class MainFixture {
   };
 
   constructor() {
+    
+    
     const store = new Store({ solid: new BrowserSolid() });
     store.add(new Model(modelConfig.syncCodeBranch.name));
+    store.add(new Model(modelConfig.lockInfoBranch.name));
     store.add(new Model(modelConfig.profile.name, { type: ModelType.PLANE }));
     // All of below subscribes just to update data then return the latest data
     // by invoke corresponding ipc response callback

@@ -25,7 +25,11 @@ export class StoreService {
   ) {
   }
 
-  // Separate startup, to avoid ipc response too quick in e2e environment lead to other services aren't even subscribe
+  private getData() {
+    this.electronService.ipcRenderer.send(IpcChannel.GET_APP_DATA_REQ);
+  }
+
+  // Separate startup, to avoid ipc response too quick in e2e environment lead to other services couldn't even subscribe
   public startup() {
     if (this.electronService.isElectron && !this.hasBeenStartup) {
       this.hasBeenStartup = true;
@@ -36,8 +40,12 @@ export class StoreService {
           });
         }
       });
-      this.electronService.ipcRenderer.send(IpcChannel.GET_APP_DATA_REQ);
+      this.getData();
     }
+  }
+
+  public refresh() {
+    this.getData();
   }
 
   public createItem<T>(model: string, content: T) {
