@@ -31,7 +31,7 @@ export class LockInfoChannel implements IpcChannelInterface {
     this.branchModel = this.store.get<Branch>(modelConfig.lockInfoBranch.name);
     this.branchesToDisplay = this.branchModel.data as Branch[];
     this.refreshLockInfo();
-    setInterval(this.refreshLockInfo.bind(this), 30000);
+    setInterval(this.refreshLockInfo.bind(this), 300000);
   }
 
   private getAllBranches(event: IpcMainEvent, request: IPCRequest<void>) {
