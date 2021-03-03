@@ -28,6 +28,13 @@ export enum ModelType {
     password: string;
   }
 
+  export interface Repo {
+    name: string;
+    locked: boolean;
+    reason: string;
+    repository: string;
+  }
+
   export interface Branch extends ModelBase_ {
     name: string;
     directory?: {
@@ -37,6 +44,7 @@ export enum ModelType {
     lock?: {
       locked: boolean;
       reason?: string;
+      repos?: Repo[]
     }
   }
 

@@ -5,15 +5,16 @@ import * as SftpClient from 'ssh2-sftp-client';
 import { promisify } from 'util';
 import { IpcChannelInterface } from '@electron/app/interfaces';
 import { Branch, Profile } from '@oam-kit/store/types';
-import { Store } from '@oam-kit/store'
+import { Store, modelConfig } from '@oam-kit/store'
 import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
 import { SyncCodeStep } from '@oam-kit/sync-code';
 import { IpcMainEvent } from 'electron';
 import { getUserDataPath } from '@electron/app/utils';
-import { M_CodeSync } from '@electron/app/constants/config';
+import { module } from '@electron/app/constants/config';
 
+const config = module.syncCode;
 const userDataPath = getUserDataPath();
-const DIFF_PATH = path.join(userDataPath, M_CodeSync.diffName);
+const DIFF_PATH = path.join(userDataPath, config.diffName);
 
 type IpcResponse_ = IPCResponse<SyncCodeStep>;
 
@@ -61,7 +62,7 @@ export class SyncCodeChannel implements IpcChannelInterface {
   }
 
   private async connectServer_(): Promise<any> {
-    const profile = this.store.get<Profile>('profile').data as Profile;
+    const profile = this.store.get<Profile>(modelConfig.profile.name).data as Profile;
     return this.sftpClient
       .connect({
         host: profile.remote,
@@ -128,7 +129,7 @@ export class SyncCodeChannel implements IpcChannelInterface {
     console.debug('uploadPatchToServer: start.');
     return this.sftpClient
       // Upload diff file into target remote by ssh
-      .fastPut(path.join(DIFF_PATH), `${this.branch?.directory.target}/${M_CodeSync.diffName}`)
+      .fastPut(path.join(DIFF_PATH), `${this.branch?.directory.target}/${config.diffName}`)
       .then(() => {
         console.debug('uploadPatchToServer: done.');
         const res: IpcResponse_ = { isSuccessed: true, data: SyncCodeStep.UPLOAD_DIFF };
@@ -156,7 +157,7 @@ export class SyncCodeChannel implements IpcChannelInterface {
           command += `${file} `;
         }
       }
-      command += `&& svn patch ${M_CodeSync.diffName}`;
+      command += `&& svn patch ${config.diffName}`;
 
       client.exec(command, (err: any, stream: any) => {
         if (err) {
