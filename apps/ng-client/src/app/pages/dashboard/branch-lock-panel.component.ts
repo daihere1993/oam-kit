@@ -1,4 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
+import { IpcService } from '@ng-client/core/services/ipc.service';
+import { IpcChannel } from '@oam-kit/ipc';
 import { Branch, Repo } from '@oam-kit/store';
 
 @Component({
@@ -82,10 +84,29 @@ import { Branch, Repo } from '@oam-kit/store';
     </div>
   `,
 })
-export class BranchLockPanelComponent {
+export class BranchLockPanelComponent implements OnChanges {
   @Input() branch: Branch;
 
   public listeningRepoSet = new Set<string>();
+
+  constructor(private ipcService: IpcService) {}
+
+  ngOnChanges() {
+    this.listeningRepoSet.forEach((repoName) => {
+      const repo = this.branch?.lock?.repos.find((r) => {
+        r.name === repoName;
+      });
+      if (!this.hasRepoLocked(repo)) {
+        this.ipcService.send<{ title: string; body: string }>(IpcChannel.NOTIFICATION_REQ, {
+          responseChannel: IpcChannel.NOTIFICATION_RES,
+          data: {
+            title: 'OAM-KIT',
+            body: `${this.branch.name}.${repo.name} unlock`,
+          },
+        });
+      }
+    });
+  }
 
   public getLockMsg(repo: Repo): string {
     if (this.branch?.lock?.locked) {
@@ -101,29 +122,30 @@ export class BranchLockPanelComponent {
   }
 
   public isListeningRepo(repo: Repo): boolean {
-    return this.listeningRepoSet.has(this.getRepoToken(repo));
+    return this.listeningRepoSet.has(repo.name);
   }
 
   public onBellClick(repo: Repo) {
-    const token = this.getRepoToken(repo);
-    this.isListeningRepo(repo) ? this.listeningRepoSet.delete(token) : this.listeningRepoSet.add(token);
+    this.isListeningRepo(repo)
+      ? this.listeningRepoSet.delete(repo.name)
+      : this.listeningRepoSet.add(repo.name);
   }
 
   public getPopConfirmTitle(repo: Repo): string {
     if (this.isListeningRepo(repo)) {
       return `Are you sure to cancel current listening?`;
     } else {
-      return `Are you sure to listen ${this.getRepoToken(repo)}?`;
+      return `Are you sure to listen ${repo.name} of ${this.branch?.name}?`;
     }
   }
 
-  private getRepoToken(repo: Repo): string {
-    if (!this.branch) {
-      throw new Error(`[BranchLockPanelComponent][getRepoToken] branch is empty.`);
-    }
-    if (!repo) {
-      throw new Error(`[BranchLockPanelComponent][getRepoToken] repo is empty.`);
-    }
-    return `${this.branch.name}.${repo.name}`;
-  }
+  // private getRepoToken(repo: Repo): string {
+  //   if (!this.branch) {
+  //     throw new Error(`[BranchLockPanelComponent][getRepoToken] branch is empty.`);
+  //   }
+  //   if (!repo) {
+  //     throw new Error(`[BranchLockPanelComponent][getRepoToken] repo is empty.`);
+  //   }
+  //   return `${this.branch.name}.${repo.name}`;
+  // }
 }
