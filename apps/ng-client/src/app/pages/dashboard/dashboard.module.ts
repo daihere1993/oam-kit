@@ -6,6 +6,9 @@ import { BranchLockPanelComponent } from './branch-lock-panel.component';
 
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { NzMessageModule } from 'ng-zorro-antd/message'
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm'
+
 
 @NgModule({
   declarations: [DashboardComponent, BranchLockPanelComponent],
@@ -13,6 +16,8 @@ import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
     CommonModule,
     NzIconModule,
     NzToolTipModule,
+    NzMessageModule,
+    NzPopconfirmModule,
     DashboardRoutingModule
   ]
 })

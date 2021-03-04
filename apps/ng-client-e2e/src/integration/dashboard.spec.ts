@@ -11,16 +11,18 @@ function secondPanel() {
   return cy.get('.branch-lock-panel-wrapper').last();
 }
 
+const repos: Repo[] = [
+  { name: 'moam', repository: 'BTS_SC_MOAM_LTE', locked: false, reason: '' },
+  { name: 'has', repository: 'BTS_SC_HAS_OAM', locked: true, reason: 'Auto lock' },
+];
+const branches: Branch[] = [
+  { id: 1, name: 'trunk', lock: { locked: false, repos: repos } },
+  { id: 2, name: '5G21A', lock: { locked: true, repos: repos, reason: 'Lock by BC' } },
+];
+
 describe('Display two panels correctly', () => {
   const fixture = new MainFixture();
-  const repos: Repo[] = [
-    { name: 'moam', repository: 'BTS_SC_MOAM_LTE', locked: false, reason: '' },
-    { name: 'has', repository: 'BTS_SC_HAS_OAM', locked: true, reason: 'Auto lock' },
-  ];
-  const branches: Branch[] = [
-    { id: 1, name: 'trunk', lock: { locked: false, repos: repos } },
-    { id: 2, name: '5G21A', lock: { locked: true, repos: repos, reason: 'Lock by BC' } },
-  ];
+
   beforeEach(() => {
     const mockedAppData: APPData = {} as APPData;
     mockedAppData[modelConfig.lockInfoBranch.name] = branches;
@@ -43,30 +45,33 @@ describe('Display two panels correctly', () => {
     firstPanel()
       .children('.branch-lock-panel__repo')
       .first()
+      .children('.branch-lock-panel__repo--right')
       .children('.branch-lock-panel__name')
       .should('have.text', 'moam');
     firstPanel()
       .children('.branch-lock-panel__repo')
       .last()
+      .children('.branch-lock-panel__repo--right')
       .children('.branch-lock-panel__name')
       .should('have.text', 'has');
     secondPanel()
       .children('.branch-lock-panel__repo')
       .first()
+      .children('.branch-lock-panel__repo--right')
       .children('.branch-lock-panel__name')
       .should('have.text', 'moam');
     secondPanel()
       .children('.branch-lock-panel__repo')
       .last()
+      .children('.branch-lock-panel__repo--right')
       .children('.branch-lock-panel__name')
       .should('have.text', 'has');
   });
   it('display lock/unlock icon', () => {
     /**
      * Firt panel:
-     * 1. branch: 'unlock'
-     * 2. first repository: 'unlock'
-     * 3. second repository: 'lock'
+     * 1. first repository: 'unlock'
+     * 2. second repository: 'lock'
      */
     firstPanel()
       .children('.branch-lock-panel__repo')
@@ -80,9 +85,8 @@ describe('Display two panels correctly', () => {
       .should('have.attr', 'ng-reflect-nz-type', 'lock');
     /**
      * Second panel:
-     * 1. branch: 'lock'
-     * 2. first repository: 'unlock'
-     * 3. second repository: 'lock'
+     * 1. first repository: 'lock' due to branch lock
+     * 2. second repository: 'lock' due to branch lock
      */
     secondPanel()
       .children('.branch-lock-panel__repo')
@@ -97,3 +101,6 @@ describe('Display two panels correctly', () => {
   });
 });
 
+describe('Repo listening', () => {
+  const mainFixture = new MainFixture();
+});

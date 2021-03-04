@@ -15,6 +15,14 @@ import { DashboardModule } from './pages/dashboard/dashboard.module';
 import { RouteReuseStrategy } from '@angular/router';
 import { CacheRouteStrategy } from './core/services/cache-page-strategy.service';
 
+/** config angular i18n */
+import { registerLocaleData } from '@angular/common';
+import en from '@angular/common/locales/en';
+registerLocaleData(en);
+
+/** config ng-zorro-antd i18n **/
+import { NZ_I18N, en_US } from 'ng-zorro-antd/i18n';
+
 @NgModule({
   declarations: [AppComponent],
   imports: [
@@ -27,12 +35,15 @@ import { CacheRouteStrategy } from './core/services/cache-page-strategy.service'
     NzIconModule,
     DashboardModule,
     SyncCodeModule,
-    ProfileModule
+    ProfileModule,
   ],
-  providers: [{
-    provide: RouteReuseStrategy,
-    useClass: CacheRouteStrategy
-  }],
+  providers: [
+    {
+      provide: RouteReuseStrategy,
+      useClass: CacheRouteStrategy,
+    },
+    { provide: NZ_I18N, useValue: en_US },
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
