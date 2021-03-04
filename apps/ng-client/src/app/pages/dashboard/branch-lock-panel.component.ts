@@ -1,7 +1,8 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { IpcService } from '@ng-client/core/services/ipc.service';
 import { IpcChannel } from '@oam-kit/ipc';
 import { Branch, Repo } from '@oam-kit/store';
+import { modules as moduleConf } from '@oam-kit/utility/overall-config';
 
 @Component({
   selector: 'app-branch-lock-panel',
@@ -64,8 +65,9 @@ import { Branch, Repo } from '@oam-kit/store';
             [class.branch-lock-panel__bell-icon--listening]="isListeningRepo(repo)"
             nz-icon
             nz-popconfirm
-            [nzPopconfirmTitle]="getPopConfirmTitle(repo)"
+            nzPopconfirmPlacement="top"
             (nzOnConfirm)="onBellClick(repo)"
+            [nzPopconfirmTitle]="getPopConfirmTitle(repo)"
             nzType="bell"
             nzTheme="fill"
           ></i>
@@ -84,28 +86,30 @@ import { Branch, Repo } from '@oam-kit/store';
     </div>
   `,
 })
-export class BranchLockPanelComponent implements OnChanges {
+export class BranchLockPanelComponent implements OnInit {
   @Input() branch: Branch;
 
   public listeningRepoSet = new Set<string>();
 
   constructor(private ipcService: IpcService) {}
 
-  ngOnChanges() {
-    this.listeningRepoSet.forEach((repoName) => {
-      const repo = this.branch?.lock?.repos.find((r) => {
-        r.name === repoName;
-      });
-      if (!this.hasRepoLocked(repo)) {
-        this.ipcService.send<{ title: string; body: string }>(IpcChannel.NOTIFICATION_REQ, {
-          responseChannel: IpcChannel.NOTIFICATION_RES,
-          data: {
-            title: 'OAM-KIT',
-            body: `${this.branch.name}.${repo.name} unlock`,
-          },
+  ngOnInit() {
+    setInterval(() => {
+      this.listeningRepoSet.forEach((repoName) => {
+        const repo = this.branch?.lock?.repos.find((r) => {
+          r.name === repoName;
         });
-      }
-    });
+        if (!this.hasRepoLocked(repo)) {
+          this.ipcService.send<{ title: string; body: string }>(IpcChannel.NOTIFICATION_REQ, {
+            responseChannel: IpcChannel.NOTIFICATION_RES,
+            data: {
+              title: 'OAM-KIT',
+              body: `${this.branch.name}.${repo.name} unlock`,
+            },
+          });
+        }
+      });
+    }, moduleConf.lockInfo.interval);
   }
 
   public getLockMsg(repo: Repo): string {
@@ -132,20 +136,12 @@ export class BranchLockPanelComponent implements OnChanges {
   }
 
   public getPopConfirmTitle(repo: Repo): string {
-    if (this.isListeningRepo(repo)) {
-      return `Are you sure to cancel current listening?`;
-    } else {
-      return `Are you sure to listen ${repo.name} of ${this.branch?.name}?`;
+    if (this.hasRepoLocked(repo)) {
+      if (this.isListeningRepo(repo)) {
+        return `Are you sure to cancel current listening?`;
+      } else {
+        return `Are you sure to listen "${repo.name}" of ${this.branch?.name}?`;
+      }
     }
   }
-
-  // private getRepoToken(repo: Repo): string {
-  //   if (!this.branch) {
-  //     throw new Error(`[BranchLockPanelComponent][getRepoToken] branch is empty.`);
-  //   }
-  //   if (!repo) {
-  //     throw new Error(`[BranchLockPanelComponent][getRepoToken] repo is empty.`);
-  //   }
-  //   return `${this.branch.name}.${repo.name}`;
-  // }
 }

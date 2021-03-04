@@ -102,5 +102,22 @@ describe('Display two panels correctly', () => {
 });
 
 describe('Repo listening', () => {
-  const mainFixture = new MainFixture();
+  const fixture = new MainFixture();
+  const mockedAppData: APPData = {} as APPData;
+  mockedAppData[modelConfig.lockInfoBranch.name] = branches;
+  beforeEach(() => {
+    fixture.visit('dashboard').then(() => {
+      fixture.simulateBackendResToClient<APPData>(IpcChannel.GET_APP_DATA_RES, mockedAppData);
+    });
+  });
+
+  it('should not be listened if repo is unlock', () => {
+    firstPanel()
+      .children('.branch-lock-panel__repo')
+      .first()
+      .children('.branch-lock-panel__repo--right')
+      .children('.branch-lock-panel__bell-icon')
+      .click();
+    cy.get('.ant-popover-content').should('not.exist');
+  });
 });
