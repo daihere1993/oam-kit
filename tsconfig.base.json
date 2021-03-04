@@ -19,6 +19,7 @@
       "@electron/types": ["apps/electron/src/app/constants/types"],
       "@ng-client/*": ["apps/ng-client/src/app/*"],
       "@oam-kit/utility": ["libs/utility/src/index.ts"],
+      "@oam-kit/utility/*": ["libs/utility/src/lib/*"],
       "@oam-kit/store": ["libs/store/src/index.ts"],
       "@oam-kit/store/*": ["libs/store/src/lib/*"],
       "@oam-kit/ipc": ["libs/ipc/src/index.ts"],

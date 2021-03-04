@@ -1,9 +1,8 @@
 import { IpcChannelInterface } from '@electron/app/interfaces';
-import { Model, Store } from '@oam-kit/store';
+import { Model, modelConfig, Store } from '@oam-kit/store';
 import { ModelType, StoreData, StoreAction, Branch, Profile } from '@oam-kit/store/types';
 import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
 import { IpcMainEvent } from 'electron/main';
-import { model } from '@electron/app/constants/config';
 import { defaultBranchesToDisplay } from '../lock-info';
 
 type IpcRequest_ = IPCRequest<StoreData<any>>;
@@ -60,10 +59,10 @@ export class ModelChannel implements IpcChannelInterface {
 
   public async startup$() {
     // init all models
-    await this.store.add$(new Model<Branch>(model.syncCodeBranch.name));
-    await this.store.add$(new Model<Branch>(model.lockInfoBranch.name, {
+    await this.store.add$(new Model<Branch>(modelConfig.syncCodeBranch.name));
+    await this.store.add$(new Model<Branch>(modelConfig.lockInfoBranch.name, {
       initContent: defaultBranchesToDisplay
     }));
-    await this.store.add$(new Model<Profile>(model.profile.name, { type: ModelType.PLANE }));
+    await this.store.add$(new Model<Profile>(modelConfig.profile.name, { type: ModelType.PLANE }));
   }
 }

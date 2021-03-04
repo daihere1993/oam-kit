@@ -1,6 +1,6 @@
 import { app, autoUpdater, dialog } from 'electron';
 import { platform, arch } from 'os';
-import { updateServerUrl } from '../constants/config';
+import { updateServerUrl } from '@oam-kit/utility/overall-config';
 import App from '../app';
 
 export default class UpdateEvents {

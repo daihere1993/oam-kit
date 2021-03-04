@@ -10,11 +10,11 @@ import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
 import { SyncCodeStep } from '@oam-kit/sync-code';
 import { IpcMainEvent } from 'electron';
 import { getUserDataPath } from '@electron/app/utils';
-import { modules } from '@electron/app/constants/config';
+import { modules as modulesConf } from '@oam-kit/utility/overall-config';
 
-const config = modules.syncCode;
+const moduleConf = modulesConf.syncCode;
 const userDataPath = getUserDataPath();
-const DIFF_PATH = path.join(userDataPath, config.diffName);
+const DIFF_PATH = path.join(userDataPath, moduleConf.diffName);
 
 type IpcResponse_ = IPCResponse<SyncCodeStep>;
 
@@ -129,7 +129,7 @@ export class SyncCodeChannel implements IpcChannelInterface {
     console.debug('uploadPatchToServer: start.');
     return this.sftpClient
       // Upload diff file into target remote by ssh
-      .fastPut(path.join(DIFF_PATH), `${this.branch?.directory.target}/${config.diffName}`)
+      .fastPut(path.join(DIFF_PATH), `${this.branch?.directory.target}/${moduleConf.diffName}`)
       .then(() => {
         console.debug('uploadPatchToServer: done.');
         const res: IpcResponse_ = { isSuccessed: true, data: SyncCodeStep.UPLOAD_DIFF };
@@ -157,7 +157,7 @@ export class SyncCodeChannel implements IpcChannelInterface {
           command += `${file} `;
         }
       }
-      command += `&& svn patch ${config.diffName}`;
+      command += `&& svn patch ${moduleConf.diffName}`;
 
       client.exec(command, (err: any, stream: any) => {
         if (err) {

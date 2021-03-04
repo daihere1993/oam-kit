@@ -1,8 +1,6 @@
 import { IpcChannelInterface } from '@electron/app/interfaces';
-import { IPCRequest, IPCResponse } from '@oam-kit/ipc';
 import { Model, Store, modelConfig } from '@oam-kit/store';
-import { IpcMainEvent } from 'electron';
-import { modules } from '@electron/app/constants/config';
+import * as config from '@oam-kit/utility/overall-config';
 import { Branch, Profile, Repo } from '@oam-kit/store/types';
 import * as branchLockParser from '@electron/app/utils/branchLockParser';
 import * as fetcher from '@electron/app/utils/fetcher';
@@ -16,8 +14,7 @@ export const defaultBranchesToDisplay: Branch[] = [
   { id: 2, name: '5G21A', lock: { locked: false, repos: defaultRepos } },
 ];
 
-const config = modules.lockInfo;
-const svnroot = 'https://svne1.access.nsn.com/isource/svnroot';
+const moduleConf = config.modules.lockInfo;
 
 export class LockInfoChannel implements IpcChannelInterface {
   handlers = [];
@@ -31,17 +28,7 @@ export class LockInfoChannel implements IpcChannelInterface {
     this.branchModel = this.store.get<Branch>(modelConfig.lockInfoBranch.name);
     this.branchesToDisplay = this.branchModel.data as Branch[];
     this.refreshLockInfo();
-    setInterval(this.refreshLockInfo.bind(this), 300000);
-  }
-
-  private getAllBranches(event: IpcMainEvent, request: IPCRequest<void>) {
-    const res: IPCResponse<Branch[]> = { data: this.branchModel.data as Branch[] };
-    event.reply(request.responseChannel, res);
-  }
-
-  private getBranchLockInfo(event: IpcMainEvent, request: IPCRequest<{ branchId: number }>) {
-    const res: IPCResponse<Branch> = { data: this.branchModel.find(request.data.branchId) };
-    event.reply(request.responseChannel, res);
+    setInterval(this.refreshLockInfo.bind(this), moduleConf.interval);
   }
 
   // There are two kinds of lock info: the whole branch and specific repositories
@@ -67,7 +54,7 @@ export class LockInfoChannel implements IpcChannelInterface {
   }
 
   private getJsonBranchLockJson() {
-    const jsonPath = `${config.svnroot}/${config.oam_repository}/conf/BranchFor.json`;
+    const jsonPath = `${config.svnroot}/${moduleConf.oam_repository}/conf/BranchFor.json`;
     const profile = this.store.get<Profile>(modelConfig.profile.name).data as Profile;
     return fetcher.svnCat(jsonPath, { username: profile.username, password: profile.password });
   }
@@ -75,7 +62,7 @@ export class LockInfoChannel implements IpcChannelInterface {
     const operations = [];
     for (const branch of this.branchesToDisplay) {
       for (const repo of branch.lock.repos) {
-        const svnPath = `${svnroot}/${repo.repository}/LOCKS/locks.conf`;
+        const svnPath = `${config.svnroot}/${repo.repository}/LOCKS/locks.conf`;
         const profile = this.store.get<Profile>(modelConfig.profile.name).data as Profile;
         const locksContent = await fetcher.svnCat(svnPath, {
           username: profile.username,

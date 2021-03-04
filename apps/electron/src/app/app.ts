@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 
 import { BrowserWindow, shell, screen, ipcMain } from 'electron';
-import { rendererAppName, rendererAppPort, storeName } from './constants/config';
+import { rendererAppName, rendererAppPort, storeName } from '@oam-kit/utility/overall-config';
 import { environment } from '../environments/environment';
 import { join } from 'path';
 import { format } from 'url';

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Branch, modelConfig } from '@oam-kit/store';
+import { modules as moduleConf } from '@oam-kit/utility/overall-config';
 import { StoreService } from '../../core/services/store.service';
 
 @Component({
@@ -32,7 +33,7 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    setInterval(this.store.refresh.bind(this.store), 300000);
+    setInterval(this.store.refresh.bind(this.store), moduleConf.lockInfo.interval);
   }
 
 }
