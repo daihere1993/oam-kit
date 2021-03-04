@@ -48,10 +48,23 @@ import { modules as moduleConf } from '@oam-kit/utility/overall-config';
         cursor: pointer;
       }
       .branch-lock-panel__bell-icon--listening {
-        color: green;
+        color: red;
+        -webkit-animation-timing-function: ease-in-out;
+        -webkit-animation-name: breathe;
+        -webkit-animation-duration: 1000ms;
+        -webkit-animation-iteration-count: infinite;
+        -webkit-animation-direction: alternate;
       }
       .branch-lock-panel__repo:not(:last-of-type) {
         margin-bottom: 4px;
+      }
+      @-webkit-keyframes breathe {
+        0% {
+          opacity: 0.5;
+        }
+        100% {
+          opacity: 1;
+        }
       }
     </style>
     <div class="branch-lock-panel-wrapper">
@@ -71,6 +84,7 @@ import { modules as moduleConf } from '@oam-kit/utility/overall-config';
             nzType="bell"
             nzTheme="fill"
           ></i>
+          <div class="breath_div"></div>
           <span class="branch-lock-panel__name branch-lock-panel__repo-name">{{ repo.name }}</span>
         </div>
         <i
