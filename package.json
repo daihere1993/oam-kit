@@ -1,6 +1,6 @@
 {
   "name": "oam-kit",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "license": "MIT",
   "author": {
     "name": "Luke Wu",
@@ -16,7 +16,7 @@
     "nx": "nx",
     "dev": "nx e2e ng-client-e2e --watch",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build && nx build electron",
     "build:main": "nx build electron",
     "e2e": "ng e2e",
     "make": "nx run electron:make --platform windows --arch x64 --publishPolicy never",
