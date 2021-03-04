@@ -1,16 +1,18 @@
 // Plase some little gadgets which are worked to client
-
+import * as path from 'path';
+import * as fs from 'fs';
 import { IpcChannelInterface } from '@electron/app/interfaces';
 import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
-import { BrowserWindow, dialog, IpcMainEvent } from 'electron';
+import { BrowserWindow, dialog, IpcMainEvent, Notification } from 'electron';
 
 export interface KitChannelOptions {
-  mainWindow: BrowserWindow
+  mainWindow: BrowserWindow;
 }
 
 export class KitChannel implements IpcChannelInterface {
   handlers = [
-    { name: IpcChannel.SELECT_PATH_REQ, fn: this.onSelectPath }
+    { name: IpcChannel.SELECT_PATH_REQ, fn: this.onSelectPath },
+    { name: IpcChannel.NOTIFICATION_REQ, fn: this.showSysNotification },
   ];
 
   private options: KitChannelOptions;
@@ -25,5 +27,21 @@ export class KitChannel implements IpcChannelInterface {
     });
     const res: IPCResponse<any> = { isSuccessed: !!targetPath, data: targetPath };
     event.reply(IpcChannel.SELECT_PATH_RES, res);
+  }
+
+  private showSysNotification(event: IpcMainEvent, req: IPCRequest<{ title: string; body: string }>) {
+    const icon = path.join(__dirname, './assets/jenkins.png');
+    if (!fs.existsSync(icon)) {
+      throw new Error('No image found.');
+    }
+    const notify = new Notification({
+      title: req.data.title,
+      body: req.data.body,
+      timeoutType: 'never',
+      icon: icon,
+    });
+    notify.show();
+    const res: IPCResponse<void> = { isSuccessed: true };
+    event.reply(req.responseChannel, res);
   }
 }
