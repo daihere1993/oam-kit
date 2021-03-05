@@ -1,13 +1,12 @@
-function parseLocksItems(items: string[]) {
-  const result = [];
+export function parseLocksItems(items: string[]) {
+  const result = {};
   const regex = /(\S+)\s*=\s*(.*)$/;
   for (const item of items) {
     const m = item.match(regex);
     if (m && m[2].trim() === '*()') {
-      const tmp = {};
-      const branchName = m[1].match(/(?<=\/)(.+)(?=\/\.*)/)[1];
-      tmp[branchName] = true;
-      result.push(tmp);
+      const reverseStr = [...m[1]].reverse().join('') + '/';
+      const branchName = [...reverseStr.match(/(?<=\*\.\/)(.+?)(?=\/)/)[0]].reverse().join('');
+      result[branchName] = true;
     }
   }
   return result;
@@ -40,7 +39,7 @@ function parseLockConf(locksContent: string): string[] {
 export function isLocked(locksContent: string, branch: string) {
   const items = parseLockConf(locksContent);
   const lockedBranches = parseLocksItems(items);
-  return lockedBranches[branch];
+  return !!lockedBranches[branch];
 }
 
 export function getLockReason(locksContent: string, branch: string): string {

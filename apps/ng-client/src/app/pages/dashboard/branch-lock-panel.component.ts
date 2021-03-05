@@ -111,7 +111,7 @@ export class BranchLockPanelComponent implements OnInit {
     setInterval(() => {
       this.listeningRepoSet.forEach((repoName) => {
         const repo = this.branch?.lock?.repos.find((r) => {
-          r.name === repoName;
+          return r.name === repoName;
         });
         if (!this.hasRepoLocked(repo)) {
           this.ipcService.send<{ title: string; body: string }>(IpcChannel.NOTIFICATION_REQ, {
