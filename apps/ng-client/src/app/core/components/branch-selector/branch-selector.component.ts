@@ -3,7 +3,7 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { Branch } from '@oam-kit/store/types';
 import { BranchSettingComponent, DialogRes, DialogAction } from './branch-setting.component';
 import { BranchService } from '../../services/branch.service';
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 
 @Component({
   selector: 'app-branch-selector',

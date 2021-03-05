@@ -3,7 +3,7 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { Profile } from '@oam-kit/store/types';
 import { ProfileService } from '../../core/services/profile.service';
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 
 @Component({
   selector: 'app-profile',

@@ -2,7 +2,7 @@ import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
 import { Model, Store, modelConfig } from '@oam-kit/store';
 import { BrowserSolid } from '@oam-kit/store/solid/browser-solid';
 import { APPData, ModelType, StoreAction, StoreData } from '@oam-kit/store/types';
-import { merge } from 'lodash';
+import { merge } from 'lodash-es';
 import { Subject } from 'rxjs';
 
 interface ChangedData {
