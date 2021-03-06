@@ -5,16 +5,13 @@ import { APPData, StoreAction, StoreData } from '@oam-kit/store/types';
 import { IpcChannel } from '@oam-kit/ipc';
 import { ElectronService } from './electron.service';
 import { IpcService } from './ipc.service';
-
-export const emptyAPPData: APPData = {
-  profile: { remote: '', username: '', password: '' },
-  branches: [],
-};
+import * as Immutable from 'immutable';
 
 @Injectable({
   providedIn: 'root',
 })
 export class StoreService {
+  private originalData: any;
   private hasBeenStartup = false;
   public data$: BehaviorSubject<APPData> = new BehaviorSubject<APPData>(null);
 
@@ -36,7 +33,13 @@ export class StoreService {
       this.electronService.ipcRenderer.on(IpcChannel.GET_APP_DATA_RES, (event, res: IPCResponse<APPData>) => {
         if (res.isSuccessed) {
           this.zone.run(() => {
-            this.data$.next(res.data);
+            const latestData = Immutable.fromJS(res.data)
+            if (!this.originalData) {
+              this.originalData = latestData;
+            } else {
+              this.originalData = Immutable.is(this.originalData, latestData) ? this.originalData : latestData;
+            }
+            this.data$.next(this.originalData.toJS() as APPData);
           });
         }
       });

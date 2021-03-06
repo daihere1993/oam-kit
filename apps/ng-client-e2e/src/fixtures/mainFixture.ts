@@ -2,7 +2,7 @@ import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
 import { Model, Store, modelConfig } from '@oam-kit/store';
 import { BrowserSolid } from '@oam-kit/store/solid/browser-solid';
 import { APPData, ModelType, StoreAction, StoreData } from '@oam-kit/store/types';
-import { merge } from 'lodash-es';
+import { merge, cloneDeep } from 'lodash-es';
 import { Subject } from 'rxjs';
 
 interface ChangedData {
@@ -51,39 +51,39 @@ export class MainFixture {
     removeListener: () => {},
   };
 
+  public store: Store = new Store({ solid: new BrowserSolid() });
+
   constructor() {
-    
-    
-    const store = new Store({ solid: new BrowserSolid() });
-    store.add(new Model(modelConfig.syncCodeBranch.name));
-    store.add(new Model(modelConfig.lockInfoBranch.name));
-    store.add(new Model(modelConfig.profile.name, { type: ModelType.PLANE }));
+    this.store.add(new Model(modelConfig.syncCodeBranch.name));
+    this.store.add(new Model(modelConfig.lockInfoBranch.name));
+    this.store.add(new Model(modelConfig.profile.name, { type: ModelType.PLANE }));
     // All of below subscribes just to update data then return the latest data
     // by invoke corresponding ipc response callback
     this.onPullData.subscribe(() => {
-      this.updateData(store);
+      this.updateData();
     });
     this.onCreateData.subscribe(async ({ model, content }) => {
-      const m = store.get(model);
+      const m = this.store.get(model);
       m.create(content);
-      this.updateData(store);
+      this.updateData();
     });
     this.onUpdateData.subscribe(async ({ model, content }) => {
-      const m = store.get(model);
+      const m = this.store.get(model);
       m.edit(content);
-      this.updateData(store);
+      this.updateData();
     });
     this.onDeleteData.subscribe(async ({ model, content }) => {
-      const m = store.get(model);
+      const m = this.store.get(model);
       m.delete(content);
-      this.updateData(store);
+      this.updateData();
     });
   }
 
-  private updateData(store: Store) {
+  private updateData() {
     const cb = this.ipcResponseCallbackMap[IpcChannel.GET_APP_DATA_RES];
     if (!cb) throw new Error(`Didn't listen IpcChannel.GET_APP_DATA_RES.`);
-    const res: IPCResponse<APPData> = { isSuccessed: true, data: store.getAllData() };
+    // To totally immulate electron store, need use different object reference for each response
+    const res: IPCResponse<APPData> = { isSuccessed: true, data: cloneDeep(this.store.getAllData()) };
     cb(null, res);
   }
 

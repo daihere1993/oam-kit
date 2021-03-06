@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { IpcService } from '@ng-client/core/services/ipc.service';
 import { IpcChannel } from '@oam-kit/ipc';
 import { Branch, Repo } from '@oam-kit/store';
@@ -99,6 +99,7 @@ import { modules as moduleConf } from '@oam-kit/utility/overall-config';
       </div>
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BranchLockPanelComponent implements OnInit {
   @Input() branch: Branch;

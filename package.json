@@ -59,6 +59,7 @@
     "axios": "^0.21.1",
     "cheerio": "^1.0.0-rc.5",
     "immer": "^8.0.1",
+    "immutable": "^4.0.0-rc.12",
     "lodash-es": "^4.17.21",
     "ng-zorro-antd": "^11.0.2",
     "rxjs": "~6.5.5",

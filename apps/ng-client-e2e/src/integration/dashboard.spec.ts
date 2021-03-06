@@ -1,4 +1,3 @@
-import { IpcChannel } from '@oam-kit/ipc';
 import { modelConfig } from '@oam-kit/store';
 import { APPData, Branch, Repo } from '@oam-kit/store/types';
 import { MainFixture } from '../fixtures/mainFixture';
@@ -24,11 +23,10 @@ describe('Display two panels correctly', () => {
   const fixture = new MainFixture();
 
   beforeEach(() => {
-    const mockedAppData: APPData = {} as APPData;
-    mockedAppData[modelConfig.lockInfoBranch.name] = branches;
-    fixture.visit('dashboard').then(() => {
-      fixture.simulateBackendResToClient<APPData>(IpcChannel.GET_APP_DATA_RES, mockedAppData);
-    });
+    const store = fixture.store;
+    const branchModel = store.get(modelConfig.lockInfoBranch.name);
+    branchModel.init(branches);
+    fixture.visit('dashboard');
   });
 
   it('display branch name', () => {
@@ -106,9 +104,10 @@ describe('Repo listening', () => {
   const mockedAppData: APPData = {} as APPData;
   mockedAppData[modelConfig.lockInfoBranch.name] = branches;
   beforeEach(() => {
-    fixture.visit('dashboard').then(() => {
-      fixture.simulateBackendResToClient<APPData>(IpcChannel.GET_APP_DATA_RES, mockedAppData);
-    });
+    const store = fixture.store;
+    const branchModel = store.get(modelConfig.lockInfoBranch.name);
+    branchModel.init(branches);
+    fixture.visit('dashboard');
   });
 
   it('should not be listened if repo is unlock', () => {
