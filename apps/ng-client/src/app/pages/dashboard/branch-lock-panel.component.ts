@@ -1,8 +1,7 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { IpcService } from '@ng-client/core/services/ipc.service';
 import { IpcChannel } from '@oam-kit/ipc';
 import { Branch, Repo } from '@oam-kit/store';
-import { modules as moduleConf } from '@oam-kit/utility/overall-config';
 
 @Component({
   selector: 'app-branch-lock-panel',
@@ -101,30 +100,29 @@ import { modules as moduleConf } from '@oam-kit/utility/overall-config';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BranchLockPanelComponent implements OnInit {
+export class BranchLockPanelComponent implements OnChanges {
   @Input() branch: Branch;
 
   public listeningRepoSet = new Set<string>();
 
   constructor(private ipcService: IpcService) {}
 
-  ngOnInit() {
-    setInterval(() => {
-      this.listeningRepoSet.forEach((repoName) => {
-        const repo = this.branch?.lock?.repos.find((r) => {
-          return r.name === repoName;
-        });
-        if (!this.hasRepoLocked(repo)) {
-          this.ipcService.send<{ title: string; body: string }>(IpcChannel.NOTIFICATION_REQ, {
-            responseChannel: IpcChannel.NOTIFICATION_RES,
-            data: {
-              title: 'OAM-KIT',
-              body: `${this.branch.name}.${repo.name} unlock`,
-            },
-          });
-        }
+  ngOnChanges() {
+    this.listeningRepoSet.forEach((repoName) => {
+      const repo = this.branch?.lock?.repos.find((r) => {
+        return r.name === repoName;
       });
-    }, moduleConf.lockInfo.interval);
+      if (!this.hasRepoLocked(repo)) {
+        this.ipcService.send<{ title: string; body: string }>(IpcChannel.NOTIFICATION_REQ, {
+          responseChannel: IpcChannel.NOTIFICATION_RES,
+          data: {
+            title: 'OAM-KIT',
+            body: `${this.branch.name}.${repo.name} unlock`,
+          },
+        });
+        this.listeningRepoSet.delete(repo.name);
+      }
+    });
   }
 
   public getLockMsg(repo: Repo): string {
