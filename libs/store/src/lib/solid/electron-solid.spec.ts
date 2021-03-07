@@ -3,14 +3,15 @@ import * as path from 'path';
 import { ElectronSolid } from './electron-solid';
 import { APPData, Branch, Profile } from '../types';
 
-const BRANCH_MODEL = 'branches';
+const BRANCH_MODEL = 'syncCodeBranch';
 const PROFILE_MODEL = 'profile';
 
 describe('Solid()', () => {
   const targetPath = path.join(__dirname, '../../__test__/mockedData.json');
   const source: APPData = {
-    branches: [{ id: 1, name: 'test name', directory: { source: 'test source', target: 'test target' } }],
     profile: { id: 1, remote: 'test remote', username: 'test username', password: 'test password' },
+    syncCodeBranch: [{ id: 1, name: 'test name', directory: { source: 'test source', target: 'test target' } }],
+    lockInfoBranch: []
   };
 
   async function startup(solid: ElectronSolid) {
@@ -48,12 +49,12 @@ describe('Solid()', () => {
     });
     it('should add new item into target', async () => {
       const target = solid.data;
-      expect(target.branches.length).toBe(source.branches.length + 1);
+      expect(target.syncCodeBranch.length).toBe(source.syncCodeBranch.length + 1);
     });
 
     it('should create corresponding id automatically', () => {
       const target = solid.data;
-      const latestBranch = target.branches[target.branches.length - 1];
+      const latestBranch = target.syncCodeBranch[target.syncCodeBranch.length - 1];
       expect(latestBranch.id).toBeDefined();
       expect(typeof latestBranch.id === 'number').toBeTruthy();
       newBranch.id = latestBranch.id;
@@ -75,7 +76,7 @@ describe('Solid()', () => {
     it('should be successful when edit array model', async () => {
       const content: Partial<Branch> = { id: 1, name: 'test' };
       await solid.editItem$(BRANCH_MODEL, content);
-      const sourceBranch = solid.data.branches[0];
+      const sourceBranch = solid.data.syncCodeBranch[0];
       expect(sourceBranch.name).toBe(content.name);
     });
 
@@ -107,10 +108,10 @@ describe('Solid()', () => {
     });
 
     it('delete array model', async () => {
-      const targetBranch = source.branches[0];
-      const originalLength = source.branches.length;
+      const targetBranch = source.syncCodeBranch[0];
+      const originalLength = source.syncCodeBranch.length;
       await solid.deleteItem$(BRANCH_MODEL, targetBranch.id);
-      expect(solid.data.branches.length).toBe(originalLength - 1);
+      expect(solid.data.syncCodeBranch.length).toBe(originalLength - 1);
     });
   });
 });
