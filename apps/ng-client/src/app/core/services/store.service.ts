@@ -5,13 +5,12 @@ import { APPData, StoreAction, StoreData } from '@oam-kit/store/types';
 import { IpcChannel } from '@oam-kit/ipc';
 import { ElectronService } from './electron.service';
 import { IpcService } from './ipc.service';
-import * as Immutable from 'immutable';
-
+import { isEqual } from 'lodash-es';
 @Injectable({
   providedIn: 'root',
 })
 export class StoreService {
-  private originalData: any;
+  private data: APPData;
   private hasBeenStartup = false;
   public data$: BehaviorSubject<APPData> = new BehaviorSubject<APPData>(null);
 
@@ -33,13 +32,12 @@ export class StoreService {
       this.electronService.ipcRenderer.on(IpcChannel.GET_APP_DATA_RES, (event, res: IPCResponse<APPData>) => {
         if (res.isSuccessed) {
           this.zone.run(() => {
-            const latestData = Immutable.fromJS(res.data)
-            if (!this.originalData) {
-              this.originalData = latestData;
+            if (!this.data) {
+              this.data = res.data;
             } else {
-              this.originalData = Immutable.is(this.originalData, latestData) ? this.originalData : latestData;
+              this.data = isEqual(this.data, res.data) ? this.data : res.data;
             }
-            this.data$.next(this.originalData.toJS() as APPData);
+            this.data$.next(this.data);
           });
         }
       });

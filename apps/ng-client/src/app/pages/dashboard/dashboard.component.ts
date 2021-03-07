@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Branch, modelConfig } from '@oam-kit/store';
 import { modules as moduleConf } from '@oam-kit/utility/overall-config';
 import { StoreService } from '../../core/services/store.service';
@@ -21,16 +21,14 @@ import { StoreService } from '../../core/services/store.service';
       </div>
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DashboardComponent implements OnInit {
   public branches: Branch[];
 
-  constructor(private store: StoreService, private cd: ChangeDetectorRef) {
+  constructor(private store: StoreService) {
     this.store.startup();
     this.store.data$.subscribe(data => {
       this.branches = data && data[modelConfig.lockInfoBranch.name] || [];
-      this.cd.markForCheck();
     })
   }
 
