@@ -30,9 +30,9 @@ export interface Profile extends ModelBase_ {
 
 export interface Repo {
   name: string;
-  locked: boolean;
-  reason: string;
-  repository: string;
+  locked?: boolean;
+  reason?: string;
+  repository?: string;
 }
 
 export interface Branch extends ModelBase_ {
@@ -42,7 +42,7 @@ export interface Branch extends ModelBase_ {
     target?: string;
   };
   lock?: {
-    locked: boolean;
+    locked?: boolean;
     reason?: string;
     repos?: Repo[];
   };
@@ -52,6 +52,8 @@ export interface APPData {
   profile: Profile;
   syncCodeBranch: Branch[];
   lockInfoBranch: Branch[];
+  visibleBranches?: Branch[];
+  visibleRepos?: Repo[];
 }
 
 export interface ModelOptions {

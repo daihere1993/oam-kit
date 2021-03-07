@@ -73,7 +73,6 @@ export class BrowserSolid extends Solid {
 
 
   protected updateAll() {
-    localStorage.getItem
     try {
       localStorage.setItem('data', JSON.stringify(this.data));
       this.data$.next(this.data);

@@ -1,5 +1,6 @@
 import { modelConfig } from '@oam-kit/store';
-import { APPData, Branch, Repo } from '@oam-kit/store/types';
+import { Branch, Repo } from '@oam-kit/store/types';
+import { cloneDeep } from 'lodash';
 import { MainFixture } from '../fixtures/mainFixture';
 
 function firstPanel() {
@@ -101,8 +102,6 @@ describe('Display two panels correctly', () => {
 
 describe('Repo listening', () => {
   const fixture = new MainFixture();
-  const mockedAppData: APPData = {} as APPData;
-  mockedAppData[modelConfig.lockInfoBranch.name] = branches;
   beforeEach(() => {
     const store = fixture.store;
     const branchModel = store.get(modelConfig.lockInfoBranch.name);
@@ -118,5 +117,65 @@ describe('Repo listening', () => {
       .children('.branch-lock-panel__bell-icon')
       .click();
     cy.get('.ant-popover-content').should('not.exist');
+  });
+});
+
+describe('Panel modification', () => {
+  const visibleBranches = [{ name: 'trunk' }, { name: '5G21A' }, { name: 'SBTS21A' }, { name: 'STBS20C' }];
+  const visibleRepos: Repo[] = [
+    { name: 'moam', repository: 'BTS_SC_MOAM_LTE' },
+    { name: 'has', repository: 'BTS_SC_HAS_OAM' },
+    { name: 'test', repository: 'test' },
+  ];
+  const fixture = new MainFixture();
+  beforeEach(() => {
+    const store = fixture.store;
+    const branchModel = store.get(modelConfig.lockInfoBranch.name);
+    const visibleBranchesModel = store.get(modelConfig.visibleBranches.name);
+    const visibleRepoesModel = store.get(modelConfig.visibleRepos.name);
+    branchModel.init(cloneDeep(branches));
+    visibleBranchesModel.init(cloneDeep(visibleBranches));
+    visibleRepoesModel.init(cloneDeep(visibleRepos));
+    fixture.visit('dashboard');
+  });
+
+  it('add a new panel', () => {
+    cy.get('nz-select[name="branchSelect"]').click();
+    cy.get('nz-option-item').last().click().wait(100);
+    cy.get('nz-select[name="repoSelect"]').click();
+    cy.get('nz-option-item').first().click();
+    cy.get('button[data-btn-type="update"]').click();
+    // should have a new panel in page
+    cy.get('.dashboard-brach-lock-container').should('have.length', 3);
+  });
+
+  it('add new repository for existed branch', () => {
+    cy.get('nz-select[name="branchSelect"]').click();
+    cy.get('nz-option-item').first().click().wait(100);
+    cy.get('nz-select[name="repoSelect"]').click();
+    cy.get('nz-option-item').last().click();
+    cy.get('button[data-btn-type="update"]').click();
+    firstPanel().children('.branch-lock-panel__repo').should('have.length', 3);
+  });
+
+  it('delete existed repository', () => {
+    cy.get('nz-select[name="branchSelect"]').click();
+    cy.get('nz-option-item').first().click().wait(100);
+    cy.get('.ant-select-selection-item-remove').first().click();
+    cy.get('button[data-btn-type="update"]').click();
+    firstPanel().children('.branch-lock-panel__repo').should('have.length', 1);
+  });
+
+  it('delete a panel', () => {
+    cy.get('nz-select[name="branchSelect"]').click();
+    cy.get('nz-option-item').first().click().wait(100);
+    cy.get('button[data-btn-type="delete"]').click();
+    cy.get('.branch-lock-panel-wrapper').should('have.length', 1);
+  });
+
+  it('save button should be disabled when branch and repository isn\'t changed.', () => {
+    cy.get('nz-select[name="branchSelect"]').click();
+    cy.get('nz-option-item').first().click().wait(100);
+    cy.get('button[data-btn-type="update"]').should('be.disabled');
   });
 });
