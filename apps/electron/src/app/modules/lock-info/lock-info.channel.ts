@@ -1,19 +1,17 @@
 import { IpcChannelInterface } from '@electron/app/interfaces';
 import { Model, Store, modelConfig } from '@oam-kit/store';
 import * as config from '@oam-kit/utility/overall-config';
-import { Branch, Profile, Repo } from '@oam-kit/store/types';
+import { APPData, Branch, Profile, Repo } from '@oam-kit/store/types';
 import * as branchLockParser from '@electron/app/utils/branchLockParser';
 import * as fetcher from '@electron/app/utils/fetcher';
+import { BrowserWindow } from 'electron';
+import { IpcChannel, IPCResponse } from '@oam-kit/ipc';
 
 export const visibleRepos: Repo[] = [
-  { name: 'moam', repository: 'BTS_SC_MOAM_LTE', locked: false, reason: '' },
-  { name: 'has', repository: 'BTS_SC_HAS_OAM', locked: false, reason: '' },
+  { name: 'moam', repository: 'BTS_SC_MOAM_LTE' },
+  { name: 'has', repository: 'BTS_SC_HAS_OAM' },
 ];
-export const visibleBranches: Branch[] = [
-  { name: 'trunk' },
-  { name: '5G21A' },
-  { name: 'SBTS20C' },
-];
+export const visibleBranches: Branch[] = [{ name: 'trunk' }, { name: '5G21A' }, { name: 'SBTS20C' }];
 export const defaultBranchesToDisplay: Branch[] = [
   { id: 1, name: 'trunk', lock: { locked: false, repos: visibleRepos } },
   { id: 2, name: '5G21A', lock: { locked: false, repos: visibleRepos } },
@@ -24,24 +22,45 @@ const moduleConf = config.modules.lockInfo;
 export class LockInfoChannel implements IpcChannelInterface {
   handlers = [];
 
+  private win: BrowserWindow;
   private store: Store;
   private branchModel: Model<Branch>;
   private branchesToDisplay: Branch[] = defaultBranchesToDisplay;
 
-  constructor(store: Store) {
+  constructor(store: Store, win: BrowserWindow) {
+    this.win = win;
     this.store = store;
     this.branchModel = this.store.get<Branch>(modelConfig.lockInfoBranch.name);
     this.branchesToDisplay = this.branchModel.data as Branch[];
     this.refreshLockInfo();
     setInterval(this.refreshLockInfo.bind(this), moduleConf.interval);
+    this.branchModel.onChange$.subscribe((branches) => {
+      if (this.hasCreatedNewRepo(branches as Branch[])) {
+        this.refreshLockInfo();
+      } 
+    });
+  }
+
+  private hasCreatedNewRepo(branches: Branch[]): boolean {
+    for (const branch of branches) {
+      const repos = branch.lock?.repos;
+      for (const repo of repos) {
+        if (!Object.prototype.hasOwnProperty.apply(repo, 'locked')) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   // There are two kinds of lock info: the whole branch and specific repositories
   // Note: If branch is locked, it must be BC
   // and if repository is locked, it would be automatically locked by jenkins
   private refreshLockInfo() {
-    this.refreshAllBranchLockInfo();
-    this.refreshAllRepoLockInfo();
+    Promise.all([this.refreshAllBranchLockInfo(), this.refreshAllRepoLockInfo()]).then(() => {
+      const res: IPCResponse<APPData> = { isSuccessed: true, data: this.store.getAllData() };
+      this.win.webContents.send(IpcChannel.GET_APP_DATA_RES, res);
+    });
   }
 
   private async refreshAllBranchLockInfo() {
@@ -75,8 +94,8 @@ export class LockInfoChannel implements IpcChannelInterface {
         });
         const locked = branchLockParser.isLocked(locksContent, branch.name);
         const currentRepo = branch.lock.repos.find((r) => r.repository === repo.repository);
+        currentRepo.locked = locked;
         if (locked) {
-          currentRepo.locked = locked;
           currentRepo.reason = branchLockParser.getLockReason(locksContent, branch.name);
         }
       }

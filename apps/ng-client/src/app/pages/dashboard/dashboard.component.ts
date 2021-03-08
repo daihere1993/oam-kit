@@ -1,6 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { Branch, modelConfig, Repo } from '@oam-kit/store';
-import { modules as moduleConf } from '@oam-kit/utility/overall-config';
 import { StoreService } from '../../core/services/store.service';
 
 @Component({
@@ -30,7 +29,7 @@ import { StoreService } from '../../core/services/store.service';
     </div>
   `,
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent {
   public branches: Branch[];
   public visibleRepoes: Repo[];
   public visibleBranches: Branch[];
@@ -42,9 +41,5 @@ export class DashboardComponent implements OnInit {
       this.visibleRepoes = (data && data[modelConfig.visibleRepos.name]) || [];
       this.visibleBranches = (data && data[modelConfig.visibleBranches.name]) || [];
     });
-  }
-
-  ngOnInit() {
-    setInterval(this.store.refresh.bind(this.store), moduleConf.lockInfo.interval);
   }
 }

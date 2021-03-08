@@ -96,7 +96,7 @@ export default class App {
       modelChannel,
       new KitChannel({ mainWindow: App.mainWindow }),
       new SyncCodeChannel(store),
-      new LockInfoChannel(store)
+      new LockInfoChannel(store, App.mainWindow)
     ];
     for (const channel of channels) {
       for (const handler of channel.handlers) {
