@@ -5,13 +5,18 @@ import { Branch, Profile, Repo } from '@oam-kit/store/types';
 import * as branchLockParser from '@electron/app/utils/branchLockParser';
 import * as fetcher from '@electron/app/utils/fetcher';
 
-const defaultRepos: Repo[] = [
+export const visibleRepos: Repo[] = [
   { name: 'moam', repository: 'BTS_SC_MOAM_LTE', locked: false, reason: '' },
   { name: 'has', repository: 'BTS_SC_HAS_OAM', locked: false, reason: '' },
 ];
+export const visibleBranches: Branch[] = [
+  { name: 'trunk' },
+  { name: '5G21A' },
+  { name: 'SBTS20C' },
+];
 export const defaultBranchesToDisplay: Branch[] = [
-  { id: 1, name: 'trunk', lock: { locked: false, repos: defaultRepos } },
-  { id: 2, name: '5G21A', lock: { locked: false, repos: defaultRepos } },
+  { id: 1, name: 'trunk', lock: { locked: false, repos: visibleRepos } },
+  { id: 2, name: '5G21A', lock: { locked: false, repos: visibleRepos } },
 ];
 
 const moduleConf = config.modules.lockInfo;
