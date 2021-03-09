@@ -94,7 +94,9 @@ import { Branch, Repo } from '@oam-kit/store';
           [class.branch-lock-panel__lock-icon--locked]="hasRepoLocked(repo)"
           nz-tooltip
           [nzTooltipTitle]="getLockMsg(repo)"
+          *ngIf="!isCheckingRepoInfo(repo)"
         ></i>
+        <nz-spin nzSimple nzSize="small" *ngIf="isCheckingRepoInfo(repo)"></nz-spin>
       </div>
     </div>
   `,
@@ -123,6 +125,10 @@ export class BranchLockPanelComponent implements OnChanges {
         this.listeningRepoSet.delete(repo.name);
       }
     });
+  }
+
+  public isCheckingRepoInfo(repo: Repo): boolean {
+    return !Object.prototype.hasOwnProperty.call(repo, 'locked');
   }
 
   public getLockMsg(repo: Repo): string {

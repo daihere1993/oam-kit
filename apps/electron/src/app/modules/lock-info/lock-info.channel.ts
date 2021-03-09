@@ -6,6 +6,8 @@ import * as branchLockParser from '@electron/app/utils/branchLockParser';
 import * as fetcher from '@electron/app/utils/fetcher';
 import { BrowserWindow } from 'electron';
 import { IpcChannel, IPCResponse } from '@oam-kit/ipc';
+import { cloneDeep } from 'lodash';
+import { concat, Observable } from 'rxjs';
 
 export const visibleRepos: Repo[] = [
   { name: 'moam', repository: 'BTS_SC_MOAM_LTE' },
@@ -13,8 +15,8 @@ export const visibleRepos: Repo[] = [
 ];
 export const visibleBranches: Branch[] = [{ name: 'trunk' }, { name: '5G21A' }, { name: 'SBTS20C' }];
 export const defaultBranchesToDisplay: Branch[] = [
-  { id: 1, name: 'trunk', lock: { locked: false, repos: visibleRepos } },
-  { id: 2, name: '5G21A', lock: { locked: false, repos: visibleRepos } },
+  { id: 1, name: 'trunk', lock: { locked: false, repos: cloneDeep(visibleRepos) } },
+  { id: 2, name: '5G21A', lock: { locked: false, repos: cloneDeep(visibleRepos) } },
 ];
 
 const moduleConf = config.modules.lockInfo;
@@ -37,7 +39,7 @@ export class LockInfoChannel implements IpcChannelInterface {
     this.branchModel.onChange$.subscribe((branches) => {
       if (this.hasCreatedNewRepo(branches as Branch[])) {
         this.refreshLockInfo();
-      } 
+      }
     });
   }
 
@@ -45,7 +47,7 @@ export class LockInfoChannel implements IpcChannelInterface {
     for (const branch of branches) {
       const repos = branch.lock?.repos;
       for (const repo of repos) {
-        if (!Object.prototype.hasOwnProperty.apply(repo, 'locked')) {
+        if (!Object.prototype.hasOwnProperty.call(repo, 'locked')) {
           return true;
         }
       }
@@ -57,9 +59,11 @@ export class LockInfoChannel implements IpcChannelInterface {
   // Note: If branch is locked, it must be BC
   // and if repository is locked, it would be automatically locked by jenkins
   private refreshLockInfo() {
-    Promise.all([this.refreshAllBranchLockInfo(), this.refreshAllRepoLockInfo()]).then(() => {
-      const res: IPCResponse<APPData> = { isSuccessed: true, data: this.store.getAllData() };
-      this.win.webContents.send(IpcChannel.GET_APP_DATA_RES, res);
+    Promise.all([this.refreshAllBranchLockInfo(), this.refreshAllRepoLockInfo()]).then((operations: any[]) => {
+      concat(operations.flat(Infinity)).subscribe(() => {
+        const res: IPCResponse<APPData> = { isSuccessed: true, data: this.store.getAllData() };
+        this.win.webContents.send(IpcChannel.GET_APP_DATA_RES, res);
+      });
     });
   }
 
@@ -71,10 +75,14 @@ export class LockInfoChannel implements IpcChannelInterface {
       const lockedBranch = lockBranches[branch.name];
       branch.lock.locked = lockedBranch['locked_by_BC'];
       branch.lock.reason = lockedBranch['BC_MSG'];
-      operations.push(branch.id ? this.branchModel.edit$(branch) : this.branchModel.create$(branch));
+      operations.push(
+        branch.id
+          ? this.coldObservable(this.branchModel.edit$.bind(this.branchModel, branch))
+          : this.coldObservable(this.branchModel.create$.bind(this.branchModel, branch))
+      );
     }
-    await Promise.all(operations);
     console.log('refreshAllBranchLockInfo done');
+    return operations;
   }
 
   private getJsonBranchLockJson() {
@@ -99,9 +107,19 @@ export class LockInfoChannel implements IpcChannelInterface {
           currentRepo.reason = branchLockParser.getLockReason(locksContent, branch.name);
         }
       }
-      operations.push(branch.id ? this.branchModel.edit$(branch) : this.branchModel.create$(branch));
+      operations.push(
+        branch.id
+          ? this.coldObservable(this.branchModel.edit$.bind(this.branchModel, branch))
+          : this.coldObservable(this.branchModel.create$.bind(this.branchModel, branch))
+      );
     }
-    await Promise.all(operations);
     console.log('refreshAllRepoLockInfo done');
+    return operations;
+  }
+
+  private coldObservable(cb: () => void) {
+    return new Observable(() => {
+      cb();
+    });
   }
 }

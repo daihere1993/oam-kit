@@ -10,7 +10,7 @@ export const modules = {
   syncCode: { diffName: 'moamkit.diff' },
   lockInfo: {
     oam_repository: 'BTS_SC_OAM_LTE',
-    interval: 300000
+    interval: 120000
   }
 }
 
