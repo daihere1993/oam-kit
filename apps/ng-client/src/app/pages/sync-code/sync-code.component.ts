@@ -10,7 +10,7 @@ import { Branch } from '@oam-kit/store/types';
 import { SyncCodeStep } from '@oam-kit/sync-code';
 import { IpcChannel } from '@oam-kit/ipc';
 import { IpcService,  } from '../../core/services/ipc.service';
-import { Stepper, StepStatus, StepperStatus } from '@oam-kit/utility';
+import { Stepper, StepStatus, StepperStatus, Step } from '@oam-kit/utility';
 import { ProfileService } from '../../core/services/profile.service';
 
 @Component({
@@ -36,7 +36,7 @@ import { ProfileService } from '../../core/services/profile.service';
 
       <nz-steps nzDirection="vertical" style="margin-top: 30px;" nzSize="small">
         <nz-step
-          *ngFor="let step of syncStepper.steps"
+          *ngFor="let step of syncStepper.steps; trackBy: trackFn"
           [nzTitle]="step.title"
           [nzStatus]="step.status"
           [nzIcon]="step.status === 'process' ? 'loading' : null"
@@ -137,5 +137,9 @@ export class SyncCodeComponent implements OnInit, OnDestroy {
         type: SyncCodeStep.APPLY_DIFF,
       },
     ]);
+  }
+
+  public trackFn(index: number, item: Step) {
+    return item.index;
   }
 }

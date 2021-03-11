@@ -32,7 +32,7 @@ import { cloneDeep } from 'lodash-es';
         (ngModelChange)="onBranchChange($event)"
       >
         <nz-option
-          *ngFor="let branch of visibleBranches"
+          *ngFor="let branch of visibleBranches; trackBy: trackFn"
           [nzValue]="branch"
           [nzLabel]="branch.name"
         ></nz-option>
@@ -43,7 +43,7 @@ import { cloneDeep } from 'lodash-es';
         [(ngModel)]="selectedRepoes"
         nzPlaceHolder="repositories"
       >
-        <nz-option *ngFor="let repo of visibleRepoes" [nzLabel]="repo.name" [nzValue]="repo"></nz-option>
+        <nz-option *ngFor="let repo of visibleRepoes; trackBy: trackFn" [nzLabel]="repo.name" [nzValue]="repo"></nz-option>
       </nz-select>
       <button
         data-btn-type="update"
@@ -157,5 +157,9 @@ export class ToolbarComponent {
   private cleanAllSelects() {
     this.selectedBranch = null;
     this.selectedRepoes = [];
+  }
+
+  public trackFn(index: number, item: Branch) {
+    return item.id;
   }
 }

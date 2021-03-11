@@ -44,7 +44,7 @@ import { cloneDeep } from 'lodash-es';
         [nzDropdownRender]="addBranchOption"
       >
         <nz-option
-          *ngFor="let branch of branches"
+          *ngFor="let branch of branches; trackBy: trackFn"
           nzCustomContent
           [nzLabel]="branch.name"
           [nzValue]="branch"
@@ -115,6 +115,10 @@ export class BranchSelectorComponent implements OnInit {
         }
       });
     e.stopPropagation();
+  }
+
+  public trackFn(index: number, item: Branch) {
+    return item.id;
   }
 
   ngOnInit() {

@@ -70,7 +70,7 @@ import { Branch, Repo } from '@oam-kit/store';
       <div class="branch-lock-panel__header">
         <span class="branch-lock-panel__name">{{ branch.name }}</span>
       </div>
-      <div class="branch-lock-panel__repo" *ngFor="let repo of branch?.lock?.repos">
+      <div class="branch-lock-panel__repo" *ngFor="let repo of branch?.lock?.repos; trackBy: trackFn">
         <div class="branch-lock-panel__repo--right">
           <i
             class="branch-lock-panel__bell-icon"
@@ -162,5 +162,9 @@ export class BranchLockPanelComponent implements OnChanges {
         return `Are you sure to listen "${repo.name}" of ${this.branch?.name}?`;
       }
     }
+  }
+
+  public trackFn(index: number, item: Repo) {
+    return item.name;
   }
 }

@@ -18,7 +18,7 @@ import { StoreService } from '../../core/services/store.service';
       }
     </style>
     <div class="dashboard-wrapper">
-      <div class="dashboard-brach-lock-container" *ngFor="let branch of branches">
+      <div class="dashboard-brach-lock-container" *ngFor="let branch of branches; trackBy: trackByFn">
         <app-branch-lock-panel [branch]="branch"></app-branch-lock-panel>
       </div>
       <app-branch-lock-info-toolbar
@@ -41,5 +41,9 @@ export class DashboardComponent {
       this.visibleRepoes = (data && data[modelConfig.visibleRepos.name]) || [];
       this.visibleBranches = (data && data[modelConfig.visibleBranches.name]) || [];
     });
+  }
+
+  trackByFn(index: number, item: Branch) {
+    return item.id;
   }
 }
