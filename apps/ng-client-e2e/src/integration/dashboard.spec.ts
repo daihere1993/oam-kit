@@ -143,7 +143,7 @@ describe('Panel modification', () => {
     cy.get('nz-select[name="branchSelect"]').click();
     cy.get('nz-option-item').last().click().wait(100);
     cy.get('nz-select[name="repoSelect"]').click();
-    cy.get('nz-option-item').first().click();
+    cy.get('nz-option-item').first().click().wait(100);
     cy.get('button[data-btn-type="update"]').click();
     // should have a new panel in page
     cy.get('.dashboard-brach-lock-container').should('have.length', 3);
