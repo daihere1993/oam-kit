@@ -6,27 +6,25 @@ import { StoreService } from '../../core/services/store.service';
   selector: 'app-dashboard',
   template: `
     <style>
-      .dashboard-wrapper {
+      .dashboard-branch-lock-pannel-wrapper {
         display: flex;
         flex-wrap: wrap;
       }
-      .dashboard-brach-lock-container {
+      app-branch-lock-panel {
         margin-bottom: 10px;
       }
-      .dashboard-brach-lock-container:not(:last-of-type) {
+      app-branch-lock-panel:not(:last-of-type) {
         margin-right: 10px;
       }
     </style>
-    <div class="dashboard-wrapper">
-      <div class="dashboard-brach-lock-container" *ngFor="let branch of branches; trackBy: trackByFn">
-        <app-branch-lock-panel [branch]="branch"></app-branch-lock-panel>
-      </div>
-      <app-branch-lock-info-toolbar
-        [branches]="branches"
-        [visibleRepoes]="visibleRepoes"
-        [visibleBranches]="visibleBranches"
-      ></app-branch-lock-info-toolbar>
+    <div class="dashboard-branch-lock-pannel-wrapper">
+      <app-branch-lock-panel *ngFor="let branch of branches; trackBy: trackByFn" [branch]="branch"></app-branch-lock-panel>
     </div>
+    <app-branch-lock-info-toolbar
+      [branches]="branches"
+      [visibleRepoes]="visibleRepoes"
+      [visibleBranches]="visibleBranches"
+    ></app-branch-lock-info-toolbar>
   `,
 })
 export class DashboardComponent {

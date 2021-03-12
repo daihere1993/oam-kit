@@ -9,7 +9,7 @@ import { Branch, Repo } from '@oam-kit/store';
     <style>
       .branch-lock-panel-wrapper {
         width: 320px;
-        background: #d3e0dc;
+        background: #f0f2f5;
         padding: 0 10px 10px 10px;
       }
       .branch-lock-panel__header {
@@ -44,6 +44,8 @@ import { Branch, Repo } from '@oam-kit/store';
         font-size: 20px;
         margin-right: 2px;
         color: grey;
+      }
+      .branch-lock-panel__bell-icon--listenable {
         cursor: pointer;
       }
       .branch-lock-panel__bell-icon--listening {
@@ -74,6 +76,7 @@ import { Branch, Repo } from '@oam-kit/store';
         <div class="branch-lock-panel__repo--right">
           <i
             class="branch-lock-panel__bell-icon"
+            [class.branch-lock-panel__bell-icon--listenable]="this.hasRepoLocked(repo)"
             [class.branch-lock-panel__bell-icon--listening]="isListeningRepo(repo)"
             nz-icon
             nz-popconfirm

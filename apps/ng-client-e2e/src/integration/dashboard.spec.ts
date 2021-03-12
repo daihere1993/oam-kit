@@ -146,7 +146,7 @@ describe('Panel modification', () => {
     cy.get('nz-option-item').first().click().wait(100);
     cy.get('button[data-btn-type="update"]').click();
     // should have a new panel in page
-    cy.get('.dashboard-brach-lock-container').should('have.length', 3);
+    cy.get('app-branch-lock-panel').should('have.length', 3);
   });
 
   it('add new repository for existed branch', () => {

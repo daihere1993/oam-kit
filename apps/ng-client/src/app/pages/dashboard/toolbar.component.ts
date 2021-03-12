@@ -9,12 +9,12 @@ import { cloneDeep } from 'lodash-es';
     <style>
       .dashboard-branch-lock-toolbar {
         width: 100%;
-        position: absolute;
-        left: 0;
-        bottom: 0;
-        padding: 16px;
+        padding: 10px;
         display: flex;
-        justify-content: flex-end;
+        background: #f0f2f5;
+      }
+      nz-select {
+        margin-right: 6px;
       }
       .dashboard-branch-lock-toolbar nz-select[name='branchSelect'] {
         height: 32px;
