@@ -1,15 +1,26 @@
 {
   "name": "oam-kit",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "license": "MIT",
+  "author": {
+    "name": "Luke Wu",
+    "email": "luke.wu@nokia-sbell.com"
+  },
+  "build": {
+    "appId": "com.electron.oamkit"
+  },
+  "description": "A tool platform for Nokia oam.",
   "scripts": {
     "ng": "nx",
     "postinstall": "exitzero electron-builder install-app-deps && husky install",
     "nx": "nx",
+    "dev": "nx e2e ng-client-e2e --watch",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build && nx build electron",
     "build:main": "nx build electron",
     "e2e": "ng e2e",
+    "make": "nx run electron:make --platform windows --arch x64 --publishPolicy never",
+    "package": "nx run electron:package --platform windows --arch x64 --publishPolicy never",
     "ut": "nx run-many --all --target=test",
     "lint": "nx workspace-lint && ng lint",
     "precommit": "npm run lint && npm run ut && npm run e2e",
@@ -48,7 +59,8 @@
     "axios": "^0.21.1",
     "cheerio": "^1.0.0-rc.5",
     "immer": "^8.0.1",
-    "lodash": "^4.17.20",
+    "immutable": "^4.0.0-rc.12",
+    "lodash-es": "^4.17.21",
     "ng-zorro-antd": "^11.0.2",
     "rxjs": "~6.5.5",
     "seedrandom": "^3.0.5",
@@ -74,7 +86,7 @@
     "@nrwl/tao": "11.1.5",
     "@nrwl/workspace": "11.1.5",
     "@types/jest": "26.0.8",
-    "@types/lodash": "^4.14.168",
+    "@types/lodash-es": "^4.17.4",
     "@types/node": "12.12.38",
     "@types/shelljs": "^0.8.8",
     "@types/xlsx": "0.0.36",

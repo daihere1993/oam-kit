@@ -16,7 +16,7 @@ export interface DialogRes {
 }
 
 @Component({
-  selector: 'oam-branch-setting-page',
+  selector: 'app-branch-setting-page',
   template: `
     <style>
       .container .ant-form-item:last-child {
@@ -46,7 +46,7 @@ export interface DialogRes {
               <input name="source" nz-input formControlName="source" [(ngModel)]="branch.directory.source" />
             </nz-input-group>
             <ng-template #folderSelector>
-              <oam-path-field [(value)]="branch.directory.source"></oam-path-field>
+              <app-path-field [(value)]="branch.directory.source"></app-path-field>
             </ng-template>
           </nz-form-control>
         </nz-form-item>

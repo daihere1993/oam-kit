@@ -3,13 +3,14 @@ import { Solid } from './solid';
 import { ElectronSolid } from './solid/electron-solid';
 import { APPData, Branch, Profile } from './types';
 
-const BRANCH_MODEL = 'branches';
+const BRANCH_MODEL = 'syncCodeBranch';
 const PROFILE_MODEL = 'profile';
 
 describe('Model()', () => {
   const source: APPData = {
-    branches: [{ id: 1, name: 'test name', directory: { source: 'test source', target: 'test target' } }],
     profile: { remote: 'test remote', username: 'test username', password: 'test password' },
+    syncCodeBranch: [{ id: 1, name: 'test name', directory: { source: 'test source', target: 'test target' } }],
+    lockInfoBranch: []
   };
 
   describe('setup()', () => {
@@ -24,7 +25,7 @@ describe('Model()', () => {
     it('should get correct data after setup', () => {
       solid.data$.next(source);
       const targetBranch = model.find(1);
-      expect(targetBranch).toEqual(source.branches[0]);
+      expect(targetBranch).toEqual(source.syncCodeBranch[0]);
     });
   });
 

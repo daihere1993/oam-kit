@@ -5,16 +5,12 @@ import { APPData, StoreAction, StoreData } from '@oam-kit/store/types';
 import { IpcChannel } from '@oam-kit/ipc';
 import { ElectronService } from './electron.service';
 import { IpcService } from './ipc.service';
-
-export const emptyAPPData: APPData = {
-  profile: { remote: '', username: '', password: '' },
-  branches: [],
-};
-
+import { isEqual } from 'lodash-es';
 @Injectable({
   providedIn: 'root',
 })
 export class StoreService {
+  private data: APPData;
   private hasBeenStartup = false;
   public data$: BehaviorSubject<APPData> = new BehaviorSubject<APPData>(null);
 
@@ -25,19 +21,32 @@ export class StoreService {
   ) {
   }
 
-  // Separate startup, to avoid ipc response too quick in e2e environment lead to other services aren't even subscribe
+  private getData() {
+    this.electronService.ipcRenderer.send(IpcChannel.GET_APP_DATA_REQ);
+  }
+
+  // Separate startup, to avoid ipc response too quick in e2e environment lead to other services couldn't even subscribe
   public startup() {
     if (this.electronService.isElectron && !this.hasBeenStartup) {
       this.hasBeenStartup = true;
       this.electronService.ipcRenderer.on(IpcChannel.GET_APP_DATA_RES, (event, res: IPCResponse<APPData>) => {
         if (res.isSuccessed) {
           this.zone.run(() => {
-            this.data$.next(res.data);
+            if (!this.data) {
+              this.data = res.data;
+            } else {
+              this.data = isEqual(this.data, res.data) ? this.data : res.data;
+            }
+            this.data$.next(this.data);
           });
         }
       });
-      this.electronService.ipcRenderer.send(IpcChannel.GET_APP_DATA_REQ);
+      this.getData();
     }
+  }
+
+  public refresh() {
+    this.getData();
   }
 
   public createItem<T>(model: string, content: T) {

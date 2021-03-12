@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 
 import { BrowserWindow, shell, screen, ipcMain } from 'electron';
-import { rendererAppName, rendererAppPort, storeName } from './constants/config';
+import { rendererAppName, rendererAppPort, storeName } from '@oam-kit/utility/overall-config';
 import { environment } from '../environments/environment';
 import { join } from 'path';
 import { format } from 'url';
@@ -11,6 +11,7 @@ import { KitChannel } from './modules/kit';
 import { ModelChannel } from './modules/model';
 import { SyncCodeChannel } from './modules/sync-code';
 import { ElectronSolid } from '@oam-kit/store/solid/electron-solid';
+import { LockInfoChannel } from './modules/lock-info';
 
 export default class App {
   // Keep a global reference of the window object, if you don't, the window will
@@ -86,6 +87,7 @@ export default class App {
 
   private static async initChannels$() {
     const targetPath = join(utils.getUserDataPath(), storeName);
+    console.debug(`data file: ${targetPath}`);
     const store = new Store({ solid: new ElectronSolid(targetPath) });
     await store.startup$();
     const modelChannel = new ModelChannel(store);
@@ -93,7 +95,8 @@ export default class App {
     const channels: any[] = [
       modelChannel,
       new KitChannel({ mainWindow: App.mainWindow }),
-      new SyncCodeChannel(store)
+      new SyncCodeChannel(store),
+      new LockInfoChannel(store, App.mainWindow)
     ];
     for (const channel of channels) {
       for (const handler of channel.handlers) {
@@ -104,21 +107,10 @@ export default class App {
 
   private static initMainWindow() {
     const workAreaSize = screen.getPrimaryDisplay().workAreaSize;
-    const width = Math.min(1280, workAreaSize.width || 1280);
-    const height = Math.min(720, workAreaSize.height || 720);
+    const width = Math.min(900, workAreaSize.width || 900);
+    const height = App.application.isPackaged? Math.min(540, workAreaSize.height || 540) : Math.min(720, workAreaSize.height || 720);
 
     // Create the browser window.
-    // App.mainWindow = new BrowserWindow({
-    //   width: width,
-    //   height: height,
-    //   show: false,
-    //   webPreferences: {
-    //     nodeIntegration: true,
-    //     contextIsolation: true,
-    //     backgroundThrottling: false,
-    //     preload: join(__dirname, 'preload.js'),
-    //   },
-    // });
     App.mainWindow = new BrowserWindow({
       width: width,
       height: height,
@@ -134,7 +126,10 @@ export default class App {
     // if main window is ready to show, close the splash window and show the main window
     App.mainWindow.once('ready-to-show', () => {
       App.mainWindow.show();
-      App.mainWindow.webContents.toggleDevTools();
+      const enableChromeDebugger = App.application.isPackaged? false : true;
+      if (enableChromeDebugger) {
+        App.mainWindow.webContents.toggleDevTools();
+      }
     });
 
     // handle all external redirects in a new browser window

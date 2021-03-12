@@ -1,16 +1,20 @@
+import { Subject } from 'rxjs';
 import { map, filter } from 'rxjs/operators'
 import { Solid } from "./solid";
 import { ModelType, ModelOptions } from './types';
 
 export class Model<T extends { id?: number}> {
   private solid: Solid;
+  private initContent: T | T[];
   public data: T | T[];
   public name: string;
   public type: ModelType;
+  public onChange$ = new Subject<T | T[]>();
 
   constructor(name: string, options: ModelOptions = { type: ModelType.DEFAULT }) {
     this.name = name;
     this.type = options.type;
+    this.initContent = options.initContent;
   }
 
   /** Setup original data */
@@ -20,11 +24,14 @@ export class Model<T extends { id?: number}> {
     this.solid.data$.pipe(
       filter(s => !!s),
       map(s => s[this.name])
-    ).subscribe(s => this.data = s);
+    ).subscribe(s => {
+      this.data = s;
+      this.onChange$.next(s);
+    });
   }
   /** Init model value when mode is new */
   public async init$(content: any) {
-    await this.solid.initItem$(this.name, content);
+    await this.solid.initItem$(this.name, this.initContent || content);
   }
   public init(content: any) {
     this.solid.initItem(this.name, content);

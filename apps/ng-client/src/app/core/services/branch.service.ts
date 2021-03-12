@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Branch } from '@oam-kit/store/types';
+import { Branch, modelConfig } from '@oam-kit/store';
 import { BehaviorSubject } from 'rxjs';
 import { StoreService } from './store.service';
 
-const MODEL = 'branches';
+const MODEL = modelConfig.syncCodeBranch.name;
 
 @Injectable({providedIn: 'root'})
 export class BranchService {
@@ -11,7 +11,7 @@ export class BranchService {
 
   constructor(private store: StoreService) {
     this.store.data$.subscribe((data) => {
-      this.branches$.next(data?.branches || []);
+      this.branches$.next(data && data[MODEL] || []);
     });
     this.store.startup();
   }

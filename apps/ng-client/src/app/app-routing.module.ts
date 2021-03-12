@@ -8,7 +8,7 @@ export interface AppRoute extends Route {
 const routes: AppRoute[] = [
   {
     path: '',
-    redirectTo: 'sync-code',
+    redirectTo: 'dashboard',
     pathMatch: 'full',
   },
 ];

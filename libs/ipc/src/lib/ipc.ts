@@ -1,6 +1,8 @@
 export enum IpcChannel {
   SELECT_PATH_REQ = 'select_path_req',
   SELECT_PATH_RES = 'select_path_res',
+  NOTIFICATION_REQ = 'notification_req',
+  NOTIFICATION_RES = 'notification_res',
   STORE_DATA_REQ = 'store_data_req',
   STORE_DATA_RES = 'store_data_res',
   GET_APP_DATA_REQ = 'get_app_data_req',

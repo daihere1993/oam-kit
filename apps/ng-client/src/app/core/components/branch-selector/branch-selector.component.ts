@@ -3,10 +3,10 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { Branch } from '@oam-kit/store/types';
 import { BranchSettingComponent, DialogRes, DialogAction } from './branch-setting.component';
 import { BranchService } from '../../services/branch.service';
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 
 @Component({
-  selector: 'oam-branch-selector',
+  selector: 'app-branch-selector',
   template: `
     <style>
       :host(branch-selector) {
@@ -44,7 +44,7 @@ import { cloneDeep } from 'lodash';
         [nzDropdownRender]="addBranchOption"
       >
         <nz-option
-          *ngFor="let branch of branches"
+          *ngFor="let branch of branches; trackBy: trackFn"
           nzCustomContent
           [nzLabel]="branch.name"
           [nzValue]="branch"
@@ -115,6 +115,10 @@ export class BranchSelectorComponent implements OnInit {
         }
       });
     e.stopPropagation();
+  }
+
+  public trackFn(index: number, item: Branch) {
+    return item.id;
   }
 
   ngOnInit() {

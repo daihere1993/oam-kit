@@ -3,7 +3,6 @@ import * as path from 'path';
 import * as XLSX from 'xlsx';
 import axios from 'axios';
 import { app, remote } from 'electron';
-import { M_AutoCommit } from '../constants/config';
 import { Observable } from 'rxjs';
 import { WorkSheet } from 'xlsx/types';
 
@@ -28,14 +27,6 @@ export function getRBIdByPageLink(link: string): number {
   } catch (error) {
     console.debug(error.message);
   }
-}
-
-export function getReviewBoardDiffURLByRBId(id: number): string {
-  return `${M_AutoCommit.reviewBoardBasedUrl}/r/${id}/diff/raw`;
-}
-
-export function getReviewBoardDiffURLByRBPageLink(link: string): string {
-  return getReviewBoardDiffURLByRBId(getRBIdByPageLink(link));
 }
 export function isObject(obj: any): boolean {
   return typeof obj === 'object' && obj !== null;

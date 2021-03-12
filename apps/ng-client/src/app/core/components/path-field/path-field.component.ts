@@ -8,7 +8,7 @@ enum Type {
 }
 
 @Component({
-  selector: 'oam-path-field',
+  selector: 'app-path-field',
   template: `
     <i nz-icon style="cursor: pointer;" nzType="folder" nzTheme="outline" (click)="toSelectPath($event)"></i>
   `,

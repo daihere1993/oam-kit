@@ -5,7 +5,7 @@
       "projectType": "application",
       "root": "apps/ng-client",
       "sourceRoot": "apps/ng-client/src",
-      "prefix": "oam-kit",
+      "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
@@ -64,7 +64,20 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "ng-client:build"
+            "browserTarget": "ng-client:build",
+            "port": 3200
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "ng-client:build:production"
+            }
+          }
+        },
+        "serve-e2e": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "ng-client:build",
+            "port": 4200
           },
           "configurations": {
             "production": {
@@ -104,7 +117,7 @@
           "options": {
             "cypressConfig": "apps/ng-client-e2e/cypress.json",
             "tsConfig": "apps/ng-client-e2e/tsconfig.e2e.json",
-            "devServerTarget": "ng-client:serve"
+            "devServerTarget": "ng-client:serve-e2e"
           },
           "configurations": {
             "production": {
