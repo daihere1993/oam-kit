@@ -18,5 +18,4 @@ export const modules = {
 export const model = {
   profile: { name: 'profile' },
   syncCodeBranch: { name: 'syncCodeBranch' },
-  lockInfoBranch: { name: 'lockInfoBranch' }
 }

@@ -21,6 +21,8 @@ export enum IpcChannel {
   REPLY_AUTO_COMMIT_REQ = 'autoCommitReq-reply',
   RCAEDA_ANALYZE_REQ = 'rcaeda_analyze_req',
   RCAEDA_ANALYZE_RES = 'rcaeda_analyze_res',
+  GET_LOCK_INFO_REQ = 'get_lock_info_req',
+  GET_LOCK_INFO_RES = 'get_lock_info_res',
 }
 
 export interface IPCRequest<T> {

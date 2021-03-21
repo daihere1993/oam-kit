@@ -1,9 +1,8 @@
 import { IpcChannelInterface } from '@electron/app/interfaces';
 import { Model, modelConfig, Store } from '@oam-kit/store';
-import { ModelType, StoreData, StoreAction, Branch, Profile } from '@oam-kit/store/types';
+import { ModelType, StoreData, StoreAction, Branch, Profile, ReviewBoard } from '@oam-kit/store/types';
 import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
 import { IpcMainEvent } from 'electron/main';
-import { defaultBranchesToDisplay, visibleBranches, visibleRepos } from '../lock-info';
 
 type IpcRequest_ = IPCRequest<StoreData<any>>;
 
@@ -59,16 +58,17 @@ export class ModelChannel implements IpcChannelInterface {
 
   public async startup$() {
     // init all models
+    await this.store.add$(new Model<ReviewBoard>(modelConfig.autoCommit.name, { type: ModelType.PLANE }));
     await this.store.add$(new Model<Branch>(modelConfig.syncCodeBranch.name));
-    await this.store.add$(new Model<Branch>(modelConfig.lockInfoBranch.name, {
-      initContent: defaultBranchesToDisplay
-    }));
-    await this.store.add$(new Model<Branch>(modelConfig.visibleBranches.name, {
-      initContent: visibleBranches
-    }));
-    await this.store.add$(new Model<Branch>(modelConfig.visibleRepos.name, {
-      initContent: visibleRepos
-    }));
+    // await this.store.add$(new Model<Branch>(modelConfig.lockInfoBranch.name, {
+    //   initContent: defaultBranchesToDisplay
+    // }));
+    // await this.store.add$(new Model<Branch>(modelConfig.visibleBranches.name, {
+    //   initContent: visibleBranches
+    // }));
+    // await this.store.add$(new Model<Branch>(modelConfig.visibleRepos.name, {
+    //   initContent: visibleRepos
+    // }));
     await this.store.add$(new Model<Profile>(modelConfig.profile.name, { type: ModelType.PLANE }));
   }
 }

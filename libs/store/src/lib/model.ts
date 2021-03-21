@@ -1,4 +1,3 @@
-import { Subject } from 'rxjs';
 import { map, filter } from 'rxjs/operators'
 import { Solid } from "./solid";
 import { ModelType, ModelOptions } from './types';
@@ -9,7 +8,6 @@ export class Model<T extends { id?: number}> {
   public data: T | T[];
   public name: string;
   public type: ModelType;
-  public onChange$ = new Subject<T | T[]>();
 
   constructor(name: string, options: ModelOptions = { type: ModelType.DEFAULT }) {
     this.name = name;
@@ -26,7 +24,6 @@ export class Model<T extends { id?: number}> {
       map(s => s[this.name])
     ).subscribe(s => {
       this.data = s;
-      this.onChange$.next(s);
     });
   }
   /** Init model value when mode is new */
