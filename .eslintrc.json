@@ -24,13 +24,13 @@
       "extends": ["plugin:@nrwl/nx/typescript"],
       "parserOptions": { "project": "./tsconfig.*?.json" },
       "rules": {
-        "@typescript-eslint/no-explicit-any": "off"
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-empty-function": "off"
       }
     },
     {
       "files": ["*.js", "*.jsx"],
-      "extends": ["plugin:@nrwl/nx/javascript"],
-      "rules": {}
+      "extends": ["plugin:@nrwl/nx/javascript"]
     }
   ]
 }

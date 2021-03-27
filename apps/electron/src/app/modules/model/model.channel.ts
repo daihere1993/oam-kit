@@ -58,7 +58,7 @@ export class ModelChannel implements IpcChannelInterface {
 
   public async startup$() {
     // init all models
-    await this.store.add$(new Model<ReviewBoard>(modelConfig.autoCommit.name, { type: ModelType.PLANE }));
+    await this.store.add$(new Model<ReviewBoard>(modelConfig.autoCommit.name));
     await this.store.add$(new Model<Branch>(modelConfig.syncCodeBranch.name));
     // await this.store.add$(new Model<Branch>(modelConfig.lockInfoBranch.name, {
     //   initContent: defaultBranchesToDisplay

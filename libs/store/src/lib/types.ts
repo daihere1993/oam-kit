@@ -47,12 +47,13 @@ export interface Branch extends ModelBase_ {
 }
 
 export interface ReviewBoard extends ModelBase_ {
-	rbLink: string;
-	branchName: string;
-	repoName: string;
-	hasUnlocked: boolean;
-	hasCommitted: boolean;
-	logs: string;
+  name: string;
+	link: string;
+	branch: string;
+	repo: Repo;
+	revision: string;
+  committedDate: string;
+	logs: string[];
 }
 
 export interface BranchLockInfo {

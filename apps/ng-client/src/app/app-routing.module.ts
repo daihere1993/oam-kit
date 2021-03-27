@@ -8,7 +8,7 @@ export interface AppRoute extends Route {
 const routes: AppRoute[] = [
   {
     path: '',
-    redirectTo: 'dashboard',
+    redirectTo: 'auto-commit',
     pathMatch: 'full',
   },
 ];

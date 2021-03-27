@@ -1,44 +1,46 @@
 import { IpcChannelInterface } from '@electron/app/interfaces';
 import { Store, modelConfig } from '@oam-kit/store';
 import * as config from '@oam-kit/utility/overall-config';
-import { BranchLockInfo, LockInfo, Profile, Repo, RepoLockInfo } from '@oam-kit/store/types';
+import { BranchLockInfo, LockInfo, Profile, Repo, RepoLockInfo, ReviewBoard } from '@oam-kit/store/types';
 import * as branchLockParser from '@electron/app/utils/branchLockParser';
 import * as fetcher from '@electron/app/utils/fetcher';
 import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
 import { IpcMainEvent } from 'electron/main';
-
-// export const visibleRepos: Repo[] = [
-//   { name: 'moam', repository: 'BTS_SC_MOAM_LTE' },
-//   { name: 'has', repository: 'BTS_SC_HAS_OAM' },
-// ];
-// export const visibleBranches: Branch[] = [{ name: 'trunk' }, { name: '5G21A' }, { name: 'SBTS20C' }];
-// export const defaultBranchesToDisplay: Branch[] = [
-//   { id: 1, name: 'trunk', lock: { locked: false, repos: cloneDeep(visibleRepos) } },
-//   { id: 2, name: '5G21A', lock: { locked: false, repos: cloneDeep(visibleRepos) } },
-// ];
+import { RbBase_ } from '../rb';
 
 const moduleConf = config.modules.lockInfo;
 
-export class LockInfoChannel implements IpcChannelInterface {
+export class LockInfoChannel extends RbBase_ implements IpcChannelInterface {
   handlers = [{ name: IpcChannel.GET_LOCK_INFO_REQ, fn: this.getLockInfo }];
 
-  private store: Store;
-
-  constructor(store: Store) {
+  constructor(private store: Store) {
+    super();
     this.store = store;
   }
 
-  public getLockInfo(event: IpcMainEvent, req: IPCRequest<{ branch: string; repo: Repo }>) {
-    const { branch, repo } = req.data;
-    Promise.all([this.getBranchLockInfo(branch), this.getRepoLockInfo(branch, repo)]).then((data) => {
-      const [branchLockInfo, repoLockInfo] = data;
+  /**
+   * Get lock info by rb link.
+   * @param event
+   * @param req
+   */
+  public async getLockInfo(event: IpcMainEvent, req: IPCRequest<Partial<ReviewBoard>>) {
+    const res: IPCResponse<LockInfo> = {};
+    try {
+      const partialRb = req.data;
+      const branchLockInfo = await this.getBranchLockInfo(partialRb.branch);
+      const repoLockInfo = await this.getRepoLockInfo(partialRb.branch, partialRb.repo);
       const lockInfo: LockInfo = {
         repo: repoLockInfo,
         branch: branchLockInfo,
       };
-      const res: IPCResponse<LockInfo> = { isSuccessed: true, data: lockInfo };
+      res.data = lockInfo;
+      res.isSuccessed = true;
+    } catch (error) {
+      res.isSuccessed = false;
+      res.error = { name: 'getLockInfo', message: error.message };
+    } finally {
       event.reply(req.responseChannel, res);
-    });
+    }
   }
 
   private async getBranchLockInfo(branch: string): Promise<BranchLockInfo> {
@@ -70,6 +72,14 @@ export class LockInfoChannel implements IpcChannelInterface {
   private getJsonBranchLockJson() {
     const jsonPath = `${config.svnroot}/${moduleConf.oam_repository}/conf/BranchFor.json`;
     const profile = this.store.get<Profile>(modelConfig.profile.name).data as Profile;
-    return fetcher.svnCat(jsonPath, { username: profile.username, password: profile.password });
+    try {
+      return fetcher.svnCat(jsonPath, { username: profile.username, password: profile.password });
+    } catch(error) {
+      if (!this.isCustomError(error)) {
+        throw new Error(`[oam-kit][getJsonBranchLockJson] ${error.message}`);
+      } else {
+        throw error;
+      }
+    }
   }
 }

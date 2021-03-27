@@ -1,4 +1,4 @@
-const { pathsToModuleNameMapper } = require('ts-jest/utils')
+const { pathsToModuleNameMapper } = require('ts-jest/utils');
 const { compilerOptions } = require('../../tsconfig.base.json');
 
 module.exports = {
@@ -16,6 +16,6 @@ module.exports = {
   coverageDirectory: '../../coverage/apps/electron',
   // To use paths from tsconfig.json in jest files
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
-    prefix: "<rootDir>/../../",
+    prefix: '<rootDir>/../../',
   }),
 };
