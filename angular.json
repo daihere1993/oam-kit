@@ -25,10 +25,7 @@
                 "output": "/assets/"
               }
             ],
-            "styles": [
-              "apps/ng-client/src/styles.scss",
-              "./node_modules/ng-zorro-antd/ng-zorro-antd.min.css"
-            ],
+            "styles": ["apps/ng-client/src/styles.scss", "./node_modules/ng-zorro-antd/ng-zorro-antd.min.css"],
             "scripts": []
           },
           "configurations": {
@@ -279,6 +276,27 @@
           "outputs": ["coverage/libs/sync-code"],
           "options": {
             "jestConfig": "libs/sync-code/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "logger": {
+      "root": "libs/logger",
+      "sourceRoot": "libs/logger/src",
+      "projectType": "library",
+      "architect": {
+        "lint": {
+          "builder": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/logger/**/*.ts"]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/logger"],
+          "options": {
+            "jestConfig": "libs/logger/jest.config.js",
             "passWithNoTests": true
           }
         }

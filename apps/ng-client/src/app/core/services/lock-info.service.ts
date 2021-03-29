@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { RbItem } from '@ng-client/pages/auto-commit/auto-commit.component';
 import { IpcChannel, IPCRequest } from '@oam-kit/ipc';
+import { LOG_PHASE, LOG_TYPE } from '@oam-kit/logger';
 import { LockInfo, ReviewBoard } from '@oam-kit/store';
 import { from, of, Subject, timer } from 'rxjs';
 import { mergeMap, takeUntil } from 'rxjs/operators';
@@ -22,9 +23,12 @@ export class LockInfoService {
         mergeMap(() => from(this.getPartialLockInfo(rb))),
         mergeMap((partialLockInfo) => {
           if (partialLockInfo.isLocked) {
-            rb.logger.insert('Branch_Lock_Info', `Locked, ${partialLockInfo.reason}. Keep listening...`);
+            rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.BRANCH_CHECK__LOCKED, {
+              branch: rb.branch,
+              reason: partialLockInfo.reason,
+            });
           } else {
-            rb.logger.insert('Branch_Lock_Info', `Unlocked, then try to commit code.`);
+            rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.BRANCH_CHECK__UNLOCKED, { branch: rb.branch });
             onBranchUnlocked.next();
             cancelInterval.next(true);
             cancelInterval.complete();
@@ -35,8 +39,10 @@ export class LockInfoService {
       )
       .subscribe(
         () => {},
-        (error) => {
-          rb.logger.insert('Branch_Lock_Info', `Failed, row response: ${error.message}`);
+        () => {
+          cancelInterval.next(true);
+          cancelInterval.complete();
+          onBranchUnlocked.complete();
         }
       );
     return onBranchUnlocked;
@@ -57,7 +63,8 @@ export class LockInfoService {
       const reason = lockInfo.branch.locked ? lockInfo.branch.reason : lockInfo.repo.reason;
       return { isLocked, reason };
     } else {
-      throw new Error(error.message);
+      rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.EXCEPTION, { name: error.name, message: error.message });
+      throw new Error();
     }
   }
 }

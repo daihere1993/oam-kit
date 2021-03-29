@@ -51,9 +51,9 @@ export interface ReviewBoard extends ModelBase_ {
 	link: string;
 	branch: string;
 	repo: Repo;
-	revision: string;
-  committedDate: string;
-	logs: string[];
+	revision?: string;
+  committedDate?: string;
+	logs?: string[];
 }
 
 export interface BranchLockInfo {

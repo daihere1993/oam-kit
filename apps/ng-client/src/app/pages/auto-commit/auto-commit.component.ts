@@ -5,6 +5,8 @@ import { formatDate } from '@angular/common';
 import { Repo, ReviewBoard } from '@oam-kit/store';
 import { IpcService } from '@ng-client/core/services/ipc.service';
 import { IpcChannel, IPCRequest } from '@oam-kit/ipc';
+import { LOG_PHASE, LOG_TEMPLATES, LOG_TYPE } from '@oam-kit/logger';
+import { getStringFromTemplate } from '@oam-kit/utility/utils';
 import { Subject } from 'rxjs';
 
 @Component({
@@ -21,11 +23,10 @@ import { Subject } from 'rxjs';
         margin-top: 20px;
       }
       .logs-container {
-        height: 300px;
+        height: 230px;
         padding: 10px;
         background: #f0f2f5;
         overflow-y: scroll;
-        overflow-x: wrap;
       }
       .editable-cell {
         position: relative;
@@ -45,8 +46,14 @@ import { Subject } from 'rxjs';
     <div class="rb-form-wrapper">
       <h2>RB Table</h2>
       <input #attachedLink class="rb-form__input" nz-input placeholder="RB link" />
-      <button nz-button nzType="primary" [nzLoading]="isAttachingRb" (click)="attachRb(attachedLink.value)">
-        {{ isAttachingRb ? 'Attching...' : 'Attach' }}
+      <button
+        nz-button
+        nzType="primary"
+        data-btn-type="attach"
+        [nzLoading]="isAttachingRb"
+        (click)="attachRb(attachedLink.value)"
+      >
+        {{ isAttachingRb ? 'Attaching...' : 'Attach' }}
       </button>
       <nz-table #editRowTable nzBordered [nzData]="listOfData">
         <thead>
@@ -81,7 +88,7 @@ import { Subject } from 'rxjs';
             <td class="rb-table__cell">
               <ng-container *ngIf="data.isCommitting; then rbSpin; else rbActions"></ng-container>
               <ng-template #rbActions>
-                <a nz-button nzType="link" (click)="commit(data)">Commit</a>
+                <a nz-button data-btn-type="commit" nzType="link" (click)="commit(data)">Commit</a>
                 <a nz-button nzType="link">Refresh</a>
                 <a nz-button nzType="link" nz-popconfirm nzPopconfirmTitle="Sure to delete?" (nzOnConfirm)="deleteRow(i)">
                   Delete
@@ -113,7 +120,7 @@ export class AutoCommitComponent implements OnInit {
 
   private onLogChange = new Subject<string>();
 
-  public listOfData: ReviewBoard[] = [];
+  public listOfData: RbItem[] = [];
 
   startEdit(divEle: any, inputEle: any) {
     divEle.style.display = 'none';
@@ -129,15 +136,22 @@ export class AutoCommitComponent implements OnInit {
   }
 
   async attachRb(link: string) {
-    this.isAttachingRb = true;
-    const rb = new RbItem({ link }, this.onLogChange);
-    const value = await this.rbService.getPartialRb(rb);
-    if (value) {
-      rb.merge(value);
-      rb.logger.insert('RB_Attach', 'Attached!!!');
+    if (!this.linkExisted(link)) {
+      this.isAttachingRb = true;
+      const rb = new RbItem({ link }, this.onLogChange);
+      rb.logger.insert(LOG_PHASE.RB_ATTACH, LOG_TYPE.RB_ATTACH__START, { link });
+      const value = await this.rbService.getPartialRb(rb);
+      if (value) {
+        rb.merge(value);
+        rb.logger.insert(LOG_PHASE.RB_ATTACH, LOG_TYPE.RB_ATTACH__OK);
+        this.isAttachingRb = false;
+        this.listOfData = [...this.listOfData, rb];
+      }
       this.isAttachingRb = false;
-      this.listOfData = [...this.listOfData, rb];
       this.cdr.detectChanges();
+    } else {
+      const rb = this.findRbByLink(link);
+      rb.logger.insert(LOG_PHASE.RB_ATTACH, LOG_TYPE.RB_ATTACH__DULICATE);
     }
   }
 
@@ -162,20 +176,45 @@ export class AutoCommitComponent implements OnInit {
 
   ngOnInit() {
     this.onLogChange.subscribe((nLog) => {
+      this.logs.reverse();
       this.logs.push(nLog);
+      this.logs.reverse();
       this.cdr.detectChanges();
     });
   }
 
   public async commit(rb: RbItem) {
     rb.isCommitting = true;
+    rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.RB_IS_READY__START, { link: rb.link });
     const ready = await this.rbService.isRbReady(rb);
     this.cdr.detectChanges();
     if (ready) {
-      this.lockInfoService.getUnlockListener(rb).subscribe(async () => {
-        await this.rbService.svnCommit(rb);
-      });
+      rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.BRANCH_CHECK__START);
+      this.lockInfoService.getUnlockListener(rb).subscribe(
+        async () => {
+          rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.SVN_COMMIT__START);
+          await this.rbService.svnCommit(rb);
+          rb.isCommitting = false;
+          this.cdr.detectChanges();
+        },
+        () => {},
+        () => {
+          rb.isCommitting = false;
+          this.cdr.detectChanges();
+        }
+      );
+    } else {
+      rb.isCommitting = false;
+      this.cdr.detectChanges();
     }
+  }
+
+  private linkExisted(link: string) {
+    return !!this.findRbByLink(link);
+  }
+
+  private findRbByLink(link: string) {
+    return this.listOfData.find((item) => item.link === link);
   }
 }
 
@@ -186,11 +225,18 @@ export class AutoCommitComponent implements OnInit {
 class Logger {
   logs: string[] = [];
 
-  constructor(private name: string, private comments: string, private onLogChange: Subject<string>) {}
+  constructor(public name: string, public comments: string, private onLogChange: Subject<string>) {}
 
-  insert(phase: string, message: string) {
+  // 2021-03-23 03:41:23 GENERAL[RB_ATTACH]: Start to attach "http://biedronka.emea.nsn-net.net/r/92555/"...
+  insert(phase: LOG_PHASE, type: LOG_TYPE, info: any = {}) {
     const date = formatDate(new Date(), 'yyyy-MM-dd HH:mm:ss', 'en-CN');
-    const nLog = `${date} ${this.name}[${this.comments}][${phase}]: ${message}`;
+    const name = this.name || 'GENERAL';
+    const message = getStringFromTemplate(LOG_TEMPLATES[type], info);
+    let nLog = `${date} ${name}`;
+    if (this.comments) {
+      nLog += `[${this.comments}]`;
+    }
+    nLog += `[${phase}]: ${message}`;
     this.logs.push(nLog);
     this.onLogChange.next(nLog);
   }
@@ -223,17 +269,19 @@ export class RbItem implements ReviewBoard {
   // true means committment on going
   public isCommitting: boolean;
 
-  constructor(value: Partial<ReviewBoard>, private onLogChange: Subject<string>) {
+  constructor(value: Partial<ReviewBoard>, onLogChange: Subject<string>) {
     Object.assign(this, value);
-    if (value.branch && value.repo) {
-      this.logger = new Logger(value.name, `${value.branch}.${value.repo.name}`, onLogChange);
-    }
+    const comments = value.branch && value.repo.name ? `${value.branch.toUpperCase()}.${value.repo.name}` : null;
+    this.logger = new Logger(value.name, comments, onLogChange);
   }
 
   merge(value: Partial<ReviewBoard>) {
-    if (!this.logger && value.branch && value.repo) {
-      this.logger = new Logger(value.name, `${value.branch}.${value.repo.name}`, this.onLogChange);
-    }
     Object.assign(this, value);
+    if (!this.logger.name && value.name) {
+      this.logger.name = value.name;
+    }
+    if (!this.logger.comments && value.repo?.name) {
+      this.logger.comments = `${value.branch.toUpperCase()}.${value.repo.name}`;
+    }
   }
 }
