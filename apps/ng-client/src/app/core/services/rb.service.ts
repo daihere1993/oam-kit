@@ -10,6 +10,7 @@ export class RbService {
   constructor(private ipcService: IpcService) {}
 
   public async svnCommit(rb: RbItem) {
+    rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.SVN_COMMIT__START);
     const req: IPCRequest<string> = { data: rb.link, responseChannel: IpcChannel.SVN_COMMIT_RES };
     const { isSuccessed, data, error } = await this.ipcService.send<string, string>(IpcChannel.SVN_COMMIT_REQ, req);
     if (isSuccessed) {
@@ -19,9 +20,10 @@ export class RbService {
     }
   }
 
-  public async getPartialRb(rb: RbItem) {
+  public async completeRbInfo(rb: RbItem) {
     if (!this.isValidRbLink(rb.link)) {
       rb.logger.insert(LOG_PHASE.RB_ATTACH, LOG_TYPE.RB_ATTACH__INVALID_LINK);
+      return { isSuccessed: false };
     } else {
       const req: IPCRequest<string> = { data: rb.link, responseChannel: IpcChannel.GET_PARTIAL_RB_RES };
       const { isSuccessed, data, error } = await this.ipcService.send<string, Partial<ReviewBoard>>(
@@ -29,14 +31,17 @@ export class RbService {
         req
       );
       if (isSuccessed) {
-        return data;
+        rb.merge(data);
+        rb.logger.insert(LOG_PHASE.RB_ATTACH, LOG_TYPE.RB_ATTACH__OK);
       } else {
         rb.logger.insert(LOG_PHASE.RB_ATTACH, LOG_TYPE.EXCEPTION, { name: error.name, message: error.message });
       }
+      return { isSuccessed };
     }
   }
 
   public async isRbReady(rb: RbItem) {
+    rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.RB_IS_READY__START, { link: rb.link });
     const req: IPCRequest<string> = { data: rb.link, responseChannel: IpcChannel.IS_RB_READY_RES };
     const { isSuccessed, error } = await this.ipcService.send<string, boolean>(IpcChannel.IS_RB_READY_REQ, req);
     if (isSuccessed) {

@@ -55,7 +55,7 @@ import { Subject } from 'rxjs';
       >
         {{ isAttachingRb ? 'Attaching...' : 'Attach' }}
       </button>
-      <nz-table #editRowTable nzBordered [nzData]="listOfData">
+      <nz-table #editRowTable nzBordered [nzData]="rbList">
         <thead>
           <tr>
             <th>Name</th>
@@ -68,7 +68,7 @@ import { Subject } from 'rxjs';
           </tr>
         </thead>
         <tbody>
-          <tr #tableRow *ngFor="let data of editRowTable.data; index as i" class="editable-row">
+          <tr #tableRow *ngFor="let data of editRowTable.data; let i = index; trackBy: trackByFn" class="editable-row">
             <td>
               <div #nameDiv class="editable-cell" (click)="startEdit(nameDiv, nameInput)">
                 {{ data.name }}
@@ -87,16 +87,16 @@ import { Subject } from 'rxjs';
             <td>{{ data.committedDate }}</td>
             <td class="rb-table__cell">
               <ng-container *ngIf="data.isCommitting; then rbSpin; else rbActions"></ng-container>
+              <ng-template #rbSpin>
+                <a nz-button nzType="link" nzLoading></a>
+                <a nz-button nzType="link" (click)="data.isCommitting = false">Cancel</a>
+              </ng-template>
               <ng-template #rbActions>
                 <a nz-button data-btn-type="commit" nzType="link" (click)="commit(data)">Commit</a>
                 <a nz-button nzType="link">Refresh</a>
                 <a nz-button nzType="link" nz-popconfirm nzPopconfirmTitle="Sure to delete?" (nzOnConfirm)="deleteRow(i)">
                   Delete
                 </a>
-              </ng-template>
-              <ng-template #rbSpin>
-                <a nz-button nzType="link" nzLoading></a>
-                <a nz-button nzType="link" (click)="data.isCommitting = false">Cancel</a>
               </ng-template>
             </td>
           </tr>
@@ -117,55 +117,9 @@ import { Subject } from 'rxjs';
 export class AutoCommitComponent implements OnInit {
   public logs: string[] = [];
   public isAttachingRb = false;
+  public rbList: RbItem[] = [];
 
   private onLogChange = new Subject<string>();
-
-  public listOfData: RbItem[] = [];
-
-  startEdit(divEle: any, inputEle: any) {
-    divEle.style.display = 'none';
-    inputEle.style.display = 'block';
-    setTimeout(() => {
-      inputEle.focus();
-    }, 0);
-  }
-
-  stopEdit(divEle: any, inputEle: any) {
-    divEle.style.display = 'block';
-    inputEle.style.display = 'none';
-  }
-
-  async attachRb(link: string) {
-    if (!this.linkExisted(link)) {
-      this.isAttachingRb = true;
-      const rb = new RbItem({ link }, this.onLogChange);
-      rb.logger.insert(LOG_PHASE.RB_ATTACH, LOG_TYPE.RB_ATTACH__START, { link });
-      const value = await this.rbService.getPartialRb(rb);
-      if (value) {
-        rb.merge(value);
-        rb.logger.insert(LOG_PHASE.RB_ATTACH, LOG_TYPE.RB_ATTACH__OK);
-        this.isAttachingRb = false;
-        this.listOfData = [...this.listOfData, rb];
-      }
-      this.isAttachingRb = false;
-      this.cdr.detectChanges();
-    } else {
-      const rb = this.findRbByLink(link);
-      rb.logger.insert(LOG_PHASE.RB_ATTACH, LOG_TYPE.RB_ATTACH__DULICATE);
-    }
-  }
-
-  deleteRow(index: number) {
-    this.listOfData.splice(index, 1);
-    this.listOfData = [...this.listOfData];
-  }
-
-  openUrl(event: MouseEvent, url: string) {
-    const req: IPCRequest<string> = { data: url, responseChannel: IpcChannel.OPEN_EXTERNAL_URL_RES };
-    this.ipcService.send(IpcChannel.OPEN_EXTERNAL_URL_REQ, req);
-    event.preventDefault();
-    event.stopPropagation();
-  }
 
   constructor(
     private rbService: RbService,
@@ -183,30 +137,72 @@ export class AutoCommitComponent implements OnInit {
     });
   }
 
-  public async commit(rb: RbItem) {
+  async attachRb(link: string) {
+    const _link = this.formatLink(link);
+    if (!this.linkExisted(_link)) {
+      this.isAttachingRb = true;
+
+      const rb = new RbItem({ link: _link }, this.onLogChange);
+      rb.logger.insert(LOG_PHASE.RB_ATTACH, LOG_TYPE.RB_ATTACH__START, { link: _link });
+
+      const { isSuccessed } = await this.rbService.completeRbInfo(rb);
+      if (isSuccessed) {
+        this.rbList = [...this.rbList, rb];
+      }
+      this.isAttachingRb = false;
+      this.cdr.detectChanges();
+    } else {
+      const rb = this.findRbByLink(_link);
+      rb.logger.insert(LOG_PHASE.RB_ATTACH, LOG_TYPE.RB_ATTACH__DULICATE);
+    }
+  }
+
+  async commit(rb: RbItem) {
     rb.isCommitting = true;
-    rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.RB_IS_READY__START, { link: rb.link });
-    const ready = await this.rbService.isRbReady(rb);
-    this.cdr.detectChanges();
-    if (ready) {
-      rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.BRANCH_CHECK__START);
-      this.lockInfoService.getUnlockListener(rb).subscribe(
-        async () => {
-          rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.SVN_COMMIT__START);
-          await this.rbService.svnCommit(rb);
-          rb.isCommitting = false;
-          this.cdr.detectChanges();
-        },
-        () => {},
-        () => {
-          rb.isCommitting = false;
-          this.cdr.detectChanges();
-        }
-      );
+    if (await this.rbService.isRbReady(rb)) {
+      const { onBranchUnlocked, onThrowError } = this.lockInfoService.getUnlockListener(rb);
+      onBranchUnlocked.subscribe(async () => {
+        await this.rbService.svnCommit(rb);
+        rb.isCommitting = false;
+        this.cdr.detectChanges();
+      });
+      onThrowError.subscribe(() => {
+        rb.isCommitting = false;
+        this.cdr.detectChanges();
+      });
     } else {
       rb.isCommitting = false;
       this.cdr.detectChanges();
     }
+  }
+
+  trackByFn(index: number, rb: RbItem) {
+    return rb.link;
+  }
+
+  startEdit(divEle: any, inputEle: any) {
+    divEle.style.display = 'none';
+    inputEle.style.display = 'block';
+    setTimeout(() => {
+      inputEle.focus();
+    }, 0);
+  }
+
+  stopEdit(divEle: any, inputEle: any) {
+    divEle.style.display = 'block';
+    inputEle.style.display = 'none';
+  }
+
+  deleteRow(index: number) {
+    this.rbList.splice(index, 1);
+    this.rbList = [...this.rbList];
+  }
+
+  openUrl(event: MouseEvent, url: string) {
+    const req: IPCRequest<string> = { data: url, responseChannel: IpcChannel.OPEN_EXTERNAL_URL_RES };
+    this.ipcService.send(IpcChannel.OPEN_EXTERNAL_URL_REQ, req);
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   private linkExisted(link: string) {
@@ -214,7 +210,19 @@ export class AutoCommitComponent implements OnInit {
   }
 
   private findRbByLink(link: string) {
-    return this.listOfData.find((item) => item.link === link);
+    return this.rbList.find((item) => item.link === link);
+  }
+
+  /**
+   * Link must end with a slash like: http://biedronka.emea.nsn-net.net/r/76664/
+   * instead of http://biedronka.emea.nsn-net.net/r/76664, review board doesn't accept this type of link.
+   */
+  private formatLink(link: string) {
+    if (link.match(/.+\//)[0] === link) {
+      return link;
+    } else {
+      return link + '/';
+    }
   }
 }
 

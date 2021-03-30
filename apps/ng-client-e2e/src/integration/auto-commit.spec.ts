@@ -53,8 +53,8 @@
 //   inputRbLink(link).then(() => {
 //     attachButtonTurnToOngoing();
 //     assertSpecificLogContent(LOG_TYPE.RB_ATTACH__START, 0, { link });
+//     fixture.simulateBackendResToClient(IpcChannel.GET_PARTIAL_RB_RES, fakeRb);
 //     cy.wait(100).then(() => {
-//       fixture.simulateBackendResToClient(IpcChannel.GET_PARTIAL_RB_RES, fakeRb);
 //       assertSpecificLogContent(LOG_TYPE.RB_ATTACH__OK);
 //       attachButtonBackToNormal();
 //     });
@@ -75,21 +75,21 @@
 // }
 
 // function simulateRbIsReady(fixture: MainFixture) {
+//   fixture.simulateBackendResToClient(IpcChannel.IS_RB_READY_RES, { isSuccessed: true });
 //   return cy.wait(100).then(() => {
-//     fixture.simulateBackendResToClient(IpcChannel.IS_RB_READY_RES, { isSuccessed: true });
 //     assertSpecificLogContent(LOG_TYPE.RB_IS_READY__READY, 1);
 //     assertSpecificLogContent(LOG_TYPE.BRANCH_CHECK__START);
 //   });
 // }
 
 // function simulateBranchIsUnlocked(fixture: MainFixture) {
+//   fixture.simulateBackendResToClient(IpcChannel.GET_LOCK_INFO_RES, {
+//     branch: { name: fakeRb.branch, locked: false },
+//     repo: { locked: false },
+//   });
 //   cy.wait(100).then(() => {
-//     fixture.simulateBackendResToClient(IpcChannel.GET_LOCK_INFO_RES, {
-//       branch: { name: fakeRb.branch, locked: false },
-//       repo: { locked: false },
-//     });
-//     assertSpecificLogContent(LOG_TYPE.BRANCH_CHECK__UNLOCKED, 1, { branch: fakeRb.branch });
 //     assertSpecificLogContent(LOG_TYPE.SVN_COMMIT__START);
+//     assertSpecificLogContent(LOG_TYPE.BRANCH_CHECK__UNLOCKED, 1, { branch: fakeRb.branch });
 //   });
 // }
 
@@ -111,11 +111,11 @@
 //     inputRbLink(link).then(() => {
 //       attachButtonTurnToOngoing();
 //       assertSpecificLogContent(LOG_TYPE.RB_ATTACH__START, 0, { link });
+//       fixture.simulateBackendResToClient(IpcChannel.GET_PARTIAL_RB_RES, {
+//         name: exceptionName,
+//         message: exceptionMessage,
+//       });
 //       cy.wait(100).then(() => {
-//         fixture.simulateBackendResToClient(IpcChannel.GET_PARTIAL_RB_RES, {
-//           name: exceptionName,
-//           message: exceptionMessage,
-//         });
 //         assertSpecificLogContent(LOG_TYPE.EXCEPTION, 0, { name: exceptionName, message: exceptionMessage });
 //         attachButtonBackToNormal();
 //       });
@@ -152,8 +152,8 @@
 //       clickCommitButton(link);
 //       const exceptionName = 'Check if RB is ready';
 //       const exceptionMessage = 'some external exception';
+//       fixture.simulateBackendResToClient(IpcChannel.IS_RB_READY_RES, { name: exceptionName, message: exceptionMessage });
 //       cy.wait(100).then(() => {
-//         fixture.simulateBackendResToClient(IpcChannel.IS_RB_READY_RES, { name: exceptionName, message: exceptionMessage });
 //         assertSpecificLogContent(LOG_TYPE.RB_IS_READY__NOT_READY, 0, { message: exceptionMessage });
 //         actionCellShouldBackToNormal();
 //       });
@@ -174,8 +174,8 @@
 //     it('Case1: should be failed if there was an exception', () => {
 //       const exceptionName = 'Check branch lock info';
 //       const exceptionMessage = 'some external reason';
+//       fixture.simulateBackendResToClient(IpcChannel.GET_LOCK_INFO_RES, { name: exceptionName, message: exceptionMessage });
 //       cy.wait(100).then(() => {
-//         fixture.simulateBackendResToClient(IpcChannel.GET_LOCK_INFO_RES, { name: exceptionName, message: exceptionMessage });
 //         assertSpecificLogContent(LOG_TYPE.EXCEPTION, 0, { name: exceptionName, message: exceptionMessage });
 //         actionCellShouldBackToNormal();
 //       });
@@ -195,18 +195,18 @@
 //       simulateBranchIsUnlocked(fixture);
 //     });
 //     it('Case1: should be failed if there was an exception', () => {
+//       const exceptionName = 'SVN commit';
+//       const exceptionMessage = 'some external reason';
+//       fixture.simulateBackendResToClient(IpcChannel.SVN_COMMIT_RES, { name: exceptionName, message: exceptionMessage });
 //       cy.wait(100).then(() => {
-//         const exceptionName = 'SVN commit';
-//         const exceptionMessage = 'some external reason';
-//         fixture.simulateBackendResToClient(IpcChannel.SVN_COMMIT_RES, { name: exceptionName, message: exceptionMessage });
 //         assertSpecificLogContent(LOG_TYPE.EXCEPTION, 0, { name: exceptionName, message: exceptionMessage });
 //         actionCellShouldBackToNormal();
 //       });
 //     });
 //     it('Case2: should display the corresponding revision and committed date if code had committed', () => {
+//       const revision = '186950';
+//       fixture.simulateBackendResToClient(IpcChannel.SVN_COMMIT_RES, revision);
 //       cy.wait(100).then(() => {
-//         const revision = '186950';
-//         fixture.simulateBackendResToClient(IpcChannel.SVN_COMMIT_RES, revision);
 //         assertSpecificLogContent(LOG_TYPE.SVN_COMMIT__COMMITTED, 0, { repo: fakeRb.repo.name, revision });
 //         actionCellShouldBackToNormal();
 //       });

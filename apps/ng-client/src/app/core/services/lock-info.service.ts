@@ -15,37 +15,33 @@ export class LockInfoService {
    * @param link rb link
    * @returns return a EeventEmitter, emit when target branch unlock.
    */
-  public getUnlockListener(rb: RbItem): Subject<void> {
+  public getUnlockListener(rb: RbItem) {
     const onBranchUnlocked = new Subject<void>();
+    const onThrowError = new Subject<Error>();
     const cancelInterval = new Subject<boolean>();
-    timer(0, 300000)
-      .pipe(
-        mergeMap(() => from(this.getPartialLockInfo(rb))),
-        mergeMap((partialLockInfo) => {
-          if (partialLockInfo.isLocked) {
-            rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.BRANCH_CHECK__LOCKED, {
-              branch: rb.branch,
-              reason: partialLockInfo.reason,
-            });
-          } else {
-            rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.BRANCH_CHECK__UNLOCKED, { branch: rb.branch });
-            onBranchUnlocked.next();
-            cancelInterval.next(true);
-            cancelInterval.complete();
-          }
-          return of();
-        }),
-        takeUntil(cancelInterval)
-      )
-      .subscribe(
-        () => {},
-        () => {
+    rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.BRANCH_CHECK__START);
+    timer(0, 300000).pipe(
+      mergeMap(() => from(this.getPartialLockInfo(rb))),
+      mergeMap((partialLockInfo) => {
+        if (partialLockInfo.isLocked) {
+          rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.BRANCH_CHECK__LOCKED, {
+            branch: rb.branch,
+            reason: partialLockInfo.reason,
+          });
+        } else {
+          rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.BRANCH_CHECK__UNLOCKED, { branch: rb.branch });
+          onBranchUnlocked.next();
           cancelInterval.next(true);
           cancelInterval.complete();
-          onBranchUnlocked.complete();
         }
-      );
-    return onBranchUnlocked;
+        return of();
+      }),
+      takeUntil(cancelInterval)
+    ).subscribe(
+      () => {},
+      (e) => { onThrowError.next(e) }
+    );
+    return { onBranchUnlocked, onThrowError };
   }
 
   private async getPartialLockInfo(rb: RbItem) {

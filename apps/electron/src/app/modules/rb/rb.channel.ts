@@ -138,6 +138,8 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
       const { data } = await axios.get(url, { headers: { Referer: link } });
       if (Object.prototype.hasOwnProperty.call(data, 'message')) {
         throw new Error(data.message);
+      } else if (Object.prototype.hasOwnProperty.call(data, 'error')) {
+        throw new Error(data.error);
       } else {
         res.data = true;
         res.isSuccessed = true;
