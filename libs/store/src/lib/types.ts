@@ -52,7 +52,7 @@ export interface ReviewBoard extends ModelBase_ {
 	branch: string;
 	repo: Repo;
 	revision?: string;
-  committedDate?: string;
+  committedDate?: Date;
 	logs?: string[];
 }
 

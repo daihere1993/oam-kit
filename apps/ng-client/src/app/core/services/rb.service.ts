@@ -14,10 +14,13 @@ export class RbService {
     const req: IPCRequest<string> = { data: rb.link, responseChannel: IpcChannel.SVN_COMMIT_RES };
     const { isSuccessed, data, error } = await this.ipcService.send<string, string>(IpcChannel.SVN_COMMIT_REQ, req);
     if (isSuccessed) {
-      rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.SVN_COMMIT__COMMITTED, { repo: rb.repo.name, revision: data });
+      const revision = data;
+      rb.merge({ revision, committedDate: new Date() });
+      rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.SVN_COMMIT__COMMITTED, { repo: rb.repo.name, revision });
     } else {
       rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.EXCEPTION, { name: error.name, message: error.message });
     }
+    return { isSuccessed };
   }
 
   public async completeRbInfo(rb: RbItem) {

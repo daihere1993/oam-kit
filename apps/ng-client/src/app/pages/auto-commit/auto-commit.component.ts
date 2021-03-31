@@ -16,6 +16,9 @@ import { Subject } from 'rxjs';
       .rb-form-container {
         display: flex;
       }
+      .action-bar__container {
+        margin-bottom: 10px;
+      }
       .rb-form__input {
         width: 300px;
       }
@@ -36,7 +39,7 @@ import { Subject } from 'rxjs';
       td > input {
         display: none;
       }
-      .rb-table__cell {
+      .rb-table__cell--actions {
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -45,16 +48,18 @@ import { Subject } from 'rxjs';
     </style>
     <div class="rb-form-wrapper">
       <h2>RB Table</h2>
-      <input #attachedLink class="rb-form__input" nz-input placeholder="RB link" />
-      <button
-        nz-button
-        nzType="primary"
-        data-btn-type="attach"
-        [nzLoading]="isAttachingRb"
-        (click)="attachRb(attachedLink.value)"
-      >
-        {{ isAttachingRb ? 'Attaching...' : 'Attach' }}
-      </button>
+      <div class="action-bar__container">
+        <input #attachedLink class="rb-form__input" nz-input placeholder="RB link" />
+        <button
+          nz-button
+          nzType="primary"
+          data-btn-type="attach"
+          [nzLoading]="isAttachingRb"
+          (click)="attachRb(attachedLink.value)"
+        >
+          {{ isAttachingRb ? 'Attaching...' : 'Attach' }}
+        </button>
+      </div>
       <nz-table #editRowTable nzBordered [nzData]="rbList">
         <thead>
           <tr>
@@ -83,9 +88,9 @@ import { Subject } from 'rxjs';
             </td>
             <td>{{ data.branch.toUpperCase() }}</td>
             <td>{{ data.repo.name }}({{ data.repo.repository }})</td>
-            <td>{{ data.revision }}</td>
-            <td>{{ data.committedDate }}</td>
-            <td class="rb-table__cell">
+            <td class="rb-table__cell--revision">{{ data.revision }}</td>
+            <td class="rb-table__cell--committed-date">{{ data.committedDate | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+            <td class="rb-table__cell--actions">
               <ng-container *ngIf="data.isCommitting; then rbSpin; else rbActions"></ng-container>
               <ng-template #rbSpin>
                 <a nz-button nzType="link" nzLoading></a>
@@ -269,7 +274,7 @@ export class RbItem implements ReviewBoard {
   public branch: string;
   public repo: Repo;
   public revision: string;
-  public committedDate: string;
+  public committedDate: Date;
   public logs: string[];
   public isCommtting: boolean;
   public logger: Logger;

@@ -110,6 +110,7 @@ export class MainFixture {
       res.data = arg;
     }
     this.ipcResponseCallbackMap[channel](null, res);
+    cy.wait(100);
   }
 
   /**
