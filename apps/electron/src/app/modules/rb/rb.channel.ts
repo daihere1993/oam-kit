@@ -90,7 +90,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
     try {
       const link = req.data;
       const rbId = this.getRbId(link);
-      await this.setupAuthentication(rbId);
+      await this.setupAuthentication(rbId)
       const { message } = await this.sendSvnCommitReq(link);
       this.checkCommitResult(message);
       const revision = await this.getRevision(rbId);
@@ -122,7 +122,11 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
       });
       return data;
     } catch(error) {
-      throw new Error(error.message);
+      let message = error.message;
+      if (error.isAxiosError) {
+        message = JSON.stringify(error.response.data);
+      }
+      throw new Error(message);
     }
   }
 
@@ -147,12 +151,15 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
         this.cachedPartialRb[rbId].diffset_revision = data.diffset_revision;
       }
     } catch (error) {
-      let err = error;
-      if (!this.isCustomError(error)) {
-        err = new Error(`[oam-kit][isRbReady] ${error.message}`);
+      let message = error.message;
+      if (error.isAxiosError) {
+        message = JSON.stringify(error.response.data);
       }
+      // if (!this.isCustomError(error)) {
+      //   err = new Error(`[oam-kit][isRbReady] ${error.message}`);
+      // }
       res.isSuccessed = false;
-      res.error = { name: 'isRbReady', message: err.message };
+      res.error = { name: 'isRbReady', message: message };
     } finally {
       event.reply(req.responseChannel, res);
     }
@@ -230,11 +237,16 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
         throw new Error(`[oam-kit][getInfoFromReviewRequest] data.state is not ok, row response: ${data}`);
       }
     } catch (error) {
-      if (!this.isCustomError(error)) {
-        throw new Error(`[oam-kit][getInfoFromReviewRequest] ${error.message}`);
-      } else {
-        throw error;
+      let message = error.message;
+      if (error.isAxiosError) {
+        message = JSON.stringify(error.response.data);
       }
+      throw new Error(message);
+      // if (!this.isCustomError(error)) {
+      //   throw new Error(`[oam-kit][getInfoFromReviewRequest] ${error.message}`);
+      // } else {
+      //   throw error;
+      // }
     }
   }
 
@@ -255,11 +267,16 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
         return branch;
       }
     } catch (error) {
-      if (!this.isCustomError(error)) {
-        throw new Error(`[oam-kit][getBranchForSpecificRb] ${error.message}`);
-      } else {
-        throw error;
+      let message = error.message;
+      if (error.isAxiosError) {
+        message = JSON.stringify(error.response.data);
       }
+      throw new Error(message);
+      // if (!this.isCustomError(error)) {
+      //   throw new Error(`[oam-kit][getBranchForSpecificRb] ${error.message}`);
+      // } else {
+      //   throw error;
+      // }
     }
   }
 
@@ -275,11 +292,16 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
         return this.getRepositoryFromUrl(data.info?.url);
       }
     } catch (error) {
-      if (!this.isCustomError(error)) {
-        throw new Error(`[oam-kit][getRepositoryForSpecificRb] ${error.message}`);
-      } else {
-        throw error;
+      let message = error.message;
+      if (error.isAxiosError) {
+        message = JSON.stringify(error.response.data);
       }
+      throw new Error(message);
+      // if (!this.isCustomError(error)) {
+      //   throw new Error(`[oam-kit][getRepositoryForSpecificRb] ${error.message}`);
+      // } else {
+      //   throw error;
+      // }
     }
   }
 
@@ -317,11 +339,16 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
       assert(this.cookies.includes('svn_username'));
       assert(this.cookies.includes('svn_password'));
     } catch (error) {
-      if (!this.isCustomError(error)) {
-        throw new Error(`[oam-kit][setupSvnCredentials] ${error.message}`);
-      } else {
-        throw error;
+      let message = error.message;
+      if (error.isAxiosError) {
+        message = JSON.stringify(error.response.data);
       }
+      throw new Error(message);
+      // if (!this.isCustomError(error)) {
+      //   throw new Error(`[oam-kit][setupSvnCredentials] ${error.message}`);
+      // } else {
+      //   throw error;
+      // }
     }
   }
 
@@ -338,11 +365,16 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
       this.cookies += headers['set-cookie'][0].match(/(.+?);/)[0];
       assert(this.cookies.includes('rbsessionid'));
     } catch (error) {
-      if (!this.isCustomError(error)) {
-        throw new Error(`[oam-kit][setupRbSessionId] ${error.message}`);
-      } else {
-        throw error;
+      let message = error.message;
+      if (error.isAxiosError) {
+        message = JSON.stringify(error.response.data);
       }
+      throw new Error(message);
+      // if (!this.isCustomError(error)) {
+      //   throw new Error(`[oam-kit][setupRbSessionId] ${error.message}`);
+      // } else {
+      //   throw error;
+      // }
     }
   }
 }

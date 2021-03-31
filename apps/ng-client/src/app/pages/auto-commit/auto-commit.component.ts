@@ -13,6 +13,9 @@ import { Subject } from 'rxjs';
   selector: 'app-auto-commit',
   template: `
     <style>
+      nz-table {
+        overflow: auto;
+      }
       .rb-form-container {
         display: flex;
       }
@@ -60,7 +63,7 @@ import { Subject } from 'rxjs';
           {{ isAttachingRb ? 'Attaching...' : 'Attach' }}
         </button>
       </div>
-      <nz-table #editRowTable nzBordered [nzData]="rbList">
+      <nz-table #editRowTable nzBordered nzFrontPagination="false" [nzData]="rbList">
         <thead>
           <tr>
             <th>Name</th>
@@ -81,10 +84,8 @@ import { Subject } from 'rxjs';
               <input #nameInput type="text" nz-input [(ngModel)]="data.name" (blur)="stopEdit(nameDiv, nameInput)" />
             </td>
             <td>
-              <div #linkDiv class="editable-cell" (click)="startEdit(linkDiv, linkInput)">
-                <a (click)="openUrl($event, data.link)" [href]="">{{ data.link }}</a>
-              </div>
-              <input #linkInput nz-input type="text" [(ngModel)]="data.link" (blur)="stopEdit(linkDiv, linkInput)" />
+              <a (click)="openUrl($event, data.link)" [href]="">{{ data.link }}</a>
+              <!-- <input #linkInput nz-input type="text" [(ngModel)]="data.link" (blur)="stopEdit(linkDiv, linkInput)" /> -->
             </td>
             <td>{{ data.branch.toUpperCase() }}</td>
             <td>{{ data.repo.name }}({{ data.repo.repository }})</td>
