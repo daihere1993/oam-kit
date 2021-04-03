@@ -69,6 +69,7 @@
     "ssh2-sftp-client": "^6.0.1",
     "tslib": "^2.0.0",
     "types": "^0.1.1",
+    "winston": "^3.3.3",
     "xlsx": "^0.16.9",
     "zone.js": "^0.10.2"
   },
@@ -90,6 +91,7 @@
     "@types/lodash-es": "^4.17.4",
     "@types/node": "12.12.38",
     "@types/shelljs": "^0.8.8",
+    "@types/winston": "^2.4.4",
     "@types/xlsx": "0.0.36",
     "@typescript-eslint/eslint-plugin": "4.3.0",
     "@typescript-eslint/parser": "4.3.0",

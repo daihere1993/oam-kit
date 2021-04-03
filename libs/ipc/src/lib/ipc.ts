@@ -42,7 +42,7 @@ export interface IPCResponse<T> {
   isSuccessed?: boolean;
   data?: T;
   error?: {
-    name: string;
-    message: string;
+    name?: string;
+    message?: string;
   };
 }

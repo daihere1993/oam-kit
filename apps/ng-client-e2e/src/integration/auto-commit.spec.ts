@@ -196,7 +196,7 @@ describe('Scenario2: Commit code', () => {
         actionCellShouldBackToNormal();
       });
     });
-    it.only('Case2: should display the corresponding revision and committed date if code had committed', () => {
+    it('Case2: should display the corresponding revision and committed date if code had committed', () => {
       const revision = '186950';
       cy.wait(100).then(() => {
         fixture.simulateBackendResToClient(IpcChannel.SVN_COMMIT_RES, revision);

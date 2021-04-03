@@ -1,9 +1,12 @@
-import axios from 'axios';
-import { IpcChannelInterface } from '@electron/app/interfaces';
-import { modelConfig, Profile, ReviewBoard, Store } from '@oam-kit/store';
-import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
-import { IpcMainEvent } from 'electron/main';
+import axios, { AxiosError } from 'axios';
 import { assert } from 'console';
+import Logger from '../../utils/logger';
+import { IpcMainEvent } from 'electron/main';
+import { IpcChannelInterface } from '@electron/app/interfaces';
+import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
+import { modelConfig, Profile, ReviewBoard, Store } from '@oam-kit/store';
+
+const logger = Logger.for('RbChannel');
 
 const SVN_COMMIT_TMP = 'http://biedronka.emea.nsn-net.net/r/{RB_ID}/rb_svncommit/ajax/commit/';
 const GET_REVIEW_REQUEST_TMP = 'http://biedronka.emea.nsn-net.net/api/review-requests/{RB_ID}/';
@@ -147,12 +150,14 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
         this.cachedPartialRb[rbId].diffset_revision = data.diffset_revision;
       }
     } catch (error) {
-      let err = error;
-      if (!this.isCustomError(error)) {
-        err = new Error(`[oam-kit][isRbReady] ${error.message}`);
+      let message = error.message;
+      if (error.isAxiosError) {
+        const response = error.response;
+        message = `${response.status}, ${JSON.stringify(response.data)}`;
       }
+      logger.error(error);
       res.isSuccessed = false;
-      res.error = { name: 'isRbReady', message: err.message };
+      res.error = { message };
     } finally {
       event.reply(req.responseChannel, res);
     }
