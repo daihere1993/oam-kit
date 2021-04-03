@@ -21,7 +21,7 @@ export enum LOG_PHASE {
 
 export const LOG_TEMPLATES = {
   /** Auto commit log temlate */
-  [LOG_TYPE.EXCEPTION]: `{{name}} failed due to: {{message}}`,
+  [LOG_TYPE.EXCEPTION]: `Failed due to: {{message}}`,
   [LOG_TYPE.RB_ATTACH__START]: `Start to attach "{{link}}"...`,
   [LOG_TYPE.RB_ATTACH__INVALID_LINK]: `Attach failed, please input right RB link like: http://biedronka.emea.nsn-net.net/r/92555/`,
   [LOG_TYPE.RB_ATTACH__DULICATE]: `Attach failed, this RB has been attached before, you can find it by filter.`,

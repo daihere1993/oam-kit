@@ -59,7 +59,7 @@ export class LockInfoService {
       const reason = lockInfo.branch.locked ? lockInfo.branch.reason : lockInfo.repo.reason;
       return { isLocked, reason };
     } else {
-      rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.EXCEPTION, { name: error.name, message: error.message });
+      rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.EXCEPTION, { message: error.message });
       throw new Error();
     }
   }

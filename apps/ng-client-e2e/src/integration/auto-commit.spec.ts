@@ -112,7 +112,7 @@ describe('Scenario1: Attach a RB', () => {
         name: exceptionName,
         message: exceptionMessage,
       });
-      assertLatestLogContent(LOG_TYPE.EXCEPTION, { name: exceptionName, message: exceptionMessage });
+      assertLatestLogContent(LOG_TYPE.EXCEPTION, { message: exceptionMessage });
       attachButtonBackToNormal();
     });
   });
@@ -169,7 +169,7 @@ describe('Scenario2: Commit code', () => {
       const exceptionMessage = 'some external reason';
       cy.wait(100).then(() => {
         fixture.simulateBackendResToClient(IpcChannel.GET_LOCK_INFO_RES, { name: exceptionName, message: exceptionMessage });
-        assertLatestLogContent(LOG_TYPE.EXCEPTION, { name: exceptionName, message: exceptionMessage });
+        assertLatestLogContent(LOG_TYPE.EXCEPTION, { message: exceptionMessage });
         actionCellShouldBackToNormal();
       });
     });
@@ -192,7 +192,7 @@ describe('Scenario2: Commit code', () => {
       const exceptionMessage = 'some external reason';
       cy.wait(100).then(() => {
         fixture.simulateBackendResToClient(IpcChannel.SVN_COMMIT_RES, { name: exceptionName, message: exceptionMessage });
-        assertLatestLogContent(LOG_TYPE.EXCEPTION, { name: exceptionName, message: exceptionMessage });
+        assertLatestLogContent(LOG_TYPE.EXCEPTION, { message: exceptionMessage });
         actionCellShouldBackToNormal();
       });
     });

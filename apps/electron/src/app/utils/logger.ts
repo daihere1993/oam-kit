@@ -5,20 +5,19 @@ import { createLogger, format, LoggerOptions, transports } from 'winston';
 const WHOLE_LOG_FILE_NAME = 'oam-kit-all.log';
 const ERROR_LOG_FILE_NAME = 'oam-kit-error.log';
 
-
 const defaultOptions: LoggerOptions = {
   level: 'info',
   format: format.combine(
-    format.splat(),
-    format.prettyPrint(),
+    format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:SSS' }),
     format.errors({ stack: true }),
-    format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    format.splat(),
+    format.printf(info => `${info.timestamp} ${info.level}/${info.module}: ${info.message}`)
   ),
   defaultMeta: { module: 'GENERAL' },
   transports: [
     new transports.File({ filename: path.join(getUserDataPath(), 'logs', WHOLE_LOG_FILE_NAME) }),
     new transports.File({ filename: path.join(getUserDataPath(), 'logs', ERROR_LOG_FILE_NAME), level: 'error' }),
-  ]
+  ],
 };
 
 const Logger = {
@@ -34,7 +33,7 @@ const Logger = {
       }));
     }
     return logger;
-  }
-}
+  },
+};
 
 export default Logger;

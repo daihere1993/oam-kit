@@ -18,7 +18,7 @@ export class RbService {
       rb.merge({ revision, committedDate: new Date() });
       rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.SVN_COMMIT__COMMITTED, { repo: rb.repo.name, revision });
     } else {
-      rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.EXCEPTION, { name: error.name, message: error.message });
+      rb.logger.insert(LOG_PHASE.SVN_COMMIT, LOG_TYPE.EXCEPTION, { message: error.message });
     }
     return { isSuccessed };
   }
@@ -37,7 +37,7 @@ export class RbService {
         rb.merge(data);
         rb.logger.insert(LOG_PHASE.RB_ATTACH, LOG_TYPE.RB_ATTACH__OK);
       } else {
-        rb.logger.insert(LOG_PHASE.RB_ATTACH, LOG_TYPE.EXCEPTION, { name: error.name, message: error.message });
+        rb.logger.insert(LOG_PHASE.RB_ATTACH, LOG_TYPE.EXCEPTION, { message: error.message });
       }
       return { isSuccessed };
     }

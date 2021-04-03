@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import { assert } from 'console';
 import Logger from '../../utils/logger';
 import { IpcMainEvent } from 'electron/main';
@@ -58,6 +58,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
   }
 
   public async getPartialRbInfo(event: IpcMainEvent, req: IPCRequest<string>) {
+    logger.info('[getPartialRbInfo] start.');
     const res: IPCResponse<PartialRb> = {};
     const rbId = this.getRbId(req.data);
     try {
@@ -66,15 +67,13 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
         res.data = this.cachedPartialRb[rbId];
       } else {
         await this.initPartialRb(req.data);
+        logger.info('[getPartialRbInfo] success.');
         res.data = this.cachedPartialRb[rbId];
       }
     } catch (error) {
-      let err = error;
-      if (!this.isCustomError(error)) {
-        err = new Error(`[oam-kit][getPartialRb] ${error.message}`);
-      }
       res.isSuccessed = false;
-      res.error = { name: 'getPartialRbInfo', message: err.message };
+      res.error = { message: error.message };
+      logger.error('[getPartialRbInfo] failed: %s', error);
     } finally {
       event.reply(req.responseChannel, res);
     }
@@ -89,23 +88,23 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
    * 5. Response the revision to the front-end.
    */
   public async svnCommit(event: IpcMainEvent, req: IPCRequest<string>) {
+    logger.info('[svnCommit] start.');
     const res: IPCResponse<string> = {};
     try {
       const link = req.data;
       const rbId = this.getRbId(link);
-      await this.setupAuthentication(rbId)
+      await this.setupAuthentication(rbId);
       const { message } = await this.sendSvnCommitReq(link);
       this.checkCommitResult(message);
       const revision = await this.getRevision(rbId);
       res.isSuccessed = true;
       res.data = revision;
+      logger.info('[svnCommit] success.');
     } catch (error) {
-      let err = error;
-      if (!this.isCustomError(error)) {
-        err = new Error(`[oam-kit][svnCommit] ${error.message}`);
-      }
+      logger.error(error.message);
       res.isSuccessed = false;
-      res.error = { name: 'svnCommit', message: err.message };
+      res.error = { message: error.message };
+      logger.error('[svnCommit] failed: %s', error);
     } finally {
       event.reply(req.responseChannel, res);
     }
@@ -113,6 +112,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
 
   private async sendSvnCommitReq(link: string) {
     try {
+      logger.info('[sendSvnCommitReq] start.');
       const url = this.getUrlFromTmp(SVN_COMMIT_TMP, this.getRbId(link));
       const rb = this.cachedPartialRb[this.getRbId(link)];
       const { data } = await axios.post(url, `commit_scope=only_this&diffset_revision=${rb.diffset_revision}`, {
@@ -123,12 +123,14 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       });
+      logger.info('[sendSvnCommitReq] success.');
       return data;
-    } catch(error) {
+    } catch (error) {
       let message = error.message;
       if (error.isAxiosError) {
         message = JSON.stringify(error.response.data);
       }
+      logger.error('[sendSvnCommitReq] failed: %s', error);
       throw new Error(message);
     }
   }
@@ -137,6 +139,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
    * Check if those mandatory requirement before code committment like: ship number, CI passed, test case have done.
    */
   public async isRbReady(event: IpcMainEvent, req: IPCRequest<string>) {
+    logger.info('[isRbReady] start.');
     const res: IPCResponse<boolean> = {};
     const link = req.data;
     const rbId = this.getRbId(link);
@@ -152,6 +155,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
         res.isSuccessed = true;
         this.cachedPartialRb[rbId] = this.cachedPartialRb[rbId] || {};
         this.cachedPartialRb[rbId].diffset_revision = data.diffset_revision;
+        logger.info('[isRbReady] success.');
       }
     } catch (error) {
       let message = error.message;
@@ -162,6 +166,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
       logger.error(error);
       res.isSuccessed = false;
       res.error = { message };
+      logger.error('[isRbReady] failed: %s', error);
     } finally {
       event.reply(req.responseChannel, res);
     }
@@ -195,33 +200,26 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
   }
 
   private async initPartialRb(link: string) {
-    try {
-      const rbId = this.getRbId(link);
-      const fields = ['summary', 'links'];
-      const info = await this.getInfoFromReviewRequest(rbId, fields);
-      const latestDiffUrl = info?.links.latest_diff.href;
-      const repoInfoUrl = info?.links.repository.href + 'info/';
-      this.cachedPartialRb[rbId] = this.cachedPartialRb[rbId] || {};
-      Object.assign(this.cachedPartialRb[rbId], {
-        link,
-        name: info.summary.match(/(.+):/)[1],
-        branch: (await this.getBranchForSpecificRb(latestDiffUrl)),
-        repo: {
-          name: info?.links.repository.title.toUpperCase(),
-          repository: await this.getRepositoryForSpecificRb(repoInfoUrl),
-        },
-      });
-    } catch (error) {
-      if (!this.isCustomError(error)) {
-        throw new Error(`[oam-kit][initPartialRb] ${error.message}`);
-      } else {
-        throw error;
-      }
-    }
+    const rbId = this.getRbId(link);
+    const fields = ['summary', 'links'];
+    const info = await this.getInfoFromReviewRequest(rbId, fields);
+    const latestDiffUrl = info?.links.latest_diff.href;
+    const repoInfoUrl = info?.links.repository.href + 'info/';
+    this.cachedPartialRb[rbId] = this.cachedPartialRb[rbId] || {};
+    Object.assign(this.cachedPartialRb[rbId], {
+      link,
+      name: info.summary.match(/(.+):/)[1],
+      branch: await this.getBranchForSpecificRb(latestDiffUrl),
+      repo: {
+        name: info?.links.repository.title.toUpperCase(),
+        repository: await this.getRepositoryForSpecificRb(repoInfoUrl),
+      },
+    });
   }
 
   private async getInfoFromReviewRequest(rbId: number, fields: string[]) {
     try {
+      logger.info('[getInfoFromReviewRequest] start, rbid: %d, fields: %s', rbId, fields);
       const ret: any = {};
       const url = this.getUrlFromTmp(GET_REVIEW_REQUEST_TMP, rbId);
       const { data } = await axios.get(url);
@@ -231,9 +229,10 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
           if (Object.prototype.hasOwnProperty.call(reviewRequest, field)) {
             ret[field] = reviewRequest[field];
           } else {
-            console.debug(`[oam-kit][getInfoFromReviewRequest] couldn't find ${field} in review_request`);
+            logger.warn('[getInfoFromReviewRequest] couldn\'t find %s in review_request', field);
           }
         }
+        logger.info('[getInfoFromReviewRequest] success');
         return ret;
       } else {
         throw new Error(`[oam-kit][getInfoFromReviewRequest] data.state is not ok, row response: ${data}`);
@@ -243,17 +242,9 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
       if (error.isAxiosError) {
         message = JSON.stringify(error.response.data);
       }
+      logger.info('[getInfoFromReviewRequest] failed: %s', error);
       throw new Error(message);
-      // if (!this.isCustomError(error)) {
-      //   throw new Error(`[oam-kit][getInfoFromReviewRequest] ${error.message}`);
-      // } else {
-      //   throw error;
-      // }
     }
-  }
-
-  private hasBeenInited(rbId: number): boolean {
-    return !!(rbId in this.cachedPartialRb && this.cachedPartialRb[rbId].branch && this.cachedPartialRb[rbId].repo);
   }
 
   /**
@@ -274,11 +265,6 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
         message = JSON.stringify(error.response.data);
       }
       throw new Error(message);
-      // if (!this.isCustomError(error)) {
-      //   throw new Error(`[oam-kit][getBranchForSpecificRb] ${error.message}`);
-      // } else {
-      //   throw error;
-      // }
     }
   }
 
@@ -299,11 +285,6 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
         message = JSON.stringify(error.response.data);
       }
       throw new Error(message);
-      // if (!this.isCustomError(error)) {
-      //   throw new Error(`[oam-kit][getRepositoryForSpecificRb] ${error.message}`);
-      // } else {
-      //   throw error;
-      // }
     }
   }
 
@@ -324,6 +305,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
   }
 
   private async setupSvnCredentials(rbId: number) {
+    logger.info('[setupSvnCredentials] start');
     const profileModel = this.store.get<Profile>(modelConfig.profile.name);
     const profile = profileModel.data as Profile;
     const url = this.getUrlFromTmp(SETUP_SVN_CREDENTIALS, rbId);
@@ -340,17 +322,14 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
       }
       assert(this.cookies.includes('svn_username'));
       assert(this.cookies.includes('svn_password'));
+      logger.info('[setupSvnCredentials] success.');
     } catch (error) {
       let message = error.message;
       if (error.isAxiosError) {
         message = JSON.stringify(error.response.data);
       }
+      logger.info('[setupSvnCredentials] failed: %s', error);
       throw new Error(message);
-      // if (!this.isCustomError(error)) {
-      //   throw new Error(`[oam-kit][setupSvnCredentials] ${error.message}`);
-      // } else {
-      //   throw error;
-      // }
     }
   }
 
@@ -372,11 +351,6 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
         message = JSON.stringify(error.response.data);
       }
       throw new Error(message);
-      // if (!this.isCustomError(error)) {
-      //   throw new Error(`[oam-kit][setupRbSessionId] ${error.message}`);
-      // } else {
-      //   throw error;
-      // }
     }
   }
 }
