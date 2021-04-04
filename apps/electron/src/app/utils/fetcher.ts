@@ -8,7 +8,7 @@ export async function svnCat(path: string, options = { username: '', password: '
   const cmd = `svn ${defaultOptions.join(' ')} --username ${options.username} --password ${options.password} cat ${path}`;
   const { stdout, stderr } = await exec(cmd);
   if (stderr) {
-    throw new Error(`Svn cat failed, path: ${path}, error: ${stderr}`);
+    throw new Error(`[oam-kit][svnCat] Svn cat failed, path: ${path}, error: ${stderr}`);
   }
   return stdout;
 }

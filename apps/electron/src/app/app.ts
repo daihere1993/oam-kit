@@ -12,6 +12,7 @@ import { ModelChannel } from './modules/model';
 import { SyncCodeChannel } from './modules/sync-code';
 import { ElectronSolid } from '@oam-kit/store/solid/electron-solid';
 import { LockInfoChannel } from './modules/lock-info';
+import { RbChannel } from './modules/rb';
 
 export default class App {
   // Keep a global reference of the window object, if you don't, the window will
@@ -96,7 +97,8 @@ export default class App {
       modelChannel,
       new KitChannel({ mainWindow: App.mainWindow }),
       new SyncCodeChannel(store),
-      new LockInfoChannel(store, App.mainWindow)
+      new LockInfoChannel(store),
+      new RbChannel(store)
     ];
     for (const channel of channels) {
       for (const handler of channel.handlers) {
@@ -122,6 +124,7 @@ export default class App {
     });
     App.mainWindow.setMenu(null);
     App.mainWindow.center();
+    App.mainWindow.maximize();
 
     // if main window is ready to show, close the splash window and show the main window
     App.mainWindow.once('ready-to-show', () => {

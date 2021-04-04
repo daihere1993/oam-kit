@@ -7,5 +7,7 @@
   "supportFile": "./src/support/index.ts",
   "video": false,
   "screenshotsFolder": "../../dist/cypress/apps/ng-client-e2e/screenshots",
-  "chromeWebSecurity": false
+  "chromeWebSecurity": false,
+  "viewportWidth": 1400,
+  "viewportHeight": 900
 }

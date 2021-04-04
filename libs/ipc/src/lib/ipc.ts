@@ -3,6 +3,8 @@ export enum IpcChannel {
   SELECT_PATH_RES = 'select_path_res',
   NOTIFICATION_REQ = 'notification_req',
   NOTIFICATION_RES = 'notification_res',
+  OPEN_EXTERNAL_URL_REQ = 'open_external_url_req',
+  OPEN_EXTERNAL_URL_RES = 'open_external_url_res',
   STORE_DATA_REQ = 'store_data_req',
   STORE_DATA_RES = 'store_data_res',
   GET_APP_DATA_REQ = 'get_app_data_req',
@@ -21,6 +23,14 @@ export enum IpcChannel {
   REPLY_AUTO_COMMIT_REQ = 'autoCommitReq-reply',
   RCAEDA_ANALYZE_REQ = 'rcaeda_analyze_req',
   RCAEDA_ANALYZE_RES = 'rcaeda_analyze_res',
+  GET_LOCK_INFO_REQ = 'get_lock_info_req',
+  GET_LOCK_INFO_RES = 'get_lock_info_res',
+  IS_RB_READY_REQ = 'has_rb_ready_req',
+  IS_RB_READY_RES = 'has_rb_ready_res',
+  SVN_COMMIT_REQ = 'svn_commit_req',
+  SVN_COMMIT_RES = 'svn_commit_res',
+  GET_PARTIAL_RB_REQ = 'get_partial_rb_req',
+  GET_PARTIAL_RB_RES = 'get_partial_rb_res',
 }
 
 export interface IPCRequest<T> {
@@ -32,7 +42,7 @@ export interface IPCResponse<T> {
   isSuccessed?: boolean;
   data?: T;
   error?: {
-    name: string;
-    message: string;
+    name?: string;
+    message?: string;
   };
 }

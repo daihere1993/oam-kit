@@ -11,7 +11,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { AppRoutingModule } from './app-routing.module';
 import { SyncCodeModule } from './pages/sync-code/sync-code.module';
 import { ProfileModule } from './pages/profile/profile.module';
-import { DashboardModule } from './pages/dashboard/dashboard.module';
+// import { DashboardModule } from './pages/dashboard/dashboard.module';
 import { RouteReuseStrategy } from '@angular/router';
 import { CacheRouteStrategy } from './core/services/cache-page-strategy.service';
 
@@ -22,6 +22,7 @@ registerLocaleData(en);
 
 /** config ng-zorro-antd i18n **/
 import { NZ_I18N, en_US } from 'ng-zorro-antd/i18n';
+import { AutoCommitModule } from './pages/auto-commit/auto-commit.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -33,7 +34,8 @@ import { NZ_I18N, en_US } from 'ng-zorro-antd/i18n';
     NzLayoutModule,
     NzMenuModule,
     NzIconModule,
-    DashboardModule,
+    // DashboardModule,
+    AutoCommitModule,
     SyncCodeModule,
     ProfileModule,
   ],

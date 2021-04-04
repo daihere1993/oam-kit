@@ -10,7 +10,6 @@ describe('StoreService', () => {
   const mockedData: APPData = {
     profile: { remote: 'remote1', username: 'username2', password: 'username3' },
     syncCodeBranch: [],
-    lockInfoBranch: [],
   };
   let ipcResponseCb: (event: any, res: IPCResponse<APPData>) => void;
   let spyIpcSend: jest.SpyInstance;

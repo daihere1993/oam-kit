@@ -23,7 +23,8 @@
       "@oam-kit/store": ["libs/store/src/index.ts"],
       "@oam-kit/store/*": ["libs/store/src/lib/*"],
       "@oam-kit/ipc": ["libs/ipc/src/index.ts"],
-      "@oam-kit/sync-code": ["libs/sync-code/src/index.ts"]
+      "@oam-kit/sync-code": ["libs/sync-code/src/index.ts"],
+      "@oam-kit/logger": ["libs/logger/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -55,9 +55,9 @@ export class MainFixture {
 
   constructor() {
     this.store.add(new Model(modelConfig.syncCodeBranch.name));
-    this.store.add(new Model(modelConfig.lockInfoBranch.name));
-    this.store.add(new Model(modelConfig.visibleRepos.name));
-    this.store.add(new Model(modelConfig.visibleBranches.name));
+    // this.store.add(new Model(modelConfig.lockInfoBranch.name));
+    // this.store.add(new Model(modelConfig.visibleRepos.name));
+    // this.store.add(new Model(modelConfig.visibleBranches.name));
     this.store.add(new Model(modelConfig.profile.name, { type: ModelType.PLANE }));
     // All of below subscribes just to update data then return the latest data
     // by invoke corresponding ipc response callback
@@ -110,6 +110,7 @@ export class MainFixture {
       res.data = arg;
     }
     this.ipcResponseCallbackMap[channel](null, res);
+    cy.wait(100);
   }
 
   /**

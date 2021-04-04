@@ -11,7 +11,6 @@ describe('Solid()', () => {
   const source: APPData = {
     profile: { id: 1, remote: 'test remote', username: 'test username', password: 'test password' },
     syncCodeBranch: [{ id: 1, name: 'test name', directory: { source: 'test source', target: 'test target' } }],
-    lockInfoBranch: []
   };
 
   async function startup(solid: ElectronSolid) {
