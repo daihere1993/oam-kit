@@ -11,7 +11,9 @@ export enum LOG_TYPE {
   BRANCH_CHECK__LOCKED,
   BRANCH_CHECK__UNLOCKED,
   SVN_COMMIT__START,
+  SVN_COMMIT__COMMIT_MESSAGE_INVALID,
   SVN_COMMIT__COMMITTED,
+  COMMIT__CANCEL,
 }
 
 export enum LOG_PHASE {
@@ -33,5 +35,7 @@ export const LOG_TEMPLATES = {
   [LOG_TYPE.BRANCH_CHECK__LOCKED]: `{{branch}} is locked with reason: {{reason}}. Keep listening...`,
   [LOG_TYPE.BRANCH_CHECK__UNLOCKED]: `{{branch}} is unlocked, then to commit code...`,
   [LOG_TYPE.SVN_COMMIT__START]: `Start to commit code...`,
-  [LOG_TYPE.SVN_COMMIT__COMMITTED]: `Commit code successfully, revision: {{repo}}@{{revision}}.`
+  [LOG_TYPE.SVN_COMMIT__COMMIT_MESSAGE_INVALID]: `Failed, please check if commit message is valid, row response from reviewboard: {{message}}.`,
+  [LOG_TYPE.SVN_COMMIT__COMMITTED]: `Commit code successfully, revision: {{repo}}@{{revision}}.`,
+  [LOG_TYPE.COMMIT__CANCEL]: `Commit has been canceled!!!`
 }

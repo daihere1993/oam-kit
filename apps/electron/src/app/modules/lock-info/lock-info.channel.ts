@@ -1,13 +1,15 @@
+import { BranchLockInfo, LockInfo, Profile, Repo, RepoLockInfo, ReviewBoard } from '@oam-kit/store/types';
 import { IpcChannelInterface } from '@electron/app/interfaces';
 import { Store, modelConfig } from '@oam-kit/store';
 import * as config from '@oam-kit/utility/overall-config';
-import { BranchLockInfo, LockInfo, Profile, Repo, RepoLockInfo, ReviewBoard } from '@oam-kit/store/types';
 import * as branchLockParser from '@electron/app/utils/branchLockParser';
 import * as fetcher from '@electron/app/utils/fetcher';
+import Logger from '@electron/app/utils/logger';
 import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
 import { IpcMainEvent } from 'electron/main';
 import { RbBase_ } from '../rb';
 
+const logger = Logger.for('LockInfoChannel');
 const moduleConf = config.modules.lockInfo;
 
 export class LockInfoChannel extends RbBase_ implements IpcChannelInterface {
@@ -24,6 +26,7 @@ export class LockInfoChannel extends RbBase_ implements IpcChannelInterface {
    * @param req
    */
   public async getLockInfo(event: IpcMainEvent, req: IPCRequest<Partial<ReviewBoard>>) {
+    logger.info('[getLockInfo] start');
     const res: IPCResponse<LockInfo> = {};
     try {
       const partialRb = req.data;
@@ -35,9 +38,11 @@ export class LockInfoChannel extends RbBase_ implements IpcChannelInterface {
       };
       res.data = lockInfo;
       res.isSuccessed = true;
+      logger.info('[getLockInfo] success');
     } catch (error) {
       res.isSuccessed = false;
       res.error = { name: 'getLockInfo', message: error.message };
+      logger.info('[getLockInfo] failed: %s', error);
     } finally {
       event.reply(req.responseChannel, res);
     }

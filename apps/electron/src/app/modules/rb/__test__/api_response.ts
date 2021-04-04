@@ -159,3 +159,10 @@ export const REPOSITORY_RESPONSE = {
 };
 
 export const IS_COMMIT_ALLOWED = { diffset_history_id: 91652, diffset_revision: 6 };
+export const IS_COMMIT_NOT_ALLOWED = {
+  diffset_history_id: 89796,
+  message: `Changes in this review request are not ready to be delivered!\nThe following
+definition of done requirements have not been fulfilled:\nNumber of shipits after last diff: mandatory - 0, total - 1.
+(required: 0, 2)\n (note that ship its count only if the reviewer is targeted directly or is in targeted group)`,
+  diffset_revision: 26,
+};

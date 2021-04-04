@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { assert } from 'console';
 import Logger from '../../utils/logger';
 import { IpcMainEvent } from 'electron/main';
@@ -89,7 +89,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
    */
   public async svnCommit(event: IpcMainEvent, req: IPCRequest<string>) {
     logger.info('[svnCommit] start.');
-    const res: IPCResponse<string> = {};
+    const res: IPCResponse<{ revision?: string, message?: string }> = {};
     try {
       const link = req.data;
       const rbId = this.getRbId(link);
@@ -98,13 +98,20 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
       this.checkCommitResult(message);
       const revision = await this.getRevision(rbId);
       res.isSuccessed = true;
-      res.data = revision;
+      res.data = { revision };
       logger.info('[svnCommit] success.');
     } catch (error) {
-      logger.error(error.message);
-      res.isSuccessed = false;
-      res.error = { message: error.message };
-      logger.error('[svnCommit] failed: %s', error);
+      // if the error is AxiosError and the status is 400
+      // which means commit message in invalid
+      if (error.isAxiosError && error.code === '400') {
+        error as AxiosError;
+        res.isSuccessed = true;
+        res.data = { message: (error as AxiosError).response.data?.message };
+      } else {
+        res.isSuccessed = false;
+        res.error = { message: error.message };
+        logger.error('[svnCommit] failed: %s', error);
+      }
     } finally {
       event.reply(req.responseChannel, res);
     }
@@ -126,12 +133,8 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
       logger.info('[sendSvnCommitReq] success.');
       return data;
     } catch (error) {
-      let message = error.message;
-      if (error.isAxiosError) {
-        message = JSON.stringify(error.response.data);
-      }
       logger.error('[sendSvnCommitReq] failed: %s', error);
-      throw new Error(message);
+      throw error;
     }
   }
 
@@ -140,23 +143,27 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
    */
   public async isRbReady(event: IpcMainEvent, req: IPCRequest<string>) {
     logger.info('[isRbReady] start.');
-    const res: IPCResponse<boolean> = {};
+    const res: IPCResponse<{ ready: boolean, message?: string }> = {};
     const link = req.data;
     const rbId = this.getRbId(link);
     const url = this.getUrlFromTmp(IS_COMMIT_ALLOWED_TMP, rbId);
     try {
       const { data } = await axios.get(url, { headers: { Referer: link } });
+      res.isSuccessed = true;
+      res.data = { ready: true };
+      
+      // if there is a message field in data which means RB is not ready.
       if (Object.prototype.hasOwnProperty.call(data, 'message')) {
-        throw new Error(data.message);
+        res.data.ready = false;
+        res.data.message = data.message;
       } else if (Object.prototype.hasOwnProperty.call(data, 'error')) {
         throw new Error(data.error);
       } else {
-        res.data = true;
-        res.isSuccessed = true;
         this.cachedPartialRb[rbId] = this.cachedPartialRb[rbId] || {};
+        // store diffset_revision which would be used in svn commit request
         this.cachedPartialRb[rbId].diffset_revision = data.diffset_revision;
-        logger.info('[isRbReady] success.');
       }
+      logger.info('[isRbReady] success.');
     } catch (error) {
       let message = error.message;
       if (error.isAxiosError) {
@@ -333,6 +340,10 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
     }
   }
 
+  /**
+   * To get seesion id by invoke "checklists" request,
+   * the seesionid exists in the response header of "set-cookie"
+   */
   private async setupRbSessionId(rbId: number) {
     const profileModel = this.store.get<Profile>(modelConfig.profile.name);
     const profile = profileModel.data as Profile;
