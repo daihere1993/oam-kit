@@ -215,13 +215,22 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
     this.cachedPartialRb[rbId] = this.cachedPartialRb[rbId] || {};
     Object.assign(this.cachedPartialRb[rbId], {
       link,
-      name: info.summary.match(/(.+):/)[1],
+      name: this.getRbName(info.summary),
       branch: await this.getBranchForSpecificRb(latestDiffUrl),
       repo: {
         name: info?.links.repository.title.toUpperCase(),
         repository: await this.getRepositoryForSpecificRb(repoInfoUrl),
       },
     });
+  }
+
+  private getRbName(summary: string) {
+    // try to get PR id
+    const m = summary.match(/(.+):/);
+    if (m) {
+      return m[1];
+    }
+    return summary;
   }
 
   private async getInfoFromReviewRequest(rbId: number, fields: string[]) {

@@ -7,6 +7,7 @@ import {
   LATEST_DIFF_RESPONSE,
   REPOSITORY_RESPONSE,
   REVIEW_REQUEST_RESPONSE,
+  REVIEW_REQUEST_RESPONSE__SPECIAL_SUMMARY,
 } from './__test__/api_response';
 
 jest.mock('axios');
@@ -46,6 +47,11 @@ async function isRbReady(channel: RbChannel, mockEvent: any) {
 
 describe('RbChannel', () => {
   describe('getPartialRbInfo', () => {
+    afterEach(async () => {
+      jest.resetAllMocks();
+      // jest issue W/A: https://github.com/visionmedia/supertest/issues
+      await new Promise((resolve) => setTimeout(() => resolve(null), 100));
+    });
     const mockEvent: any = { reply: jest.fn() };
     it('should return correct partial RB info', async () => {
       const channel = new RbChannel(fakeStore);
@@ -56,7 +62,37 @@ describe('RbChannel', () => {
         repo: { name: 'MOAM', repository: 'BTS_SC_MOAM_LTE' },
       };
 
-      await getPartialRbInfo(channel, mockEvent);
+      // mock review_request response
+      mockedAxios.get.mockResolvedValueOnce({ data: REVIEW_REQUEST_RESPONSE });
+      // mock latestDiffUrl response
+      mockedAxios.get.mockResolvedValueOnce({ data: LATEST_DIFF_RESPONSE });
+      // mock repository response
+      mockedAxios.get.mockResolvedValueOnce({ data: REPOSITORY_RESPONSE });
+
+      await channel.getPartialRbInfo(mockEvent, { responseChannel: IpcChannel.GET_PARTIAL_RB_RES, data: link });
+      expect(mockedAxios.get).toBeCalledWith(GET_REVIEW_REQUEST_URL);
+      expect(mockedAxios.get).toBeCalledWith(LATEST_DIFF_URL);
+      expect(mockedAxios.get).toBeCalledWith(REPOSITORY_INFO_URL);
+      expect(mockEvent.reply).toBeCalledWith(IpcChannel.GET_PARTIAL_RB_RES, { isSuccessed: true, data: expectedPartialRbInfo });
+    });
+
+    it('should return whole summary as a name if RB summary is a plain string', async () => {
+      const channel = new RbChannel(fakeStore);
+      const expectedPartialRbInfo = {
+        link,
+        name: 'test',
+        branch: '5G21A',
+        repo: { name: 'MOAM', repository: 'BTS_SC_MOAM_LTE' },
+      };
+
+      // mock review_request response
+      mockedAxios.get.mockResolvedValueOnce({ data: REVIEW_REQUEST_RESPONSE__SPECIAL_SUMMARY });
+      // mock latestDiffUrl response
+      mockedAxios.get.mockResolvedValueOnce({ data: LATEST_DIFF_RESPONSE });
+      // mock repository response
+      mockedAxios.get.mockResolvedValueOnce({ data: REPOSITORY_RESPONSE });
+
+      await channel.getPartialRbInfo(mockEvent, { responseChannel: IpcChannel.GET_PARTIAL_RB_RES, data: link });
       expect(mockedAxios.get).toBeCalledWith(GET_REVIEW_REQUEST_URL);
       expect(mockedAxios.get).toBeCalledWith(LATEST_DIFF_URL);
       expect(mockedAxios.get).toBeCalledWith(REPOSITORY_INFO_URL);
@@ -67,10 +103,12 @@ describe('RbChannel', () => {
   describe('svnCommit', () => {
     let mockEvent: any;
     beforeEach(() => {
-      mockEvent = { reply: jest.fn() }
+      mockEvent = { reply: jest.fn() };
     });
-    afterEach(() => {
-      jest.clearAllMocks();
+    afterEach(async () => {
+      jest.resetAllMocks();
+      // jest issue W/A: https://github.com/visionmedia/supertest/issues
+      await new Promise((resolve) => setTimeout(() => resolve(null), 100));
     });
     it(`should return { revision: '195696' } when commit successfuly`, async () => {
       const expectedCookies =
@@ -153,13 +191,20 @@ describe('RbChannel', () => {
       // mock svn credentials response
       mockedAxios.post.mockResolvedValueOnce({ data: { svn_username: 'fake_svn_username', svn_password: 'fake_svn_password' } });
       // mock svn commit response
-      mockedAxios.post.mockRejectedValueOnce({ isAxiosError: true, code: '400', response: { data: { message: 'specific reason' } } });
+      mockedAxios.post.mockRejectedValueOnce({
+        isAxiosError: true,
+        code: '400',
+        response: { data: { message: 'specific reason' } },
+      });
       // mock review_request response
       mockedAxios.get.mockResolvedValueOnce({ data: REVIEW_REQUEST_RESPONSE });
 
       await channel.svnCommit(mockEvent, { responseChannel: IpcChannel.SVN_COMMIT_RES, data: link });
 
-      expect(mockEvent.reply).toBeCalledWith(IpcChannel.SVN_COMMIT_RES, { isSuccessed: true, data: { message: 'specific reason' } });
+      expect(mockEvent.reply).toBeCalledWith(IpcChannel.SVN_COMMIT_RES, {
+        isSuccessed: true,
+        data: { message: 'specific reason' },
+      });
 
       expect(mockedAxios.post.mock.calls).toEqual([
         // expect get rbsessionid request
@@ -205,11 +250,12 @@ describe('RbChannel', () => {
   describe('isRbReady', () => {
     let mockEvent: any;
     beforeEach(() => {
-      mockEvent = { reply: jest.fn() }
+      mockEvent = { reply: jest.fn() };
     });
-    afterEach(() => {
-      jest.clearAllMocks();
-      jest.resetAllMocks()
+    afterEach(async () => {
+      jest.resetAllMocks();
+      // jest issue W/A: https://github.com/visionmedia/supertest/issues
+      await new Promise((resolve) => setTimeout(() => resolve(null), 100));
     });
     it('should return { ready: true } when RB is ready.', async () => {
       const channel = new RbChannel(fakeStore);
