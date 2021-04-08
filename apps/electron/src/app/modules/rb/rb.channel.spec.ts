@@ -193,8 +193,7 @@ describe('RbChannel', () => {
       // mock svn commit response
       mockedAxios.post.mockRejectedValueOnce({
         isAxiosError: true,
-        code: '400',
-        response: { data: { message: 'specific reason' } },
+        response: { data: { message: 'specific reason' }, status: 400 },
       });
       // mock review_request response
       mockedAxios.get.mockResolvedValueOnce({ data: REVIEW_REQUEST_RESPONSE });

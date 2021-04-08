@@ -103,10 +103,11 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
     } catch (error) {
       // if the error is AxiosError and the status is 400
       // which means commit message in invalid
-      if (error.isAxiosError && error.code === '400') {
+      if (error.isAxiosError && error.response?.status === 400) {
         error as AxiosError;
         res.isSuccessed = true;
         res.data = { message: (error as AxiosError).response.data?.message };
+        logger.error('[svnCommit] there are some commit message issue: %s', error);
       } else {
         res.isSuccessed = false;
         res.error = { message: error.message };
