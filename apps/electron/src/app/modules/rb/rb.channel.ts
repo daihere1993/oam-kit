@@ -131,6 +131,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       });
+      this.cookies = '';
       logger.info('[sendSvnCommitReq] success.');
       return data;
     } catch (error) {
