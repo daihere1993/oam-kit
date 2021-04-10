@@ -5,7 +5,8 @@ import * as SftpClient from 'ssh2-sftp-client';
 import { promisify } from 'util';
 import { IpcChannelInterface } from '@electron/app/interfaces';
 import { Branch, Profile } from '@oam-kit/store/types';
-import { Store, modelConfig } from '@oam-kit/store'
+import { modelConfig } from '@oam-kit/store'
+import { Store } from '@electron/app/store';
 import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
 import { SyncCodeStep } from '@oam-kit/sync-code';
 import { IpcMainEvent } from 'electron';

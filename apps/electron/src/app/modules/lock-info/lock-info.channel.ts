@@ -1,6 +1,7 @@
 import { BranchLockInfo, LockInfo, Profile, Repo, RepoLockInfo, ReviewBoard } from '@oam-kit/store/types';
 import { IpcChannelInterface } from '@electron/app/interfaces';
-import { Store, modelConfig } from '@oam-kit/store';
+import { modelConfig } from '@oam-kit/store';
+import { Store } from '@electron/app/store';
 import * as config from '@oam-kit/utility/overall-config';
 import * as branchLockParser from '@electron/app/utils/branchLockParser';
 import * as fetcher from '@electron/app/utils/fetcher';

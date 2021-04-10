@@ -1,10 +1,8 @@
 import { IpcChannelInterface } from '@electron/app/interfaces';
-import { Model, modelConfig, Store } from '@oam-kit/store';
-import { ModelType, StoreData, StoreAction, Branch, Profile, ReviewBoard } from '@oam-kit/store/types';
-import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
+import { Store, Model } from '@electron/app/store';
+import { SyncCodeModel, GeneralModel, RbToolsModel } from '@oam-kit/store/types';
+import { IpcChannel, IPCRequest } from '@oam-kit/ipc';
 import { IpcMainEvent } from 'electron/main';
-
-type IpcRequest_ = IPCRequest<StoreData<any>>;
 
 export class ModelChannel implements IpcChannelInterface {
   private store: Store;
@@ -14,13 +12,37 @@ export class ModelChannel implements IpcChannelInterface {
       fn: this.onGetData,
     },
     {
-      name: IpcChannel.STORE_DATA_REQ,
-      fn: this.onModelUpdate,
+      name: IpcChannel.SYNC_DATA_REQ,
+      fn: this.syncData,
     },
   ];
 
   constructor(store: Store) {
     this.store = store;
+    this.store.add(new Model<SyncCodeModel>({
+      name: 'sync-code',
+      initValue: {
+        projects: [],
+      }
+    }));
+    this.store.add(new Model<RbToolsModel>({
+      name: 'rb-tools',
+      initValue: {
+        rbs: [],
+        preferences: { checkLockInfoInterval: 300000 }
+      }
+    }));
+    this.store.add(new Model<GeneralModel>({
+      name: 'general',
+      initValue: {
+        repositoryList: [],
+        serverList: [],
+        profile: {
+          svnAccount: { username: null, password: null },
+          nsbAccount: { username: null, password: null },
+        }
+      }
+    }))
   }
 
   private onGetData(event: IpcMainEvent) {
@@ -30,45 +52,9 @@ export class ModelChannel implements IpcChannelInterface {
     });
   }
 
-  private async onModelUpdate(
-    event: IpcMainEvent,
-    { data }: IpcRequest_
-  ) {
-    const model = this.store.get(data.model);
-    const action = data.action || StoreAction.COVER;
-    switch (action) {
-      case StoreAction.ADD_ITEM:
-        await model.create$(data.content);
-        break;
-      case StoreAction.EDIT_ITEM:
-        await model.edit$(data.content);
-        break;
-      case StoreAction.DELETE_ITEM:
-        // If there is no content, would delete a plane model, instead this content is id
-        await model.delete$(data.content as number);
-        break;
-      default:
-        throw new Error(`[ModelChannel] no valid action named: ${action}`);
-    }
-    // Would return whole app data instead a model data
-    const res: IPCResponse<any> = { isSuccessed: true, data: this.store.getAllData() };
-    event.reply(IpcChannel.STORE_DATA_RES, res);
-    event.reply(IpcChannel.GET_APP_DATA_RES, res);
-  }
-
-  public async startup$() {
-    // init all models
-    await this.store.add$(new Model<ReviewBoard>(modelConfig.autoCommit.name));
-    await this.store.add$(new Model<Branch>(modelConfig.syncCodeBranch.name));
-    // await this.store.add$(new Model<Branch>(modelConfig.lockInfoBranch.name, {
-    //   initContent: defaultBranchesToDisplay
-    // }));
-    // await this.store.add$(new Model<Branch>(modelConfig.visibleBranches.name, {
-    //   initContent: visibleBranches
-    // }));
-    // await this.store.add$(new Model<Branch>(modelConfig.visibleRepos.name, {
-    //   initContent: visibleRepos
-    // }));
-    await this.store.add$(new Model<Profile>(modelConfig.profile.name, { type: ModelType.PLANE }));
+  private syncData(event: IpcMainEvent, req: IPCRequest<{ name: string; value: any }>) {
+    const { name, value } = req.data;
+    const model = this.store.getModel(name);
+    model.reset(value);
   }
 }

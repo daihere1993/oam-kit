@@ -4,7 +4,8 @@ import Logger from '../../utils/logger';
 import { IpcMainEvent } from 'electron/main';
 import { IpcChannelInterface } from '@electron/app/interfaces';
 import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
-import { modelConfig, Profile, ReviewBoard, Store } from '@oam-kit/store';
+import { modelConfig, Profile, ReviewBoard } from '@oam-kit/store';
+import { Store } from '@electron/app/store';
 
 const logger = Logger.for('RbChannel');
 

@@ -6,11 +6,10 @@ import { environment } from '../environments/environment';
 import { join } from 'path';
 import { format } from 'url';
 import * as utils from './utils'
-import { Store } from '@oam-kit/store';
+import { Store } from './store';
 import { KitChannel } from './modules/kit';
 import { ModelChannel } from './modules/model';
 import { SyncCodeChannel } from './modules/sync-code';
-import { ElectronSolid } from '@oam-kit/store/solid/electron-solid';
 import { LockInfoChannel } from './modules/lock-info';
 import { RbChannel } from './modules/rb';
 
@@ -89,10 +88,9 @@ export default class App {
   private static async initChannels$() {
     const targetPath = join(utils.getUserDataPath(), storeName);
     console.debug(`data file: ${targetPath}`);
-    const store = new Store({ solid: new ElectronSolid(targetPath) });
-    await store.startup$();
+    const store = new Store(targetPath);
+    await store.startup();
     const modelChannel = new ModelChannel(store);
-    await modelChannel.startup$();
     const channels: any[] = [
       modelChannel,
       new KitChannel({ mainWindow: App.mainWindow }),

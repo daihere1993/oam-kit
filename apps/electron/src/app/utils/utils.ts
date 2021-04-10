@@ -5,6 +5,7 @@ import axios from 'axios';
 import { app, remote } from 'electron';
 import { Observable } from 'rxjs';
 import { WorkSheet } from 'xlsx/types';
+import {storeName } from '@oam-kit/utility/overall-config';
 
 export function getTestDir(): string {
   return path.join(__dirname, '../../__test__');
@@ -15,6 +16,12 @@ export function getUserDataPath(): string {
     return (app || remote.app).getPath('userData');
   }
   return path.join(getTestDir(), 'tmp');
+}
+
+
+export function isFirstLoad() {
+  const targetPath = path.join(getUserDataPath(), storeName);
+  return fs.existsSync(targetPath);
 }
 
 export function getTmpDir(): string {

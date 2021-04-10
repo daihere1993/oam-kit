@@ -4,7 +4,32 @@ import { APPData } from '@oam-kit/store';
 import { cloneDeep } from 'lodash-es';
 import { filter } from 'rxjs/operators';
 import { ElectronService } from './electron.service';
-import { StoreService } from './store.service';
+import { Model, StoreService } from './store.service';
+
+describe.only('Model', () => {
+  const fakeData = { projects: [{ id: 1, name: 'project1' }], color: 'red', preference: { theme: 'dark', list: [{ name: 'item1' }] } };
+  const model = new Model('test', fakeData);
+  it('model.get()', () => {
+    expect(model.get('color')).toBe('red');
+    expect(model.get('preference.theme')).toBe('dark');
+  });
+  it(`model.add('projects', newProject);`, () => {
+    model.add('projects', { name: 'project2' });
+    model.add('preference.list', { name: 'item2' });
+    expect(model.data.projects.length).toBe(2);
+    expect(model.data.projects[1]).toEqual({ name: 'project2' });
+    expect(model.data.preference.list.length).toBe(2);
+    expect(model.data.preference.list[1]).toEqual({ name: 'item2' });
+  });
+  it('model.subscribe()', (done) => {
+    model.subscribe('projects', (data) => {
+      expect(data.length).toBe(2);
+      expect(data[1]).toEqual({ name: 'project2' });
+      done();
+    });
+    model.add('projects', { name: 'project2' });
+  });
+});
 
 describe('StoreService', () => {
   const mockedData: APPData = {
@@ -31,13 +56,11 @@ describe('StoreService', () => {
       providers: [StoreService, { provide: ElectronService, useValue: mockedElectronService }],
     });
     const spyIpcOn = jest.spyOn(mockedElectronService.ipcRenderer, 'on');
-    spyIpcOn.mockImplementation(
-      (channel: IpcChannel, cb: (event: any, res: IPCResponse<APPData>) => void) => {
-        expect(channel).toBe(IpcChannel.GET_APP_DATA_RES);
-        ipcResponseCb = cb;
-        refreshData();
-      }
-    );
+    spyIpcOn.mockImplementation((channel: IpcChannel, cb: (event: any, res: IPCResponse<APPData>) => void) => {
+      expect(channel).toBe(IpcChannel.GET_APP_DATA_RES);
+      ipcResponseCb = cb;
+      refreshData();
+    });
     spyIpcSend = jest.spyOn(mockedElectronService.ipcRenderer, 'send');
   });
 
