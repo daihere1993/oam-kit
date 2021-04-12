@@ -2,10 +2,14 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import { IpcChannelInterface } from '@electron/app/interfaces';
-import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/utility/types';
+import { GeneralModel, IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/utility/types';
 import { BrowserWindow, dialog, IpcMainEvent, Notification, shell } from 'electron';
+import { NodeSSH } from 'node-ssh';
+import { Store } from '@electron/app/store';
+import { MODEL_NAME } from '@oam-kit/utility/overall-config';
 
 export interface KitChannelOptions {
+  store: Store,
   mainWindow: BrowserWindow;
 }
 
@@ -14,12 +18,43 @@ export class KitChannel implements IpcChannelInterface {
     { name: IpcChannel.SELECT_PATH_REQ, fn: this.onSelectPath },
     { name: IpcChannel.NOTIFICATION_REQ, fn: this.showSysNotification },
     { name: IpcChannel.OPEN_EXTERNAL_URL_REQ, fn: this.openExternalUrl },
+    { name: IpcChannel.SERVER_CHECK_REQ, fn: this.serverCheck },
+    { name: IpcChannel.SERVER_DIRECTORY_CHECK_REQ, fn: this.serverDirectoryCheck },
   ];
 
   private options: KitChannelOptions;
+  private ssh: NodeSSH = new NodeSSH();
+  private nsbAccount: { username: string; password: string };
 
   constructor(options: KitChannelOptions) {
     this.options = options;
+    const gModel = this.options.store.get<GeneralModel>(MODEL_NAME.GENERAL);
+    this.nsbAccount = gModel.get('profile').nsbAccount;
+  }
+
+  private async serverDirectoryCheck(event: IpcMainEvent, req: IPCRequest<{ serverAddr: string; directory: string; }>) {
+    const { serverAddr, directory } = req.data;
+    await this.ssh.connect({
+      host: serverAddr,
+      username: this.nsbAccount.username,
+      password: this.nsbAccount.password,
+    });
+    const { stderr } = await this.ssh.execCommand(`cd ${directory}`);
+    const isExistedDirectory = !!stderr;
+    const res: IPCResponse<boolean> = { isSuccessed: true, data: isExistedDirectory };
+    event.reply(req.responseChannel, res);
+  }
+
+  private async serverCheck(event: IpcMainEvent, req: IPCRequest<string>) {
+    const serverAddr = req.data;
+    await this.ssh.connect({
+      host: serverAddr,
+      username: this.nsbAccount.username,
+      password: this.nsbAccount.password,
+    });
+    const res: IPCResponse<boolean> = { isSuccessed: true, data: this.ssh.isConnected() };
+    this.ssh.dispose();
+    event.reply(req.responseChannel, res);
   }
 
   private openExternalUrl(event: IpcMainEvent, req: IPCRequest<string>) {

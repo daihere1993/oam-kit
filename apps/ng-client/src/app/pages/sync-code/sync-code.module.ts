@@ -13,6 +13,7 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 
 import { SyncCodeComponent } from './sync-code.component';
 import { ProjectSelectorComponent } from './project-selector.component';
@@ -39,6 +40,7 @@ import { PathInputModule } from '@ng-client/core/components/path-field';
     NzNotificationServiceModule,
     NzModalModule,
     NzStepsModule,
+    NzToolTipModule,
   ]
 })
 export class SyncCodeModule { }

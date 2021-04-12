@@ -26,6 +26,7 @@ import { MODEL_NAME } from '@oam-kit/utility/overall-config';
             data-btn-type="sync"
             class="sync_button"
             nz-button
+            [disabled]="!currentProject"
             nzType="primary"
             [nzLoading]="isSyncOnGoing"
             (click)="sync()"
@@ -58,7 +59,7 @@ export class SyncCodeComponent implements OnInit, OnDestroy {
     return this.syncStepper.status === StepperStatus.ONGOING
   }
 
-  private currentProject: Project;
+  public currentProject: Project;
 
   private get isReady(): boolean {
     if (!this.isProfileReady()) {

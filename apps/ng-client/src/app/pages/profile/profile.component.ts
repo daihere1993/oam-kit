@@ -45,7 +45,7 @@ import { Model } from '@oam-kit/utility/model';
               nz-button
               data-btn-type="save"
               class="button__save"
-              [disabled]="form.invalid"
+              [disabled]="!form.valid"
               nzType="primary"
               (click)="toSave()"
             >

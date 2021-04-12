@@ -23,13 +23,12 @@ export enum MODEL_NAME {
   SYNC_CODE = 'syncCode',
   RB_TOOLS = 'rbTools',
 }
-
 export const MODEL_INIT_VALUE: APPData = {
   general: {
-    serverList: [
+    serverList: new Set([
       'hzlinb35.china.nsn-net.net',
       'hzlinb36.china.nsn-net.net'
-    ],
+    ]),
     profile: {
       svnAccount: { password: null },
       nsbAccount: { username: null, password: null },

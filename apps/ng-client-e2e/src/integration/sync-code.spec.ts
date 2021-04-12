@@ -1,7 +1,6 @@
 import { SyncCodeStep } from '@oam-kit/sync-code';
-import { APPData, IpcChannel } from '@oam-kit/utility/types';
+import { IpcChannel, Project } from '@oam-kit/utility/types';
 import { MainFixture } from '../fixtures/mainFixture';
-import { addProjectAndExpectTheResult } from '../fixtures/sycnCodeFixture';
 import { fullProfileInfoAndExpected } from '../fixtures/profileFixture';
 
 function finishSyncStep(fixture: MainFixture, n: number, opt: { isSuccess: boolean; errorMsg?: string } = { isSuccess: true }) {
@@ -32,193 +31,187 @@ function finishSyncStep(fixture: MainFixture, n: number, opt: { isSuccess: boole
   }
 }
 
-describe.only('Normal case', () => {
-  const fixture = new MainFixture();
+function selectedLabelShoudBe(label: string) {
+  cy.wait(500).get('nz-select').find('nz-select-item').should('contain.text', label);
+}
 
-  it('Setup profile', () => {
-    fixture.visit('profile');
-    fullProfileInfoAndExpected();
+function fillAllProjectFields(fixture: MainFixture) {
+  cy.get('input[name="name"]').type(project.name);
+  cy.get('nz-select[formcontrolname="serverAddr"]').click();
+  selectServerAddr().then(() => {
+    fixture.simulateBackendResToClient(IpcChannel.SERVER_CHECK_RES, true);
+  });
+  cy.get('input[name="localPath"]').type(project.localPath);
+  cy.get('input[name="remotePath"]')
+    .type(project.remotePath)
+    .then(() => {
+      fixture.simulateBackendResToClient(IpcChannel.SERVER_DIRECTORY_CHECK_RES, true);
+    });
+}
+
+function selectServerAddr() {
+  cy.get('nz-select[formcontrolname="serverAddr"]').click();
+  return cy.get('nz-option-item').children().first().click();
+}
+
+function saveBtnShouldBeDisabled() {
+  cy.get('button[data-btn-type="save"]').should('be.disabled');
+}
+
+const fixture = new MainFixture();
+const project: Partial<Project> = {
+  name: 'TRUNK',
+  localPath: '/moam/trunk',
+  remotePath: '/var/fpwork/zowu/moam/trunk',
+};
+
+describe('Scenario1: add new project', () => {
+  beforeEach(() => {
+    fixture.visit('sync-code');
+    cy.get('nz-select').as('select').click();
+    cy.get('a[data-btn-type="addBranch"]').click().wait(500);
   });
 
-  it('Add a new project', function () {
-    fixture.navigate('Sync Code');
-    addProjectAndExpectTheResult();
+  it('Case1: remote address validation failed', () => {
+    selectServerAddr().then(() => {
+      fixture.simulateBackendResToClient(IpcChannel.SERVER_CHECK_RES, false);
+    });
+    cy.get('.server-validation__allert').should(
+      'include.text',
+      `Can't connect to hzlinb35.china.nsn-net.net, please make sure it is working.`
+    );
+    saveBtnShouldBeDisabled();
   });
 
-  it('All steps should be wait before code sync', () => {
-    cy.get('nz-step')
-      .as('steps')
-      .each(($el) => {
-        cy.wrap($el).should('have.attr', 'ng-reflect-nz-status', 'wait');
-      });
-  });
+  it('Case2: local project path validation failed', () => {});
 
-  it('Sync code when everything is ready', function () {
-    cy.get('nz-select').find('nz-select-item').should('contain.text', 'TRUNK');
-    cy.get('button')
-      .contains('Sync Code')
-      .click()
+  it('Case3: remote project path validation failed - path not exists', () => {
+    selectServerAddr().then(() => {
+      fixture.simulateBackendResToClient(IpcChannel.SERVER_CHECK_RES, true);
+    });
+    cy.get('input[name="remotePath"]')
+      .type(project.remotePath)
       .then(() => {
-        cy.get('nz-step').should('have.length', 4);
-        cy.get('nz-step').eq(0).as('first');
-        cy.get('nz-step').eq(1).as('second');
-        cy.get('nz-step').eq(2).as('third');
-        cy.get('nz-step').eq(3).as('fourth');
-        cy.assertStepStatus('@first', 'process');
-        cy.wait(1000)
-          .then(finishSyncStep.bind(this, fixture, 1))
-          .then(() => {
-            cy.assertStepStatus('@first', 'finish');
-            cy.assertStepStatus('@second', 'process');
-          });
-        cy.wait(1000)
-          .then(finishSyncStep.bind(this, fixture, 2))
-          .then(() => {
-            cy.assertStepStatus('@second', 'finish');
-            cy.assertStepStatus('@third', 'process');
-          });
-        cy.wait(1000)
-          .then(finishSyncStep.bind(this, fixture, 3))
-          .then(() => {
-            cy.assertStepStatus('@third', 'finish');
-            cy.assertStepStatus('@fourth', 'process');
-          });
-        cy.wait(1000)
-          .then(finishSyncStep.bind(this, fixture, 4))
-          .then(() => {
-            cy.assertStepStatus('@fourth', 'finish');
-          });
+        fixture.simulateBackendResToClient(IpcChannel.SERVER_DIRECTORY_CHECK_RES, false);
       });
-    cy.get('nz-select').find('nz-select-item').should('contain.text', 'TRUNK');
+    cy.get('.remote-path-validation__allert').should(
+      'include.text',
+      `/var/fpwork/zowu/moam/trunk does not exist in the hzlinb35.china.nsn-net.net`
+    );
+    saveBtnShouldBeDisabled();
+  });
+
+  it('Case4: the "selected project" should be the new project', () => {
+    fillAllProjectFields(fixture);
+    cy.get('button[data-btn-type="save"]').click();
+    selectedLabelShoudBe(project.name);
   });
 });
 
-describe('Edge cases', () => {
-  /**
-   * 1. isn't ready
-   *  1.1 didn't setup setting
-   *  1.2 no project selected
-   *  1.3 Sync on going
-   * 2. server failed
-   *  2.1 step1 faild with failed message
-   *  2.2 step2 faild with failed message
-   *  2.3 step3 faild with failed message
-   *  2.4 step4 faild with failed message
-   */
+describe('Scenario2: project modification', () => {
+  it('Case1: edit project', () => {});
 
-  describe("Isn't ready", () => {
-    const fixture = new MainFixture();
-    after(() => {
-      fixture.destroy();
-    });
-    it("Shouldn't work when profile is empty", () => {
-      fixture.visit('sync-code');
-      cy.get('[data-btn-type=sync]').click();
-      cy.get('[ng-reflect-nz-type=close-circle]').should('exist');
-      cy.get('.ant-notification-notice-description').should('have.text', 'Please fill corresponding setting.');
-    });
-    it("Shouldn't work when no project selected", () => {
-      fixture.visit('profile');
-      fullProfileInfoAndExpected();
-      fixture.navigate('Sync Code');
-      cy.get('[data-btn-type=sync]').click();
-      cy.get('[ng-reflect-nz-type=close-circle]').should('exist');
-      cy.get('.ant-notification-notice-description').should('have.text', 'Please add a project first.');
-    });
-    it('Button should display "on going" when sync on going', () => {
-      addProjectAndExpectTheResult();
-      cy.get('[data-btn-type=sync]').as('syncBtn').click().wait(500);
-      cy.get('@syncBtn').should('have.attr', 'ng-reflect-nz-loading', 'true');
-    });
+  it('Case1: delete project', () => {});
+});
+
+describe.only('Scenario3: sync code', () => {
+  beforeEach(() => {
+    fixture.visit('profile');
+    fullProfileInfoAndExpected();
+    fixture.navigate('Sync Code');
+    cy.get('nz-select').as('select').click();
+    cy.get('a[data-btn-type="addBranch"]').click().wait(500);
+    fillAllProjectFields(fixture);
+    cy.get('button[data-btn-type="save"]').click();
+    cy.get('[data-btn-type=sync]').click();
+  });
+  it('Case1: should be successfully when everything is fine.', () => {
+    cy.get('nz-step').should('have.length', 4);
+    cy.get('nz-step').eq(0).as('first');
+    cy.get('nz-step').eq(1).as('second');
+    cy.get('nz-step').eq(2).as('third');
+    cy.get('nz-step').eq(3).as('fourth');
+    cy.assertStepStatus('@first', 'process');
+    cy.wait(1000)
+      .then(finishSyncStep.bind(this, fixture, 1))
+      .then(() => {
+        cy.assertStepStatus('@first', 'finish');
+        cy.assertStepStatus('@second', 'process');
+      });
+    cy.wait(1000)
+      .then(finishSyncStep.bind(this, fixture, 2))
+      .then(() => {
+        cy.assertStepStatus('@second', 'finish');
+        cy.assertStepStatus('@third', 'process');
+      });
+    cy.wait(1000)
+      .then(finishSyncStep.bind(this, fixture, 3))
+      .then(() => {
+        cy.assertStepStatus('@third', 'finish');
+        cy.assertStepStatus('@fourth', 'process');
+      });
+    cy.wait(1000)
+      .then(finishSyncStep.bind(this, fixture, 4))
+      .then(() => {
+        cy.assertStepStatus('@fourth', 'finish');
+      });
   });
 
-  describe('Electron failed with specific reason', () => {
-    const fixture = new MainFixture();
-    beforeEach(() => {
-      fixture.visit('profile');
-      fullProfileInfoAndExpected();
-      fixture.navigate('Sync Code');
-      addProjectAndExpectTheResult();
-    });
-    it('Step1 failed', () => {
-      const errorMsg = 'Step1 failed';
-      cy.get('[data-btn-type=sync]')
-        .click()
-        .wait(1000)
-        .then(finishSyncStep.bind(this, fixture, 1, { isSuccess: false, errorMsg }));
-      cy.get('[ng-reflect-nz-type=close-circle]').should('exist');
-      cy.get('.ant-notification-notice-description').should('have.text', errorMsg);
-    });
-    it('Step2 failed', () => {
-      const errorMsg = 'Step2 failed';
-      cy.get('[data-btn-type=sync]')
-        .click()
-        .wait(1000)
-        .then(() => {
-          finishSyncStep(fixture, 1);
-          return cy.wait(1000);
-        })
-        .then(() => {
-          finishSyncStep(fixture, 2, { isSuccess: false, errorMsg });
-        });
-      cy.get('[ng-reflect-nz-type=close-circle]').should('exist');
-      cy.get('.ant-notification-notice-description').should('have.text', errorMsg);
-    });
-    it('Step3 failed', () => {
-      const errorMsg = 'Step3 failed';
-      cy.get('[data-btn-type=sync]')
-        .click()
-        .wait(1000)
-        .then(() => {
-          finishSyncStep(fixture, 1);
-          return cy.wait(1000);
-        })
-        .then(() => {
-          finishSyncStep(fixture, 2);
-          return cy.wait(1000);
-        })
-        .then(() => {
-          finishSyncStep(fixture, 3, { isSuccess: false, errorMsg });
-        });
-      cy.get('[ng-reflect-nz-type=close-circle]').should('exist');
-      cy.get('.ant-notification-notice-description').should('have.text', errorMsg);
-    });
-    it('Step4 failed', () => {
-      const errorMsg = 'Step4 failed';
-      cy.get('[data-btn-type=sync]')
-        .click()
-        .wait(1000)
-        .then(() => {
-          finishSyncStep(fixture, 1);
-          return cy.wait(1000);
-        })
-        .then(() => {
-          finishSyncStep(fixture, 2);
-          return cy.wait(1000);
-        })
-        .then(() => {
-          finishSyncStep(fixture, 3);
-          return cy.wait(1000);
-        })
-        .then(() => {
-          finishSyncStep(fixture, 4, { isSuccess: false, errorMsg });
-        });
-      cy.get('[ng-reflect-nz-type=close-circle]').should('exist');
-      cy.get('.ant-notification-notice-description').should('have.text', errorMsg);
-    });
+  it('Case2: step1 failed, then alter error message.', () => {
+    const errorMsg = 'Step1 failed';
+    cy.wait(1000).then(finishSyncStep.bind(this, fixture, 1, { isSuccess: false, errorMsg }));
+    cy.get('[ng-reflect-nz-type=close-circle]').should('exist');
+    cy.get('.ant-notification-notice-description').should('have.text', errorMsg);
   });
-
-  describe('Page data', () => {
-    const fixture = new MainFixture();
-    after(() => {
-      fixture.destroy();
-    });
-    it('Selected project should be presistent when reload page', () => {
-      fixture.visit('sync-code');
-      addProjectAndExpectTheResult();
-      fixture.navigate('Profile').wait(500);
-      fixture.navigate('Sync Code');
-      cy.get('nz-select').find('nz-select-item').should('contain.text', 'TRUNK');
-    });
+  it('Case3: step2 failed, then alter error message.', () => {
+    const errorMsg = 'Step2 failed';
+    cy.wait(1000)
+      .then(() => {
+        finishSyncStep(fixture, 1);
+        return cy.wait(1000);
+      })
+      .then(() => {
+        finishSyncStep(fixture, 2, { isSuccess: false, errorMsg });
+      });
+    cy.get('[ng-reflect-nz-type=close-circle]').should('exist');
+    cy.get('.ant-notification-notice-description').should('have.text', errorMsg);
+  });
+  it('Case4: step3 failed, then alter error message.', () => {
+    const errorMsg = 'Step3 failed';
+    cy.wait(1000)
+      .then(() => {
+        finishSyncStep(fixture, 1);
+        return cy.wait(1000);
+      })
+      .then(() => {
+        finishSyncStep(fixture, 2);
+        return cy.wait(1000);
+      })
+      .then(() => {
+        finishSyncStep(fixture, 3, { isSuccess: false, errorMsg });
+      });
+    cy.get('[ng-reflect-nz-type=close-circle]').should('exist');
+    cy.get('.ant-notification-notice-description').should('have.text', errorMsg);
+  });
+  it('Case5: step4 failed, then alter error message.', () => {
+    const errorMsg = 'Step4 failed';
+    cy.wait(1000)
+      .then(() => {
+        finishSyncStep(fixture, 1);
+        return cy.wait(1000);
+      })
+      .then(() => {
+        finishSyncStep(fixture, 2);
+        return cy.wait(1000);
+      })
+      .then(() => {
+        finishSyncStep(fixture, 3);
+        return cy.wait(1000);
+      })
+      .then(() => {
+        finishSyncStep(fixture, 4, { isSuccess: false, errorMsg });
+      });
+    cy.get('[ng-reflect-nz-type=close-circle]').should('exist');
+    cy.get('.ant-notification-notice-description').should('have.text', errorMsg);
   });
 });

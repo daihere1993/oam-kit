@@ -11,7 +11,7 @@ export interface Profile {
 
 export interface GeneralModel {
   // repositoryList: string[];
-  serverList: string[];
+  serverList: Set<string>;
   profile: Profile;
 }
 
@@ -71,6 +71,10 @@ export enum IpcChannel {
   NOTIFICATION_RES = 'notification_res',
   OPEN_EXTERNAL_URL_REQ = 'open_external_url_req',
   OPEN_EXTERNAL_URL_RES = 'open_external_url_res',
+  SERVER_CHECK_REQ = 'server_check_req',
+  SERVER_CHECK_RES = 'server_check_res',
+  SERVER_DIRECTORY_CHECK_REQ = 'server_directory_check_req',
+  SERVER_DIRECTORY_CHECK_RES = 'server_directory_check_res',
   SYNC_DATA_REQ = 'sync_data_req',
   SYNC_DATA_RES = 'sync_data_res',
   GET_APP_DATA_REQ = 'get_app_data_req',

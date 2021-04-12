@@ -93,7 +93,7 @@ export default class App {
     const modelChannel = new ModelChannel(store);
     const channels: any[] = [
       modelChannel,
-      new KitChannel({ mainWindow: App.mainWindow }),
+      new KitChannel({ store, mainWindow: App.mainWindow }),
       new SyncCodeChannel(store),
       new LockInfoChannel(store),
       new RbChannel(store)
