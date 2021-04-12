@@ -11,7 +11,7 @@ export interface Profile {
 
 export interface GeneralModel {
   // repositoryList: string[];
-  // serverList: string[];
+  serverList: string[];
   profile: Profile;
 }
 

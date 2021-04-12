@@ -21,7 +21,7 @@ export function getUserDataPath(): string {
 
 export function isFirstLoad() {
   const targetPath = path.join(getUserDataPath(), storeName);
-  return fs.existsSync(targetPath);
+  return !fs.existsSync(targetPath);
 }
 
 export function getTmpDir(): string {

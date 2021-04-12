@@ -10,11 +10,13 @@ const writeFile = util.promisify(fs.writeFile);
 export class Store {
   private data: Partial<APPData> = {};
   private models: Model<any>[] = [];
+  private isFirstLoad_: boolean;
 
   constructor(private path: string) {}
 
   async startup() {
-    if (!isFirstLoad()) {
+    this.isFirstLoad_ = isFirstLoad();
+    if (!this.isFirstLoad_) {
       const buffer = await readFile(this.path);
       this.data = JSON.parse(buffer.toString());
     }
@@ -22,7 +24,7 @@ export class Store {
 
   add(model: Model<any>) {
     this.models.push(model);
-    if (isFirstLoad()) {
+    if (this.isFirstLoad_) {
       this.data[model.name] = model.data;
     } else {
       model.reset(this.data[model.name]);

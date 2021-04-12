@@ -1,8 +1,11 @@
-import { Component, Input } from '@angular/core';
-import { Project } from '@oam-kit/utility/types';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { GeneralModel, Project } from '@oam-kit/utility/types';
 import { NzModalRef } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { StoreService } from '@ng-client/core/services/store.service';
+import { MODEL_NAME } from '@oam-kit/utility/overall-config';
+import { NzSelectComponent } from 'ng-zorro-antd/select';
 
 export enum DialogAction {
   CANCEL = 'cancel',
@@ -35,7 +38,10 @@ export interface DialogRes {
         <nz-form-item>
           <nz-form-label [nzSm]="8" nzRequired nzFor="serverAddr">Linsee/EECloud address</nz-form-label>
           <nz-form-control [nzSm]="13">
-            <input name="serverAddr" nz-input formControlName="serverAddr" />
+            <!-- <input name="serverAddr" nz-input formControlName="serverAddr" /> -->
+            <nz-select nzShowSearch nzAllowClear formControlName="serverAddr">
+              <nz-option *ngFor="let server of serverList" [nzLabel]="server" [nzValue]="server"></nz-option>
+            </nz-select>
           </nz-form-control>
         </nz-form-item>
 
@@ -67,7 +73,7 @@ export interface DialogRes {
     </div>
   `,
 })
-export class ProjectSettingComponent {
+export class ProjectSettingComponent implements OnInit {
   @Input() project: Project = {
     name: null,
     serverAddr: null,
@@ -76,9 +82,23 @@ export class ProjectSettingComponent {
   };
   @Input() isEdit: boolean;
 
-  public form: FormGroup;
+  @ViewChild(NzSelectComponent) selectComp: NzSelectComponent;
 
-  constructor(private modal: NzModalRef, private fb: FormBuilder, private notification: NzNotificationService) {
+  public form: FormGroup;
+  public serverList: string[];
+
+  constructor(
+    private modal: NzModalRef,
+    private fb: FormBuilder,
+    private notification: NzNotificationService,
+    private store: StoreService
+  ) {}
+
+  ngOnInit() {
+    const gModel = this.store.getModel<GeneralModel>(MODEL_NAME.GENERAL);
+    gModel.subscribe<string[]>('serverList', (data) => {
+      this.serverList = data;
+    });
     this.form = this.fb.group({
       name: [this.project.name, [Validators.required]],
       serverAddr: [this.project.serverAddr, [Validators.required]],
