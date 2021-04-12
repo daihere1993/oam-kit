@@ -1,12 +1,11 @@
-import { BranchLockInfo, LockInfo, Profile, Repo, RepoLockInfo, ReviewBoard } from '@oam-kit/store/types';
+import { GeneralModel, Repo, ReviewBoard, LockInfo, BranchLockInfo, RepoLockInfo } from '@oam-kit/utility/types';
 import { IpcChannelInterface } from '@electron/app/interfaces';
-import { modelConfig } from '@oam-kit/store';
 import { Store } from '@electron/app/store';
 import * as config from '@oam-kit/utility/overall-config';
 import * as branchLockParser from '@electron/app/utils/branchLockParser';
 import * as fetcher from '@electron/app/utils/fetcher';
 import Logger from '@electron/app/utils/logger';
-import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
+import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/utility/types';
 import { IpcMainEvent } from 'electron/main';
 import { RbBase_ } from '../rb';
 
@@ -62,10 +61,12 @@ export class LockInfoChannel extends RbBase_ implements IpcChannelInterface {
 
   private async getRepoLockInfo(branch: string, repo: Repo): Promise<RepoLockInfo> {
     const svnPath = `${config.svnroot}/${repo.repository}/LOCKS/locks.conf`;
-    const profile = this.store.get<Profile>(modelConfig.profile.name).data as Profile;
+    const gModel = this.store.get<GeneralModel>(config.MODEL_NAME.SYNC_CODE);
+    const nsbAccount = gModel.get('profile').nsbAccount;
+    const svnAccount = gModel.get('profile').svnAccount;
     const locksContent = await fetcher.svnCat(svnPath, {
-      username: profile.username,
-      password: profile.password,
+      username: nsbAccount.username,
+      password: svnAccount.password,
     });
     return {
       name: repo.name,
@@ -77,9 +78,11 @@ export class LockInfoChannel extends RbBase_ implements IpcChannelInterface {
 
   private getJsonBranchLockJson() {
     const jsonPath = `${config.svnroot}/${moduleConf.oam_repository}/conf/BranchFor.json`;
-    const profile = this.store.get<Profile>(modelConfig.profile.name).data as Profile;
+    const gModel = this.store.get<GeneralModel>(config.MODEL_NAME.SYNC_CODE);
+    const nsbAccount = gModel.get('profile').nsbAccount;
+    const svnAccount = gModel.get('profile').svnAccount;
     try {
-      return fetcher.svnCat(jsonPath, { username: profile.username, password: profile.password });
+      return fetcher.svnCat(jsonPath, { username: nsbAccount.username, password: svnAccount.password });
     } catch(error) {
       if (!this.isCustomError(error)) {
         throw new Error(`[oam-kit][getJsonBranchLockJson] ${error.message}`);

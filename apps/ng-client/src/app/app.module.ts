@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
 import { HttpClientModule } from '@angular/common/http';
@@ -23,6 +23,7 @@ registerLocaleData(en);
 /** config ng-zorro-antd i18n **/
 import { NZ_I18N, en_US } from 'ng-zorro-antd/i18n';
 import { AutoCommitModule } from './pages/auto-commit/auto-commit.module';
+import { StoreService } from './core/services/store.service';
 
 @NgModule({
   declarations: [AppComponent],
@@ -43,6 +44,12 @@ import { AutoCommitModule } from './pages/auto-commit/auto-commit.module';
     {
       provide: RouteReuseStrategy,
       useClass: CacheRouteStrategy,
+    },
+    {
+      multi: true,
+      deps: [StoreService],
+      provide: APP_INITIALIZER,
+      useFactory: (store: StoreService) => { return () => store.load() }
     },
     { provide: NZ_I18N, useValue: en_US },
   ],

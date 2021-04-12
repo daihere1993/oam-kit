@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import * as util from 'util';
-import { Model } from './model';
+import { Model } from '@oam-kit/utility/model';
 import { isFirstLoad } from '../utils';
-import { APPData } from '@oam-kit/store';
+import { APPData } from '@oam-kit/utility/types';
 
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
@@ -33,7 +33,7 @@ export class Store {
     });
   }
 
-  getModel(name: string) {
+  get<T>(name: string): Model<T> {
     return this.models.find(m => m.name === name);
   }
 

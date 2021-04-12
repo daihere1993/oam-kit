@@ -2,7 +2,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import { IpcChannelInterface } from '@electron/app/interfaces';
-import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
+import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/utility/types';
 import { BrowserWindow, dialog, IpcMainEvent, Notification, shell } from 'electron';
 
 export interface KitChannelOptions {

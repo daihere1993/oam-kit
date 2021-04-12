@@ -4,14 +4,12 @@ import * as fs from 'fs';
 import * as SftpClient from 'ssh2-sftp-client';
 import { promisify } from 'util';
 import { IpcChannelInterface } from '@electron/app/interfaces';
-import { Branch, Profile } from '@oam-kit/store/types';
-import { modelConfig } from '@oam-kit/store'
+import { GeneralModel, Project, IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/utility/types';
 import { Store } from '@electron/app/store';
-import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
 import { SyncCodeStep } from '@oam-kit/sync-code';
 import { IpcMainEvent } from 'electron';
 import { getUserDataPath } from '@electron/app/utils';
-import { modules as modulesConf } from '@oam-kit/utility/overall-config';
+import { MODEL_NAME, modules as modulesConf } from '@oam-kit/utility/overall-config';
 
 const moduleConf = modulesConf.syncCode;
 const userDataPath = getUserDataPath();
@@ -23,7 +21,7 @@ export class SyncCodeChannel implements IpcChannelInterface {
   handlers = [{ name: IpcChannel.SYNC_CODE_REQ, fn: this.handle }];
 
   private store: Store;
-  private branch: Branch;
+  private project: Project;
   private addedFiles: string[];
   private sftpClient: SftpClient;
 
@@ -32,8 +30,8 @@ export class SyncCodeChannel implements IpcChannelInterface {
     this.sftpClient = new SftpClient();
   }
 
-  private handle(event: IpcMainEvent, request: IPCRequest<Branch>): void {
-    this.branch = request.data;
+  private handle(event: IpcMainEvent, request: IPCRequest<Project>): void {
+    this.project = request.data;
     this.connectServer(event)
       .then(this.createDiff.bind(this, event))
       .then(this.diffAnalysis.bind(this, event))
@@ -63,12 +61,13 @@ export class SyncCodeChannel implements IpcChannelInterface {
   }
 
   private async connectServer_(): Promise<any> {
-    const profile = this.store.get<Profile>(modelConfig.profile.name).data as Profile;
+    const gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
+    const nsbAccount = gModel.get('profile').nsbAccount;
     return this.sftpClient
       .connect({
-        host: profile.remote,
-        username: profile.username,
-        password: profile.password,
+        host: this.project.serverAddr,
+        username: nsbAccount.username,
+        password: nsbAccount.password,
       })
       .catch((err: Error) => {
         err.name = SyncCodeStep.CONNECT_TO_SERVER;
@@ -79,7 +78,7 @@ export class SyncCodeChannel implements IpcChannelInterface {
   private async createDiff(event: IpcMainEvent): Promise<any> {
     console.debug('createDiff: start.');
     return new Promise((resolve) => {
-      shell.cd(this.branch?.directory.source).exec(`svn di > ${DIFF_PATH}`, (code, stdout, stderr) => {
+      shell.cd(this.project.localPath).exec(`svn di > ${DIFF_PATH}`, (code, stdout, stderr) => {
         if (code === 0) {
           console.debug('createDiff: done.');
           event.reply(IpcChannel.SYNC_CODE_RES, { isSuccessed: true, data: SyncCodeStep.CREATE_DIFF });
@@ -130,7 +129,7 @@ export class SyncCodeChannel implements IpcChannelInterface {
     console.debug('uploadPatchToServer: start.');
     return this.sftpClient
       // Upload diff file into target remote by ssh
-      .fastPut(path.join(DIFF_PATH), `${this.branch?.directory.target}/${moduleConf.diffName}`)
+      .fastPut(path.join(DIFF_PATH), `${this.project.remotePath}/${moduleConf.diffName}`)
       .then(() => {
         console.debug('uploadPatchToServer: done.');
         const res: IpcResponse_ = { isSuccessed: true, data: SyncCodeStep.UPLOAD_DIFF };
@@ -150,7 +149,7 @@ export class SyncCodeChannel implements IpcChannelInterface {
     console.debug('applyPatchToServer: start.');
     const { client } = this.sftpClient as any;
     return new Promise((resolve) => {
-      let command = `cd ${this.branch?.directory.target} && svn revert -R .`;
+      let command = `cd ${this.project.remotePath} && svn revert -R .`;
 
       if (this.addedFiles.length > 0) {
         command += ' && rm -rf ';

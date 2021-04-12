@@ -1,3 +1,69 @@
+export interface APPData {
+  general: GeneralModel;
+  syncCode: SyncCodeModel;
+  rbTools: RbToolsModel;
+}
+
+export interface Profile {
+  svnAccount: { password: string };
+  nsbAccount: { username: string; password: string };
+}
+
+export interface GeneralModel {
+  // repositoryList: string[];
+  // serverList: string[];
+  profile: Profile;
+}
+
+export interface Project {
+  name: string;
+  localPath: string;
+  remotePath: string;
+  serverAddr: string;
+}
+
+export interface SyncCodeModel {
+  projects: Project[];
+  preferences?: any;
+}
+
+export interface Repo {
+  name: string;
+  repository: string;
+}
+
+export interface ReviewBoard {
+  name: string;
+  link: string;
+  branch: string;
+  repo: Repo;
+  revision?: string;
+  committedDate?: Date;
+}
+
+export interface RbToolsModel {
+  rbs: ReviewBoard[];
+  preferences: { checkLockInfoInterval: number };
+}
+
+export interface BranchLockInfo {
+  name: string;
+  locked: boolean;
+  reason: string;
+}
+
+export interface RepoLockInfo {
+  name: string;
+  locked: boolean;
+  reason?: string;
+  repository: string;
+}
+
+export interface LockInfo {
+  branch: BranchLockInfo;
+  repo: RepoLockInfo;
+}
+
 export enum IpcChannel {
   SELECT_PATH_REQ = 'select_path_req',
   SELECT_PATH_RES = 'select_path_res',

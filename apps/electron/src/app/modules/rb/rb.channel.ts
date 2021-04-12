@@ -3,9 +3,10 @@ import { assert } from 'console';
 import Logger from '../../utils/logger';
 import { IpcMainEvent } from 'electron/main';
 import { IpcChannelInterface } from '@electron/app/interfaces';
-import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
-import { modelConfig, Profile, ReviewBoard } from '@oam-kit/store';
+import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/utility/types';
+import { GeneralModel, ReviewBoard } from '@oam-kit/utility/types';
 import { Store } from '@electron/app/store';
+import { MODEL_NAME } from '@oam-kit/utility/overall-config';
 
 const logger = Logger.for('RbChannel');
 
@@ -325,11 +326,12 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
 
   private async setupSvnCredentials(rbId: number) {
     logger.info('[setupSvnCredentials] start');
-    const profileModel = this.store.get<Profile>(modelConfig.profile.name);
-    const profile = profileModel.data as Profile;
+    const gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
+    const nsbAccount = gModel.get('profile').nsbAccount;
+    const svnAccount = gModel.get('profile').svnAccount;
     const url = this.getUrlFromTmp(SETUP_SVN_CREDENTIALS, rbId);
     try {
-      const { data } = await axios.post(url, `svn_username=${profile.username}&svn_password=${profile.password}`, {
+      const { data } = await axios.post(url, `svn_username=${nsbAccount.username}&svn_password=${svnAccount.password}`, {
         headers: {
           Cookie: this.cookies,
           'X-Requested-With': 'XMLHttpRequest',
@@ -357,13 +359,13 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
    * the seesionid exists in the response header of "set-cookie"
    */
   private async setupRbSessionId(rbId: number) {
-    const profileModel = this.store.get<Profile>(modelConfig.profile.name);
-    const profile = profileModel.data as Profile;
+    const gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
+    const nsbAccount = gModel.get('profile').nsbAccount;
     try {
       const { headers } = await axios.post(SETUP_RBSESSION_URL, `review_request_id=${rbId}`, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          Authorization: `Basic ${Buffer.from(`${profile.username}:${profile.password}`).toString('base64')}`,
+          Authorization: `Basic ${Buffer.from(`${nsbAccount.username}:${nsbAccount.password}`).toString('base64')}`,
         },
       });
       this.cookies += headers['set-cookie'][0].match(/(.+?);/)[0];

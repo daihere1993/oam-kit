@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, In
 import { IpcService } from '@ng-client/core/services/ipc.service';
 import { LockInfoService } from '@ng-client/core/services/lock-info.service';
 import { RbService } from '@ng-client/core/services/rb.service';
-import { IpcChannel, IPCRequest } from '@oam-kit/ipc';
+import { IpcChannel, IPCRequest } from '@oam-kit/utility/types';
 import { LOG_PHASE, LOG_TYPE } from '@oam-kit/logger';
 import { RbItem } from './auto-commit.component';
 

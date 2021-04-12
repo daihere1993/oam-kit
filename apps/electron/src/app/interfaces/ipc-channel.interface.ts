@@ -1,4 +1,4 @@
-import { IpcChannel, IPCRequest } from '@oam-kit/ipc';
+import { IpcChannel, IPCRequest } from '@oam-kit/utility/types';
 import { IpcMainEvent } from 'electron';
 
 export interface IpcChannelInterface {

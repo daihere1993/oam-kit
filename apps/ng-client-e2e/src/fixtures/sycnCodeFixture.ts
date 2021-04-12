@@ -1,19 +1,19 @@
-import { Branch } from "@oam-kit/store/types";
+import { Project } from '@oam-kit/utility/types';
 
-export function addBranchAndExpectTheResult(
-  branch: Branch = {
+export function addProjectAndExpectTheResult(
+  project: Project = {
     name: 'TRUNK',
-    directory: {
-      target: '/var/fpwork/zowu/moam/trunk',
-      source: '/moam/trunk',
-    },
+    serverAddr: '192.196.8.20',
+    localPath: '/moam/trunk',
+    remotePath: '/var/fpwork/zowu/moam/trunk',
   }
 ) {
   cy.get('nz-select').as('select').click();
   cy.get('a[data-btn-type="addBranch"]').click().wait(500);
-  cy.get('input[name="branchName"]').type(branch.name);
-  cy.get('input[name="target"]').type(branch.directory.target);
-  cy.get('input[name="source"]').type(branch.directory.source);
+  cy.get('input[name="name"]').type(project.name);
+  cy.get('input[name="serverAddr"]').type(project.serverAddr);
+  cy.get('input[name="localPath"]').type(project.localPath);
+  cy.get('input[name="remotePath"]').type(project.remotePath);
   // Must wait some time when click save button to make sure corresponding code got execute then to update data.
   return cy
     .get('button')

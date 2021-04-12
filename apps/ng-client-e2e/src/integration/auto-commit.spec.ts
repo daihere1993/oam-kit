@@ -1,8 +1,8 @@
-import { IpcChannel } from '@oam-kit/ipc';
+import { IpcChannel } from '@oam-kit/utility/types';
 import { MainFixture } from '../fixtures/mainFixture';
 import { getStringFromTemplate } from '@oam-kit/utility/utils';
 import { LOG_TEMPLATES, LOG_TYPE } from '@oam-kit/logger';
-import { LockInfo, ReviewBoard } from '@oam-kit/store';
+import { LockInfo, ReviewBoard } from '@oam-kit/utility/types';
 
 const link = 'http://biedronka.emea.nsn-net.net/r/92555/';
 const fakeRb: ReviewBoard = {

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { IpcService } from '@ng-client/core/services/ipc.service';
-import { IpcChannel } from '@oam-kit/ipc';
-import { Branch, Repo } from '@oam-kit/store';
+import { IpcChannel } from '@oam-kit/utility/types';
+import { Branch, Repo } from '@oam-kit/utility/types';
 
 @Component({
   selector: 'app-branch-lock-panel',

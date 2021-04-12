@@ -1,7 +1,7 @@
-import { Profile } from "@oam-kit/store/types";
+import { Profile } from "@oam-kit/utility/types";
 import { MainFixture } from "../fixtures/mainFixture";
 import { fullProfileInfoAndExpected } from "../fixtures/profileFixture";
-import { addBranchAndExpectTheResult } from "../fixtures/sycnCodeFixture";
+import { addProjectAndExpectTheResult } from "../fixtures/sycnCodeFixture";
 
 describe('Page cache: should not reload page that has been visited', () => {
   it('Sycn code page should be cached', () => {
@@ -9,7 +9,7 @@ describe('Page cache: should not reload page that has been visited', () => {
     mainFixture.visit('profile');
     fullProfileInfoAndExpected();
     mainFixture.navigate('Sync Code');
-    addBranchAndExpectTheResult();
+    addProjectAndExpectTheResult();
     cy.get('[data-btn-type=sync]').click();
     cy.get('nz-step').eq(0).as('first');
     cy.assertStepStatus('@first', 'process');

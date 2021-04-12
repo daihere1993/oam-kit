@@ -1,33 +1,41 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import { Profile } from '@oam-kit/store/types';
-import { ProfileService } from '../../core/services/profile.service';
-import { cloneDeep } from 'lodash-es';
+import { GeneralModel, Profile } from '@oam-kit/utility/types';
+import { StoreService } from '@ng-client/core/services/store.service';
+import { MODEL_NAME } from '@oam-kit/utility/overall-config';
+import { Model } from '@oam-kit/utility/model';
 
 @Component({
   selector: 'app-profile',
   template: `
-    <div class="container">
-      <form nz-form [formGroup]="validateForm">
-        <nz-form-item>
-          <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="remote">Server remote</nz-form-label>
-          <nz-form-control [nzSm]="14" [nzXs]="24">
-            <input nz-input name="remote" formControlName="remote" [(ngModel)]="profile.remote" />
-          </nz-form-control>
-        </nz-form-item>
+    <style>
+      .container {
+        display: flex;
+        flex-direction: column;
+      }
 
+      .field_item {
+        margin-bottom: 10px;
+      }
+
+      .button__save {
+        width: 200px;
+      }
+    </style>
+    <div class="container">
+      <form nz-form [formGroup]="form">
         <nz-form-item>
           <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="username">Username</nz-form-label>
           <nz-form-control [nzSm]="14" [nzXs]="24">
-            <input nz-input name="username" formControlName="username" [(ngModel)]="profile.username" />
+            <input nz-input name="username" formControlName="username" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="password">Password</nz-form-label>
           <nz-form-control [nzSm]="14" [nzXs]="24">
-            <input nz-input name="password" type="password" formControlName="password" [(ngModel)]="profile.password" />
+            <input nz-input name="password" type="password" formControlName="password" />
           </nz-form-control>
         </nz-form-item>
 
@@ -37,7 +45,7 @@ import { cloneDeep } from 'lodash-es';
               nz-button
               data-btn-type="save"
               class="button__save"
-              [disabled]="validateForm.invalid"
+              [disabled]="form.invalid"
               nzType="primary"
               (click)="toSave()"
             >
@@ -48,35 +56,29 @@ import { cloneDeep } from 'lodash-es';
       </form>
     </div>
   `,
-  styleUrls: ['./profile.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProfileComponent implements OnInit {
-  public validateForm: FormGroup;
+export class ProfileComponent {
+  public form: FormGroup;
   public profile: Profile;
 
-  constructor(
-    private fb: FormBuilder,
-    private profileService: ProfileService,
-    private notification: NzNotificationService,
-  ) {}
+  private gModel: Model<GeneralModel>;
 
-  public ngOnInit(): void {
-    // profile should be a local variable, couldn't have a reference link 
-    // with a variable of service which is global variable
-    this.profile = cloneDeep(this.profileService.data);
-    this.validateForm = this.fb.group({
-      remote: [null, [Validators.required]],
-      username: [null, [Validators.required]],
-      password: [null, [Validators.required]],
+  constructor(private fb: FormBuilder, private notification: NzNotificationService, private store: StoreService) {
+    this.gModel = this.store.getModel<GeneralModel>(MODEL_NAME.GENERAL);
+    this.gModel.subscribe<Profile>('profile', (data) => {
+      this.profile = data;
+    });
+    this.form = this.fb.group({
+      username: [this.profile?.nsbAccount.username, [Validators.required]],
+      password: [this.profile?.nsbAccount.password, [Validators.required]],
     });
   }
 
   public toSave(): void {
-    if (this.profile && this.profile.id) {
-      this.profileService.update(this.profile);
-    } else {
-      this.profileService.create(this.profile);
-    }
+    this.gModel.set('profile', (draft) => {
+      draft.nsbAccount = this.form.value;
+    });
     this.notification.create('success', 'Success', '', { nzPlacement: 'bottomRight' });
   }
 }

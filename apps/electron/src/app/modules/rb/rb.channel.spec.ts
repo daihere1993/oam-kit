@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { IpcChannel } from '@oam-kit/ipc';
+import { IpcChannel } from '@oam-kit/utility/types';
 import { RbChannel } from './rb.channel';
 import {
   IS_COMMIT_ALLOWED,

@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Store } from './store';
-import { Model } from './model';
+import { Model } from '@oam-kit/utility/model';
 import { isFirstLoad } from '@electron/app/utils';
 
 jest.mock('@electron/app/utils', () => ({
@@ -28,7 +28,7 @@ describe('Store', () => {
         initValue: { content: 'initial content' },
       })
     );
-    const model = store.getModel('test-model');
+    const model = store.get('test-model');
     model.reset({ content: 'new content' });
     setTimeout(() => {
       const data = JSON.parse(fs.readFileSync(dataPath).toString());

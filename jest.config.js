@@ -7,5 +7,6 @@ module.exports = {
     '<rootDir>/libs/ipc',
     '<rootDir>/libs/sync-code',
     '<rootDir>/libs/logger',
+    '<rootDir>/libs/model',
   ],
 };

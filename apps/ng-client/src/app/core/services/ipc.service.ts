@@ -1,5 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
-import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
+import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/utility/types';
 import { ipcRenderer } from 'electron';
 import { ElectronService } from './electron.service';
 import { Observable } from 'rxjs';
@@ -27,14 +27,17 @@ export class IpcService {
   public send<T, R>(channel: IpcChannel, req?: IPCRequest<T>): Promise<IPCResponse<R>>;
   public send<T, R>(channel: IpcChannel, req?: IPCRequest<T>): Promise<IPCResponse<R>> {
     if (this.electronService.isElectron) {
-      this.ipcRenderer.send(channel, req);
-      return new Promise(resolve => {
-        if (req.responseChannel) {
-          this.ipcRenderer.once(req.responseChannel, (event, response) => resolve(response));
-        } else {
-          resolve(null);
-        }
-      });
+      try {
+        return new Promise(resolve => {
+          if (req.responseChannel) {
+            this.ipcRenderer.once(req.responseChannel, (event, response) => resolve(response));
+          } else {
+            resolve(null);
+          }
+        });
+      } finally {
+        this.ipcRenderer.send(channel, req);
+      }
     }
   }
 

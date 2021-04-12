@@ -1,14 +1,10 @@
 import { SyncCodeStep } from '@oam-kit/sync-code';
-import { IpcChannel } from '@oam-kit/ipc';
+import { APPData, IpcChannel } from '@oam-kit/utility/types';
 import { MainFixture } from '../fixtures/mainFixture';
-import { addBranchAndExpectTheResult } from '../fixtures/sycnCodeFixture';
+import { addProjectAndExpectTheResult } from '../fixtures/sycnCodeFixture';
 import { fullProfileInfoAndExpected } from '../fixtures/profileFixture';
 
-function finishSyncStep(
-  fixture: MainFixture,
-  n: number,
-  opt: { isSuccess: boolean; errorMsg?: string } = { isSuccess: true }
-) {
+function finishSyncStep(fixture: MainFixture, n: number, opt: { isSuccess: boolean; errorMsg?: string } = { isSuccess: true }) {
   let step: string;
   switch (n) {
     case 1:
@@ -36,24 +32,17 @@ function finishSyncStep(
   }
 }
 
-describe('Normal case', () => {
-  let fixture: MainFixture;
-  before(() => {
-    fixture = new MainFixture();
-  });
-
-  after(() => {
-    fixture.destroy();
-  });
+describe.only('Normal case', () => {
+  const fixture = new MainFixture();
 
   it('Setup profile', () => {
     fixture.visit('profile');
     fullProfileInfoAndExpected();
   });
 
-  it('Add a new branch', function () {
-    fixture.visit('/sync-code');
-    addBranchAndExpectTheResult();
+  it('Add a new project', function () {
+    fixture.navigate('Sync Code');
+    addProjectAndExpectTheResult();
   });
 
   it('All steps should be wait before code sync', () => {
@@ -108,7 +97,7 @@ describe('Edge cases', () => {
   /**
    * 1. isn't ready
    *  1.1 didn't setup setting
-   *  1.2 no branch selected
+   *  1.2 no project selected
    *  1.3 Sync on going
    * 2. server failed
    *  2.1 step1 faild with failed message
@@ -126,21 +115,18 @@ describe('Edge cases', () => {
       fixture.visit('sync-code');
       cy.get('[data-btn-type=sync]').click();
       cy.get('[ng-reflect-nz-type=close-circle]').should('exist');
-      cy.get('.ant-notification-notice-description').should(
-        'have.text',
-        'Please fill corresponding setting.'
-      );
+      cy.get('.ant-notification-notice-description').should('have.text', 'Please fill corresponding setting.');
     });
-    it("Shouldn't work when no branch selected", () => {
+    it("Shouldn't work when no project selected", () => {
       fixture.visit('profile');
       fullProfileInfoAndExpected();
-      fixture.visit('sync-code');
+      fixture.navigate('Sync Code');
       cy.get('[data-btn-type=sync]').click();
       cy.get('[ng-reflect-nz-type=close-circle]').should('exist');
-      cy.get('.ant-notification-notice-description').should('have.text', 'Please add a branch first.');
+      cy.get('.ant-notification-notice-description').should('have.text', 'Please add a project first.');
     });
     it('Button should display "on going" when sync on going', () => {
-      addBranchAndExpectTheResult();
+      addProjectAndExpectTheResult();
       cy.get('[data-btn-type=sync]').as('syncBtn').click().wait(500);
       cy.get('@syncBtn').should('have.attr', 'ng-reflect-nz-loading', 'true');
     });
@@ -148,14 +134,11 @@ describe('Edge cases', () => {
 
   describe('Electron failed with specific reason', () => {
     const fixture = new MainFixture();
-    before(() => {
+    beforeEach(() => {
       fixture.visit('profile');
       fullProfileInfoAndExpected();
-      fixture.visit('sync-code');
-      addBranchAndExpectTheResult();
-    });
-    afterEach(() => {
-      fixture.visit('sync-code');
+      fixture.navigate('Sync Code');
+      addProjectAndExpectTheResult();
     });
     it('Step1 failed', () => {
       const errorMsg = 'Step1 failed';
@@ -230,11 +213,11 @@ describe('Edge cases', () => {
     after(() => {
       fixture.destroy();
     });
-    it('Selected branch should be presistent when reload page', () => {
+    it('Selected project should be presistent when reload page', () => {
       fixture.visit('sync-code');
-      addBranchAndExpectTheResult();
-      fixture.visit('profile').wait(500);
-      fixture.visit('sync-code');
+      addProjectAndExpectTheResult();
+      fixture.navigate('Profile').wait(500);
+      fixture.navigate('Sync Code');
       cy.get('nz-select').find('nz-select-item').should('contain.text', 'TRUNK');
     });
   });

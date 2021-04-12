@@ -10,12 +10,30 @@ export const modules = {
   syncCode: { diffName: 'moamkit.diff' },
   lockInfo: {
     oam_repository: 'BTS_SC_OAM_LTE',
-    interval: 120000
-  }
-}
+    interval: 120000,
+  },
+};
 
 /** Models */
-export const model = {
-  profile: { name: 'profile' },
-  syncCodeBranch: { name: 'syncCodeBranch' },
+// Here's enum value must be aligned with APPData
+export enum MODEL_NAME {
+  GENERAL = 'general',
+  SYNC_CODE = 'syncCode',
+  RB_TOOLS = 'rbTools',
 }
+
+export const MODEL_INIT_VALUE = {
+  general: {
+    profile: {
+      svnAccount: { password: null },
+      nsbAccount: { username: null, password: null },
+    },
+  },
+  syncCode: {
+    projects: [],
+  },
+  rbTools: {
+    rbs: [],
+    preferences: { checkLockInfoInterval: 300000 },
+  },
+};

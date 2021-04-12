@@ -23,6 +23,7 @@
     "store": { "tags": [] },
     "ipc": { "tags": [] },
     "sync-code": { "tags": [] },
-    "logger": { "tags": [] }
+    "logger": { "tags": [] },
+    "model": { "tags": [] }
   }
 }

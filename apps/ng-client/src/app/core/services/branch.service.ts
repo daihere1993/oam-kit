@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Branch, modelConfig } from '@oam-kit/store';
+import { Branch, modelConfig } from '@oam-kit/utility/types';
 import { BehaviorSubject } from 'rxjs';
 import { StoreService } from './store.service';
 

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { RbItem } from '@ng-client/pages/auto-commit/auto-commit.component';
-import { IpcChannel, IPCRequest } from '@oam-kit/ipc';
+import { IpcChannel, IPCRequest } from '@oam-kit/utility/types';
 import { LOG_PHASE, LOG_TYPE } from '@oam-kit/logger';
-import { LockInfo, ReviewBoard } from '@oam-kit/store';
+import { LockInfo, ReviewBoard } from '@oam-kit/utility/types';
 import { from, of, Subject, timer } from 'rxjs';
 import { mergeMap, takeUntil } from 'rxjs/operators';
 import { IpcService } from './ipc.service';

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
 import { formatDate } from '@angular/common';
-import { Repo, ReviewBoard } from '@oam-kit/store';
+import { Repo, ReviewBoard } from '@oam-kit/utility/types';
 import { LOG_PHASE, LOG_TEMPLATES, LOG_TYPE } from '@oam-kit/logger';
 import { getStringFromTemplate } from '@oam-kit/utility/utils';
 import { Subject } from 'rxjs';
@@ -99,14 +99,12 @@ class Logger {
 export class RbItem implements ReviewBoard {
   public get data(): ReviewBoard {
     return {
-      id: this.id,
       name: this.name,
       link: this.link,
       branch: this.branch,
       repo: this.repo,
       revision: this.revision,
       committedDate: this.committedDate,
-      logs: this.logger.logs,
     };
   }
   public readonly id: number;
