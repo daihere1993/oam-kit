@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { Project, SyncCodeModel } from '@oam-kit/utility/types';
 import { ProjectSettingComponent, DialogRes, DialogAction } from './project-setting.component';
@@ -52,7 +52,7 @@ import { Model } from '@oam-kit/utility/model';
         >
           <div class="option_container">
             <span>{{ project.name }}</span>
-            <i nz-icon nzType="edit" nzTheme="outline" (click)="edit($event, project)"></i>
+            <i nz-icon data-btn-type="editProject" nzType="edit" nzTheme="outline" (click)="edit($event, project)"></i>
           </div>
         </nz-option>
         <ng-template #addBranchOption>
@@ -69,7 +69,7 @@ import { Model } from '@oam-kit/utility/model';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProjectSelectorComponent {
+export class ProjectSelectorComponent implements OnInit {
   @Input() disabled = false;
   @Output() projectChange = new EventEmitter();
 
@@ -77,7 +77,9 @@ export class ProjectSelectorComponent {
   public projects: Project[];
   public model: Model<SyncCodeModel>;
 
-  constructor(private modalService: NzModalService, private store: StoreService) {
+  constructor(private modalService: NzModalService, private store: StoreService) {}
+
+  ngOnInit() {
     this.model = this.store.getModel<SyncCodeModel>(MODEL_NAME.SYNC_CODE);
     this.model.subscribe<Project[]>('projects', (data) => {
       this.projects = data;
@@ -122,15 +124,18 @@ export class ProjectSelectorComponent {
           if (isEditSelectedBranch) {
             this.setSelection(content);
           }
-          this.model.set('projects', draft => {
-            Object.assign(draft.find(item => item.name === project.name), content);
+          this.model.set('projects', (draft) => {
+            Object.assign(
+              draft.find((item) => item.name === project.name),
+              content
+            );
           });
         } else if (action === DialogAction.DELETE) {
           if (isEditSelectedBranch) {
             this.setSelection(null);
           }
-          this.model.set('projects', draft => {
-            const index = draft.findIndex(item => item.name === project.name);
+          this.model.set('projects', (draft) => {
+            const index = draft.findIndex((item) => item.name === project.name);
             draft.splice(index, 1);
           });
         }

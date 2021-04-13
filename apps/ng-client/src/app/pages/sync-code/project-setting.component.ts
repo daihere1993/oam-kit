@@ -127,7 +127,9 @@ export interface DialogRes {
         >
           Save
         </button>
-        <button nz-button class="dialog_btn" *ngIf="isEdit" nzType="danger" (click)="toDelete()">Delete</button>
+        <button nz-button data-btn-type="delete" class="dialog_btn" *ngIf="isEdit" nzType="danger" (click)="toDelete()">
+          Delete
+        </button>
         <button nz-button class="dialog_btn" (click)="toClose()">Close</button>
       </div>
     </div>
@@ -242,6 +244,15 @@ export class ProjectSettingComponent implements OnInit {
   }
 
   public shouldDisableSaveButton() {
-    return this.form.invalid;
+    return !(this.form.valid && this.isDirty());
+  }
+
+  private isDirty() {
+    for (const key in this.project) {
+      if (this.form?.value[key] !== this.project[key]) {
+        return true;
+      }
+    }
+    return false;
   }
 }

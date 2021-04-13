@@ -65,14 +65,19 @@ function saveBtnShouldBeDisabled() {
   cy.get('button[data-btn-type="save"]').should('be.disabled');
 }
 
-const fixture = new MainFixture();
-const project: Partial<Project> = {
+function saveBtnShouldBeEnabled() {
+  cy.get('button[data-btn-type="save"]').should('be.enabled');
+}
+
+const project: Project = {
   name: 'TRUNK',
+  serverAddr: 'hzlinb35.china.nsn-net.net',
   localPath: '/moam/trunk',
   remotePath: '/var/fpwork/zowu/moam/trunk',
 };
 
 describe('Scenario1: add new project', () => {
+  const fixture = new MainFixture();
   beforeEach(() => {
     fixture.visit('sync-code');
     cy.get('nz-select').as('select').click();
@@ -116,17 +121,52 @@ describe('Scenario1: add new project', () => {
 });
 
 describe('Scenario2: project modification', () => {
+  const project2: any = {};
+  Object.assign(project2, project);
+  project2.name = '5G21A';
+  const initData: any = {
+    syncCode: {
+      projects: [project, project2],
+    },
+    general: { serverList: new Set([project.serverAddr]) },
+  };
+  const fixture = new MainFixture({ initData });
   beforeEach(() => {
     fixture.visit('sync-code');
+    cy.get('[data-btn-type=sync]').should('be.enabled');
+    cy.get('nz-select').as('select').click();
   });
-  it.only('Case1: edit project', () => {
-    addNewProject(fixture);
+  it('Case1: edit project', () => {
+    // if no change happened, button should be disabled
+    cy.get('i[data-btn-type="editProject"]').children().first().click().wait(500);
+    saveBtnShouldBeDisabled();
+    // if there are changes, button should be enabled
+    cy.get('input[name="name"]').as('nameInput').clear();
+    cy.get('@nameInput').type('SBTS21A');
+    saveBtnShouldBeEnabled();
+    // if no change happened, button should back to be disabled
+    cy.get('@nameInput').clear();
+    cy.get('@nameInput').type(project.name);
+    saveBtnShouldBeDisabled();
+    // change name to 'SBTS21A' then click, the selected project should change to 'SBTS21A'
+    cy.get('@nameInput').clear();
+    cy.get('@nameInput').type('SBTS21A');
+    cy.get('button[data-btn-type="save"]').click();
+    selectedLabelShoudBe('SBTS21A');
   });
 
-  it('Case1: delete project', () => {});
+  it('Case1: delete project', () => {
+    cy.get('nz-option-item').children().last().click();
+    selectedLabelShoudBe('5G21A');
+    cy.get('nz-select').as('select').click();
+    cy.get('i[data-btn-type="editProject"]').children().last().click().wait(500);
+    cy.get('button[data-btn-type="delete"]').click();
+    selectedLabelShoudBe('TRUNK');
+  });
 });
 
 describe('Scenario3: sync code', () => {
+  const fixture = new MainFixture();
   beforeEach(() => {
     fixture.visit('profile');
     fullProfileInfoAndExpected();
