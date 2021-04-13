@@ -9,7 +9,7 @@ import { Store } from '@electron/app/store';
 import { MODEL_NAME } from '@oam-kit/utility/overall-config';
 
 export interface KitChannelOptions {
-  store: Store,
+  store: Store;
   mainWindow: BrowserWindow;
 }
 
@@ -32,29 +32,49 @@ export class KitChannel implements IpcChannelInterface {
     this.nsbAccount = gModel.get('profile').nsbAccount;
   }
 
-  private async serverDirectoryCheck(event: IpcMainEvent, req: IPCRequest<{ serverAddr: string; directory: string; }>) {
+  private async serverDirectoryCheck(event: IpcMainEvent, req: IPCRequest<{ serverAddr: string; directory: string }>) {
     const { serverAddr, directory } = req.data;
-    await this.ssh.connect({
-      host: serverAddr,
-      username: this.nsbAccount.username,
-      password: this.nsbAccount.password,
-    });
-    const { stderr } = await this.ssh.execCommand(`cd ${directory}`);
-    const isExistedDirectory = !!stderr;
-    const res: IPCResponse<boolean> = { isSuccessed: true, data: isExistedDirectory };
-    event.reply(req.responseChannel, res);
+    const res: IPCResponse<boolean> = { isSuccessed: true };
+    try {
+      await this.ssh.connect({
+        host: serverAddr,
+        username: this.nsbAccount.username,
+        password: this.nsbAccount.password,
+        debug(info: string) {
+          console.debug(info);
+        }
+      });
+      const { stderr } = await this.ssh.execCommand(`cd ${directory}`);
+      const isExistedDirectory = !!stderr;
+      res.data = isExistedDirectory;
+    } catch (error) {
+      res.error = { message: error.message };
+      res.isSuccessed = false;
+    } finally {
+      event.reply(req.responseChannel, res);
+    }
   }
 
   private async serverCheck(event: IpcMainEvent, req: IPCRequest<string>) {
     const serverAddr = req.data;
-    await this.ssh.connect({
-      host: serverAddr,
-      username: this.nsbAccount.username,
-      password: this.nsbAccount.password,
-    });
-    const res: IPCResponse<boolean> = { isSuccessed: true, data: this.ssh.isConnected() };
-    this.ssh.dispose();
-    event.reply(req.responseChannel, res);
+    const res: IPCResponse<boolean> = { isSuccessed: true };
+    try {
+      await this.ssh.connect({
+        host: serverAddr,
+        username: this.nsbAccount.username,
+        password: this.nsbAccount.password,
+        debug(info: string) {
+          console.debug(info);
+        }
+      });
+      res.data = this.ssh.isConnected();
+      this.ssh.dispose();
+    } catch (error) {
+      res.isSuccessed = false;
+      res.error = { message: error.message };
+    } finally {
+      event.reply(req.responseChannel, res);
+    }
   }
 
   private openExternalUrl(event: IpcMainEvent, req: IPCRequest<string>) {

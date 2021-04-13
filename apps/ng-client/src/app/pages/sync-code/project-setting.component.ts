@@ -117,7 +117,14 @@ export interface DialogRes {
       </form>
 
       <div *nzModalFooter>
-        <button nz-button data-btn-type="save" class="dialog_btn" [disabled]="!form.valid" nzType="primary" (click)="toSave()">
+        <button
+          nz-button
+          data-btn-type="save"
+          class="dialog_btn"
+          nzType="primary"
+          (click)="toSave()"
+          [disabled]="shouldDisableSaveButton()"
+        >
           Save
         </button>
         <button nz-button class="dialog_btn" *ngIf="isEdit" nzType="danger" (click)="toDelete()">Delete</button>
@@ -142,37 +149,47 @@ export class ProjectSettingComponent implements OnInit {
   public gModel: Model<GeneralModel>;
 
   serverAddrValidator = (control: FormControl) => {
-    const server = control.value;
+    const serverAddr = control.value;
     return new Observable((observer: Observer<ValidationErrors | null>) => {
-      this.ipcService
-        .send(IpcChannel.SERVER_CHECK_REQ, { responseChannel: IpcChannel.SERVER_CHECK_RES, data: server })
-        .then((res) => {
-          if (res.isSuccessed && !!res.data) {
-            observer.next(null);
-          } else {
-            observer.next({ error: true });
-          }
-          observer.complete();
-        });
+      if (serverAddr && this.project.serverAddr !== serverAddr) {
+        this.ipcService
+          .send(IpcChannel.SERVER_CHECK_REQ, { responseChannel: IpcChannel.SERVER_CHECK_RES, data: serverAddr })
+          .then((res) => {
+            if (res.isSuccessed && !!res.data) {
+              observer.next(null);
+            } else {
+              observer.next({ error: true });
+            }
+            observer.complete();
+          });
+      } else {
+        observer.next(null);
+        observer.complete();
+      }
     });
   };
 
-  remotePathValidate = (control: FormControl) => {
+  remotePathValidator = (control: FormControl) => {
     const remotePath = control.value;
     return new Observable((observer: Observer<ValidationErrors | null>) => {
-      this.ipcService
-        .send(IpcChannel.SERVER_DIRECTORY_CHECK_REQ, {
-          responseChannel: IpcChannel.SERVER_DIRECTORY_CHECK_RES,
-          data: { serverAddr: this.form.value.serverAddr, directory: remotePath },
-        })
-        .then((res) => {
-          if (res.isSuccessed && !!res.data) {
-            observer.next(null);
-          } else {
-            observer.next({ error: true });
-          }
-          observer.complete();
-        });
+      if (remotePath && this.project.remotePath !== remotePath) {
+        this.ipcService
+          .send(IpcChannel.SERVER_DIRECTORY_CHECK_REQ, {
+            responseChannel: IpcChannel.SERVER_DIRECTORY_CHECK_RES,
+            data: { serverAddr: this.form.value.serverAddr, directory: remotePath },
+          })
+          .then((res) => {
+            if (res.isSuccessed && !!res.data) {
+              observer.next(null);
+            } else {
+              observer.next({ error: true });
+            }
+            observer.complete();
+          });
+      } else {
+        observer.next(null);
+        observer.complete();
+      }
     });
   };
 
@@ -193,7 +210,7 @@ export class ProjectSettingComponent implements OnInit {
       name: [this.project.name, [Validators.required]],
       serverAddr: [this.project.serverAddr, [Validators.required], [this.serverAddrValidator]],
       localPath: [this.project.localPath, [Validators.required]],
-      remotePath: [this.project.remotePath, [Validators.required], [this.remotePathValidate]],
+      remotePath: [this.project.remotePath, [Validators.required], [this.remotePathValidator]],
     });
   }
 
@@ -222,5 +239,9 @@ export class ProjectSettingComponent implements OnInit {
     this.gModel.set('serverList', (draft) => {
       draft.add(value);
     });
+  }
+
+  public shouldDisableSaveButton() {
+    return this.form.invalid;
   }
 }

@@ -49,6 +49,13 @@ function fillAllProjectFields(fixture: MainFixture) {
     });
 }
 
+function addNewProject(fixture: MainFixture) {
+  cy.get('nz-select').as('select').click();
+  cy.get('a[data-btn-type="addBranch"]').click().wait(500);
+  fillAllProjectFields(fixture);
+  return cy.get('button[data-btn-type="save"]').click();
+}
+
 function selectServerAddr() {
   cy.get('nz-select[formcontrolname="serverAddr"]').click();
   return cy.get('nz-option-item').children().first().click();
@@ -109,20 +116,22 @@ describe('Scenario1: add new project', () => {
 });
 
 describe('Scenario2: project modification', () => {
-  it('Case1: edit project', () => {});
+  beforeEach(() => {
+    fixture.visit('sync-code');
+  });
+  it.only('Case1: edit project', () => {
+    addNewProject(fixture);
+  });
 
   it('Case1: delete project', () => {});
 });
 
-describe.only('Scenario3: sync code', () => {
+describe('Scenario3: sync code', () => {
   beforeEach(() => {
     fixture.visit('profile');
     fullProfileInfoAndExpected();
     fixture.navigate('Sync Code');
-    cy.get('nz-select').as('select').click();
-    cy.get('a[data-btn-type="addBranch"]').click().wait(500);
-    fillAllProjectFields(fixture);
-    cy.get('button[data-btn-type="save"]').click();
+    addNewProject(fixture);
     cy.get('[data-btn-type=sync]').click();
   });
   it('Case1: should be successfully when everything is fine.', () => {
