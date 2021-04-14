@@ -6,7 +6,7 @@ import { GeneralModel, IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/util
 import { BrowserWindow, dialog, IpcMainEvent, Notification, shell } from 'electron';
 import { NodeSSH } from 'node-ssh';
 import { Store } from '@electron/app/store';
-import { MODEL_NAME } from '@oam-kit/utility/overall-config';
+import { MODEL_NAME, sftp_algorithms } from '@oam-kit/utility/overall-config';
 
 export interface KitChannelOptions {
   store: Store;
@@ -40,13 +40,12 @@ export class KitChannel implements IpcChannelInterface {
         host: serverAddr,
         username: this.nsbAccount.username,
         password: this.nsbAccount.password,
-        debug(info: string) {
-          console.debug(info);
-        }
+        algorithms: sftp_algorithms,
       });
       const { stderr } = await this.ssh.execCommand(`cd ${directory}`);
-      const isExistedDirectory = !!stderr;
+      const isExistedDirectory = !stderr;
       res.data = isExistedDirectory;
+      this.ssh.dispose();
     } catch (error) {
       res.error = { message: error.message };
       res.isSuccessed = false;
@@ -63,9 +62,7 @@ export class KitChannel implements IpcChannelInterface {
         host: serverAddr,
         username: this.nsbAccount.username,
         password: this.nsbAccount.password,
-        debug(info: string) {
-          console.debug(info);
-        }
+        algorithms: sftp_algorithms,
       });
       res.data = this.ssh.isConnected();
       this.ssh.dispose();

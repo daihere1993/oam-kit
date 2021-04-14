@@ -82,6 +82,7 @@ export interface DialogRes {
           <nz-form-control [nzSm]="13">
             <nz-input-group [nzSuffix]="folderSelector">
               <input
+                #localPathInput
                 nz-input
                 name="localPath"
                 formControlName="localPath"
@@ -91,7 +92,7 @@ export interface DialogRes {
               />
             </nz-input-group>
             <ng-template #folderSelector>
-              <app-path-field [value]="project.localPath"></app-path-field>
+              <app-path-field [value]="project.localPath" (valueChange)="onLocalPathChange($event)"></app-path-field>
             </ng-template>
           </nz-form-control>
         </nz-form-item>
@@ -245,6 +246,10 @@ export class ProjectSettingComponent implements OnInit {
 
   public shouldDisableSaveButton() {
     return !(this.form.valid && this.isDirty());
+  }
+
+  public onLocalPathChange(value: string) {
+    this.form.controls.localPath.setValue(value);
   }
 
   private isDirty() {

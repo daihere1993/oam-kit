@@ -9,7 +9,7 @@ import { Store } from '@electron/app/store';
 import { SyncCodeStep } from '@oam-kit/sync-code';
 import { IpcMainEvent } from 'electron';
 import { getUserDataPath } from '@electron/app/utils';
-import { MODEL_NAME, modules as modulesConf } from '@oam-kit/utility/overall-config';
+import { MODEL_NAME, modules as modulesConf, sftp_algorithms } from '@oam-kit/utility/overall-config';
 import Logger from '@electron/app/utils/logger';
 
 const logger = Logger.for('SyncCode');
@@ -50,23 +50,26 @@ export class SyncCodeChannel implements IpcChannelInterface {
 
   private async connectServer(event: IpcMainEvent): Promise<any> {
     logger.info('connectServer: start.');
-    if (this.ssh.isConnected) {
-      return Promise.resolve();
-    } else {
-      try {
+
+    try {
+      if (this.ssh.isConnected()) {
+        return Promise.resolve();
+      } else {
         await this.ssh.connect({
           host: this.project.serverAddr,
           username: this.nsbAccount.username,
           password: this.nsbAccount.password,
+          algorithms: sftp_algorithms,
         });
-        logger.info('connectServer: done.');
-        const res: IpcResponse_ = { isSuccessed: true, data: SyncCodeStep.CONNECT_TO_SERVER };
-        event.reply(IpcChannel.SYNC_CODE_RES, res);
-      } catch (error) {
-        logger.error(error);
-        error.name = SyncCodeStep.CONNECT_TO_SERVER;
-        throw error;
       }
+    } catch (error) {
+      logger.error(error);
+      error.name = SyncCodeStep.CONNECT_TO_SERVER;
+      throw error;
+    } finally {
+      logger.info('connectServer: done.');
+      const res: IpcResponse_ = { isSuccessed: true, data: SyncCodeStep.CONNECT_TO_SERVER };
+      event.reply(IpcChannel.SYNC_CODE_RES, res);
     }
   }
 
@@ -117,7 +120,6 @@ export class SyncCodeChannel implements IpcChannelInterface {
     for (let i = 1; i < sections.length; i++) {
       const sec = sections[i];
       origins.push(sec.split('\r')[0]);
-      ``;
     }
     return origins;
   }
@@ -159,7 +161,7 @@ export class SyncCodeChannel implements IpcChannelInterface {
   }
 
   private preparePatchCmd() {
-    let cmd = `cd ${this.project.remotePath} && svn revert -R .`;
+    let cmd = `svn revert -R .`;
 
     if (this.addedFiles.length > 0) {
       cmd += ' && rm -rf ';

@@ -28,7 +28,6 @@ export class PathInputComponent implements OnDestroy {
   }
 
   public setValue(value: string) {
-    this.value = value;
     this.valueChange.emit(value);
   }
 
