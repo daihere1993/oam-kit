@@ -50,18 +50,24 @@ export interface DialogRes {
         <nz-form-item>
           <nz-form-label [nzSm]="8" nzRequired nzFor="name">Name</nz-form-label>
           <nz-form-control [nzSm]="13">
-            <input name="name" nz-input formControlName="name" />
+            <input nz-input name="name" data-test="project-name-input" formControlName="name" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label [nzSm]="8" nzRequired nzFor="serverAddr">Linsee/EECloud address</nz-form-label>
           <nz-form-control [nzSm]="13" [nzErrorTip]="serverAddrErrorTpl">
-            <nz-select nzShowSearch nzAllowClear formControlName="serverAddr" [nzDropdownRender]="dropdownRender">
+            <nz-select
+              nzShowSearch
+              nzAllowClear
+              data-test="server-addr-select"
+              formControlName="serverAddr"
+              [nzDropdownRender]="dropdownRender"
+            >
               <nz-option *ngFor="let server of serverList" [nzLabel]="server" [nzValue]="server"></nz-option>
             </nz-select>
             <ng-template #serverAddrErrorTpl let-control>
-              <p class="server-validation__allert">
+              <p data-test="server-addr-validation-alert">
                 Can't connect to {{ form.value.serverAddr }}, please make sure it is working.
               </p>
             </ng-template>
@@ -85,6 +91,7 @@ export interface DialogRes {
                 #localPathInput
                 nz-input
                 name="localPath"
+                data-test="local-project-path-input"
                 formControlName="localPath"
                 nz-tooltip
                 nzTooltipTrigger="focus"
@@ -101,15 +108,16 @@ export interface DialogRes {
           <nz-form-label [nzSm]="8" nzRequired nzFor="remotePath">Remote project path</nz-form-label>
           <nz-form-control [nzSm]="13" [nzErrorTip]="remotePathErrorTpl">
             <input
-              name="remotePath"
               nz-input
+              name="remotePath"
+              data-test="remote-project-path-input"
               formControlName="remotePath"
               nz-tooltip
               nzTooltipTrigger="focus"
               nzTooltipPlacement="topLeft"
             />
             <ng-template #remotePathErrorTpl let-control>
-              <p class="remote-path-validation__allert">
+              <p data-test="remote-project-path-validation-alert">
                 {{ form.value.remotePath }} does not exist in the {{ form.value.serverAddr }}
               </p>
             </ng-template>
@@ -120,7 +128,7 @@ export interface DialogRes {
       <div *nzModalFooter>
         <button
           nz-button
-          data-btn-type="save"
+          data-test="save-project-button"
           class="dialog_btn"
           nzType="primary"
           (click)="toSave()"
@@ -128,7 +136,7 @@ export interface DialogRes {
         >
           Save
         </button>
-        <button nz-button data-btn-type="delete" class="dialog_btn" *ngIf="isEdit" nzType="danger" (click)="toDelete()">
+        <button nz-button data-test="delete-project-button" class="dialog_btn" *ngIf="isEdit" nzType="danger" (click)="toDelete()">
           Delete
         </button>
         <button nz-button class="dialog_btn" (click)="toClose()">Close</button>

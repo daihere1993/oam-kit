@@ -1,7 +1,10 @@
+// @ts-check
+///<reference path="../global.d.ts" />
+
 import { SyncCodeStep } from '@oam-kit/sync-code';
-import { IpcChannel, Project } from '@oam-kit/utility/types';
+import { IpcChannel, Profile, Project } from '@oam-kit/utility/types';
+import { profileFixture, projectFixture } from '../fixtures/appData';
 import { MainFixture } from '../fixtures/mainFixture';
-import { fullProfileInfoAndExpected } from '../fixtures/profileFixture';
 
 function finishSyncStep(fixture: MainFixture, n: number, opt: { isSuccess: boolean; errorMsg?: string } = { isSuccess: true }) {
   let step: string;
@@ -32,147 +35,104 @@ function finishSyncStep(fixture: MainFixture, n: number, opt: { isSuccess: boole
 }
 
 function selectedLabelShoudBe(label: string) {
-  cy.wait(500).get('nz-select').find('nz-select-item').should('contain.text', label);
+  cy.wait(500).getBySel('project-select').find('nz-select-item').should('contain.text', label);
 }
-
-function fillAllProjectFields(fixture: MainFixture) {
-  cy.get('input[name="name"]').type(project.name);
-  cy.get('nz-select[formcontrolname="serverAddr"]').click();
-  selectServerAddr().then(() => {
-    fixture.simulateBackendResToClient(IpcChannel.SERVER_CHECK_RES, true);
-  });
-  cy.get('input[name="localPath"]').type(project.localPath);
-  cy.get('input[name="remotePath"]')
-    .type(project.remotePath)
-    .then(() => {
-      fixture.simulateBackendResToClient(IpcChannel.SERVER_DIRECTORY_CHECK_RES, true);
-    });
-}
-
-function addNewProject(fixture: MainFixture) {
-  cy.get('nz-select').as('select').click();
-  cy.get('a[data-btn-type="addBranch"]').click().wait(500);
-  fillAllProjectFields(fixture);
-  return cy.get('button[data-btn-type="save"]').click();
-}
-
-function selectServerAddr() {
-  cy.get('nz-select[formcontrolname="serverAddr"]').click();
-  return cy.get('nz-option-item').children().first().click();
-}
-
-function saveBtnShouldBeDisabled() {
-  cy.get('button[data-btn-type="save"]').should('be.disabled');
-}
-
-function saveBtnShouldBeEnabled() {
-  cy.get('button[data-btn-type="save"]').should('be.enabled');
-}
-
-const project: Project = {
-  name: 'TRUNK',
-  serverAddr: 'hzlinb35.china.nsn-net.net',
-  localPath: '/moam/trunk',
-  remotePath: '/var/fpwork/zowu/moam/trunk',
-};
 
 describe('Scenario1: add new project', () => {
   const fixture = new MainFixture();
   beforeEach(() => {
     fixture.visit('sync-code');
-    cy.get('nz-select').as('select').click();
-    cy.get('a[data-btn-type="addBranch"]').click().wait(500);
+    cy.getBySel('project-select').click();
+    cy.getBySel('add-project-button').click().wait(500);
   });
 
   it('Case1: remote address validation failed', () => {
-    selectServerAddr().then(() => {
-      fixture.simulateBackendResToClient(IpcChannel.SERVER_CHECK_RES, false);
-    });
-    cy.get('.server-validation__allert').should(
+    cy.getBySel('server-addr-select').click();
+    cy.get('nz-option-item').first().click();
+    cy.wait(100).then(() => fixture.simulateBackendResToClient(IpcChannel.SERVER_CHECK_RES, false));
+    cy.getBySel('server-addr-validation-alert').should(
       'include.text',
-      `Can't connect to hzlinb35.china.nsn-net.net, please make sure it is working.`
+      `Can't connect to ${projectFixture.serverAddr}, please make sure it is working.`
     );
-    saveBtnShouldBeDisabled();
+    cy.getBySel('save-project-button').should('be.disabled');
   });
 
   it('Case2: local project path validation failed', () => {});
 
   it('Case3: remote project path validation failed - path not exists', () => {
-    selectServerAddr().then(() => {
-      fixture.simulateBackendResToClient(IpcChannel.SERVER_CHECK_RES, true);
-    });
-    cy.get('input[name="remotePath"]')
-      .type(project.remotePath)
+    cy.getBySel('server-addr-select').click();
+    cy.get('nz-option-item').first().click();
+    cy.wait(100).then(() => fixture.simulateBackendResToClient(IpcChannel.SERVER_CHECK_RES, true));
+    cy.getBySel('remote-project-path-input')
+      .type(projectFixture.remotePath)
       .then(() => {
         fixture.simulateBackendResToClient(IpcChannel.SERVER_DIRECTORY_CHECK_RES, false);
       });
-    cy.get('.remote-path-validation__allert').should(
+    cy.getBySel('remote-project-path-validation-alert').should(
       'include.text',
-      `/var/fpwork/zowu/moam/trunk does not exist in the hzlinb35.china.nsn-net.net`
+      `${projectFixture.remotePath} does not exist in the ${projectFixture.serverAddr}`
     );
-    saveBtnShouldBeDisabled();
+    cy.getBySel('save-project-button').should('be.disabled');
   });
 
   it('Case4: the "selected project" should be the new project', () => {
-    fillAllProjectFields(fixture);
-    cy.get('button[data-btn-type="save"]').click();
-    selectedLabelShoudBe(project.name);
+    cy.fillAllProjectInfo(fixture, projectFixture);
+    cy.getBySel('save-project-button').click();
+    selectedLabelShoudBe(projectFixture.name);
   });
 });
 
 describe('Scenario2: project modification', () => {
   const project2: any = {};
-  Object.assign(project2, project);
+  Object.assign(project2, projectFixture);
   project2.name = '5G21A';
   const initData: any = {
     syncCode: {
-      projects: [project, project2],
+      projects: [projectFixture, project2],
     },
-    general: { serverList: new Set([project.serverAddr]) },
+    general: { serverList: new Set([projectFixture.serverAddr]) },
   };
   const fixture = new MainFixture({ initData });
   beforeEach(() => {
     fixture.visit('sync-code');
-    cy.get('[data-btn-type=sync]').should('be.enabled');
-    cy.get('nz-select').as('select').click();
+    cy.getBySel('sync-code-button').should('be.enabled');
+    cy.getBySel('project-select').click();
   });
   it('Case1: edit project', () => {
     // if no change happened, button should be disabled
-    cy.get('i[data-btn-type="editProject"]').children().first().click().wait(500);
-    saveBtnShouldBeDisabled();
+    cy.getBySel('edit-project-button').first().click().wait(500);
+    cy.getBySel('save-project-button').should('be.disabled');
     // if there are changes, button should be enabled
-    cy.get('input[name="name"]').as('nameInput').clear();
-    cy.get('@nameInput').type('SBTS21A');
-    saveBtnShouldBeEnabled();
+    cy.getBySel('project-name-input').clear();
+    cy.getBySel('project-name-input').type('SBTS21A');
+    cy.getBySel('save-project-button').should('be.enabled');
     // if no change happened, button should back to be disabled
-    cy.get('@nameInput').clear();
-    cy.get('@nameInput').type(project.name);
-    saveBtnShouldBeDisabled();
+    cy.getBySel('project-name-input').clear();
+    cy.getBySel('project-name-input').type(projectFixture.name);
+    cy.getBySel('save-project-button').should('be.disabled');
     // change name to 'SBTS21A' then click, the selected project should change to 'SBTS21A'
-    cy.get('@nameInput').clear();
-    cy.get('@nameInput').type('SBTS21A');
-    cy.get('button[data-btn-type="save"]').click();
+    cy.getBySel('project-name-input').clear();
+    cy.getBySel('project-name-input').type('SBTS21A');
+    cy.getBySel('save-project-button').click();
     selectedLabelShoudBe('SBTS21A');
   });
 
-  it('Case1: delete project', () => {
-    cy.get('nz-option-item').children().last().click();
+  it('Case2: delete project', () => {
+    cy.get('nz-option-item').last().click();
     selectedLabelShoudBe('5G21A');
-    cy.get('nz-select').as('select').click();
-    cy.get('i[data-btn-type="editProject"]').children().last().click().wait(500);
-    cy.get('button[data-btn-type="delete"]').click();
+    cy.getBySel('project-select').click();
+    cy.getBySel('edit-project-button').last().click().wait(500);
+    cy.getBySel('delete-project-button').click();
     selectedLabelShoudBe('TRUNK');
   });
 });
 
 describe('Scenario3: sync code', () => {
-  const fixture = new MainFixture();
+  const initData: any = { general: { profile: profileFixture }, syncCode: { projects: [projectFixture] } };
+  const fixture = new MainFixture({ initData });
   beforeEach(() => {
-    fixture.visit('profile');
-    fullProfileInfoAndExpected();
-    fixture.navigate('Sync Code');
-    addNewProject(fixture);
-    cy.get('[data-btn-type=sync]').click();
+    fixture.visit('sync-code');
+    cy.getBySel('sync-code-button').click();
   });
   it('Case1: should be successfully when everything is fine.', () => {
     cy.get('nz-step').should('have.length', 4);

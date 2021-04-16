@@ -40,7 +40,7 @@ import { Subject } from 'rxjs';
     <div class="logs-wrapper">
       <h2>Commit Logs</h2>
       <div class="logs-container">
-        <p class="logs__paragraph" *ngFor="let log of logs">
+        <p  data-test="log-paragraph" class="logs__paragraph" *ngFor="let log of logs">
           {{ log }}
         </p>
       </div>

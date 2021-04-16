@@ -28,14 +28,14 @@ import { Model } from '@oam-kit/utility/model';
         <nz-form-item>
           <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="username">Username</nz-form-label>
           <nz-form-control [nzSm]="14" [nzXs]="24">
-            <input nz-input name="username" formControlName="username" />
+            <input nz-input name="username" data-test="username-input" formControlName="username" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="password">Password</nz-form-label>
           <nz-form-control [nzSm]="14" [nzXs]="24">
-            <input nz-input name="password" type="password" formControlName="password" />
+            <input nz-input name="password" data-test="password-input" type="password" formControlName="password" />
           </nz-form-control>
         </nz-form-item>
 
@@ -43,7 +43,7 @@ import { Model } from '@oam-kit/utility/model';
           <nz-form-control [nzSpan]="14" [nzOffset]="6">
             <button
               nz-button
-              data-btn-type="save"
+              data-test="save-button"
               class="button__save"
               [disabled]="!form.valid"
               nzType="primary"

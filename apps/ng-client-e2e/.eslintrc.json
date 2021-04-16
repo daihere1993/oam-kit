@@ -5,8 +5,14 @@
     {
       "files": ["src/plugins/index.js"],
       "rules": {
-        "@typescript-eslint/no-var-requires": "off",
         "no-undef": "off"
+      }
+    },
+    {
+      "files": ["*.ts", "*.tsx"],
+      "rules": {
+        "@typescript-eslint/no-var-requires": "off",
+        "@typescript-eslint/triple-slash-reference": "off",
       }
     }
   ]

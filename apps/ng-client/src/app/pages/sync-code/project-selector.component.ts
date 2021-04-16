@@ -39,10 +39,11 @@ import { Model } from '@oam-kit/utility/model';
     </style>
     <div class="container">
       <nz-select
+        data-test="project-select"
         [ngModel]="selected"
-        (ngModelChange)="setSelection($event)"
         [disabled]="disabled"
         [nzDropdownRender]="addBranchOption"
+        (ngModelChange)="setSelection($event)"
       >
         <nz-option
           *ngFor="let project of projects; trackBy: trackFn"
@@ -52,13 +53,13 @@ import { Model } from '@oam-kit/utility/model';
         >
           <div class="option_container">
             <span>{{ project.name }}</span>
-            <i nz-icon data-btn-type="editProject" nzType="edit" nzTheme="outline" (click)="edit($event, project)"></i>
+            <i nz-icon data-test="edit-project-button" nzType="edit" nzTheme="outline" (click)="edit($event, project)"></i>
           </div>
         </nz-option>
         <ng-template #addBranchOption>
           <nz-divider></nz-divider>
           <div class="add_branch_container">
-            <a class="add_branch_btn" data-btn-type="addBranch" nz-button nzType="link" (click)="addBranch()">
+            <a class="add_branch_btn" data-test="add-project-button" nz-button nzType="link" (click)="addBranch()">
               <i nz-icon nzType="plus"></i>
               Add branch
             </a>

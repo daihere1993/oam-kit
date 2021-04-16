@@ -1,20 +1,20 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-namespace */
-// ***********************************************
-// This example commands.js shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
-// ***********************************************
-declare namespace Cypress {
-  interface Chainable<Subject> {
-    assertStepStatus(stepAlias: string, status: string): void;
-  }
-}
+// @ts-check
+///<reference path="../global.d.ts" />
 
-Cypress.Commands.add('assertStepStatus', (stepAlias: string, status: string) => {
-  cy.get(stepAlias).invoke('attr', 'ng-reflect-nz-status').should('contain', status);
+import { NotificationStatus } from '../types';
+import './custom-commands/sync-code.cmds';
+
+Cypress.Commands.add('getBySel', (selector, ...args) => {
+  return cy.get(`[data-test=${selector}]`, ...args);
 });
+
+Cypress.Commands.add("getBySelLike", (selector, ...args) => {
+  return cy.get(`[data-test*=${selector}]`, ...args);
+});
+
+Cypress.Commands.add('expectNotification', (status: NotificationStatus, message: string) => {
+  if (status === NotificationStatus.success) {
+    cy.get('[ng-reflect-nz-type=check-circle]').should('exist');
+    return cy.get('.ant-notification-notice-message').should('have.text', message);
+  }
+})

@@ -22,13 +22,22 @@ import { RbItem } from './auto-commit.component';
     <form nz-form [formGroup]="validateForm" nzLayout="inline">
       <nz-form-item>
         <nz-form-control nzHasFeedback nzValidatingTip="Validating..." [nzErrorTip]="linkErrorTpl">
-          <input #attachedLink class="rb-form__input" nz-input formControlName="link" placeholder="RB link" />
+          <input
+            #attachedLink
+            data-test="rblink-input"
+            class="rb-form__input"
+            nz-input
+            formControlName="link"
+            placeholder="RB link"
+          />
           <ng-template #linkErrorTpl let-control>
             <ng-container *ngIf="control.hasError('notValid')">
-              <p class="link-input__alert">Please input right RB link like: http://biedronka.emea.nsn-net.net/r/92555/</p>
+              <p data-test="rblink-validation-alert" class="link-input__alert">
+                Please input right RB link like: http://biedronka.emea.nsn-net.net/r/92555/
+              </p>
             </ng-container>
             <ng-container *ngIf="control.hasError('existed')">
-              <p class="link-input__alert">This RB has been attached.</p>
+              <p data-test="rblink-validation-alert" class="link-input__alert">This RB has been attached.</p>
             </ng-container>
           </ng-template>
         </nz-form-control>
@@ -38,7 +47,7 @@ import { RbItem } from './auto-commit.component';
           <button
             nz-button
             nzType="primary"
-            data-btn-type="attach"
+            data-test="attach-button"
             [disabled]="!validateForm.valid"
             [nzLoading]="isAttaching"
             (click)="attachRb(attachedLink.value)"

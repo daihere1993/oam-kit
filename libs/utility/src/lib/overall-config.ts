@@ -28,7 +28,6 @@ export const MODEL_INIT_VALUE: APPData = {
     serverList: new Set([
       'hzlinb35.china.nsn-net.net',
       'hzlinb36.china.nsn-net.net',
-      '10.181.196.220',
       'wrlinb119.emea.nsn-net.net',
     ]),
     profile: {

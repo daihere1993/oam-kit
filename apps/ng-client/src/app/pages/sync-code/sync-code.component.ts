@@ -23,7 +23,7 @@ import { MODEL_NAME } from '@oam-kit/utility/overall-config';
 
         <div class="sync_containner">
           <button
-            data-btn-type="sync"
+            data-test="sync-code-button"
             class="sync_button"
             nz-button
             [disabled]="!currentProject"
