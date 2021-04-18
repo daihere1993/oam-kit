@@ -74,8 +74,8 @@ export interface DialogRes {
             <ng-template #dropdownRender>
               <nz-divider></nz-divider>
               <div class="dropdown-render__containner">
-                <input #inputElement nz-input type="text" />
-                <a class="dropdown-render__button" (click)="onAddServer(inputElement.value)">
+                <input #inputElement data-test="new-server-addr-input" nz-input type="text" />
+                <a data-test="add-server-addr-button" class="dropdown-render__button" (click)="onAddServer(inputElement.value)">
                   <i nz-icon nzType="plus"></i>
                 </a>
               </div>
@@ -248,7 +248,7 @@ export class ProjectSettingComponent implements OnInit {
 
   public onAddServer(value: string) {
     this.gModel.set('serverList', (draft) => {
-      draft.add(value);
+      draft.push(value);
     });
   }
 

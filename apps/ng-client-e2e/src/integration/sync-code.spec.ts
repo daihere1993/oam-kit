@@ -2,7 +2,8 @@
 ///<reference path="../global.d.ts" />
 
 import { SyncCodeStep } from '@oam-kit/sync-code';
-import { IpcChannel, Profile, Project } from '@oam-kit/utility/types';
+import { MODEL_INIT_VALUE } from '@oam-kit/utility/overall-config';
+import { IpcChannel } from '@oam-kit/utility/types';
 import { profileFixture, projectFixture } from '../fixtures/appData';
 import { MainFixture } from '../fixtures/mainFixture';
 
@@ -75,7 +76,16 @@ describe('Scenario1: add new project', () => {
     cy.getBySel('save-project-button').should('be.disabled');
   });
 
-  it('Case4: the "selected project" should be the new project', () => {
+  it.only('Case4: add new server address', () => {
+    cy.getBySel('server-addr-select').click();
+    cy.getBySel('new-server-addr-input').type('test');
+    cy.getBySel('add-server-addr-button').click();
+    cy.get('nz-option-item').should('have.length', MODEL_INIT_VALUE.general.serverList.length + 1);
+    cy.get('nz-option-item').last().click();
+    cy.get('nz-select-item').should('contain.text', 'test');
+  });
+
+  it('Case5: the "selected project" should be the new project', () => {
     cy.fillAllProjectInfo(fixture, projectFixture);
     cy.getBySel('save-project-button').click();
     selectedLabelShoudBe(projectFixture.name);

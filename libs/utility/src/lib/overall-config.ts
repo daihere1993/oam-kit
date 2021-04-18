@@ -25,11 +25,11 @@ export enum MODEL_NAME {
 }
 export const MODEL_INIT_VALUE: APPData = {
   general: {
-    serverList: new Set([
+    serverList: [
       'hzlinb35.china.nsn-net.net',
       'hzlinb36.china.nsn-net.net',
       'wrlinb119.emea.nsn-net.net',
-    ]),
+    ],
     profile: {
       svnAccount: { password: null },
       nsbAccount: { username: null, password: null },
