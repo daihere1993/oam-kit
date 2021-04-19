@@ -11,7 +11,7 @@ export function getTestDir(): string {
 
 export function getUserDataPath(): string {
   if (app || remote) {
-    return (app || remote.app).getPath('userData');
+    return path.join((app || remote.app).getPath('userData'), '/data');
   }
   return path.join(getTestDir(), 'tmp');
 }
