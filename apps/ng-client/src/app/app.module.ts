@@ -24,6 +24,7 @@ registerLocaleData(en);
 import { NZ_I18N, en_US } from 'ng-zorro-antd/i18n';
 import { AutoCommitModule } from './pages/auto-commit/auto-commit.module';
 import { StoreService } from './core/services/store.service';
+import { AuthService } from './core/services/auth.service';
 
 @NgModule({
   declarations: [AppComponent],
@@ -50,6 +51,12 @@ import { StoreService } from './core/services/store.service';
       deps: [StoreService],
       provide: APP_INITIALIZER,
       useFactory: (store: StoreService) => { return () => store.load() }
+    },
+    {
+      multi: true,
+      deps: [AuthService],
+      provide: APP_INITIALIZER,
+      useFactory: (auth: AuthService) => { return () => auth.load() }
     },
     { provide: NZ_I18N, useValue: en_US },
   ],

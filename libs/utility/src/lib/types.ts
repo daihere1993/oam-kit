@@ -101,6 +101,8 @@ export enum IpcChannel {
   SVN_COMMIT_RES = 'svn_commit_res',
   GET_PARTIAL_RB_REQ = 'get_partial_rb_req',
   GET_PARTIAL_RB_RES = 'get_partial_rb_res',
+  AUTH_VERIFICATION_REQ = 'auth_verification_req',
+  AUTH_VERIFICATION_RES = 'auth_verification_res',
 }
 
 export interface IPCRequest<T> {

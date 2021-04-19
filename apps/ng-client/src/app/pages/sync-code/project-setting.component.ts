@@ -117,9 +117,16 @@ export interface DialogRes {
               nzTooltipPlacement="topLeft"
             />
             <ng-template #remotePathErrorTpl let-control>
-              <p data-test="remote-project-path-validation-alert">
-                {{ form.value.remotePath }} does not exist in the {{ form.value.serverAddr }}
-              </p>
+              <ng-container *ngIf="control.hasError('serverAddrIsEmpty')">
+                <p data-test="remote-project-path-validation-alert">
+                  Please select a server address before input remote project path
+                </p>
+              </ng-container>
+              <ng-container *ngIf="control.hasError('notExisted')">
+                <p data-test="remote-project-path-validation-alert">
+                  {{ form.value.remotePath }} does not exist in the {{ form.value.serverAddr }}
+                </p>
+              </ng-container>
             </ng-template>
           </nz-form-control>
         </nz-form-item>
@@ -190,7 +197,10 @@ export class ProjectSettingComponent implements OnInit {
   remotePathValidator = (control: FormControl) => {
     return new Observable((observer: Observer<ValidationErrors | null>) => {
       const remotePath = control.value;
-      if (remotePath && this.data.remotePath !== remotePath) {
+      if (!this.form.value.serverAddr) {
+        observer.next({ error: true, serverAddrIsEmpty: true });
+        observer.complete();
+      } else if (remotePath && this.data.remotePath !== remotePath) {
         this.ipcService
           .send(IpcChannel.SERVER_DIRECTORY_CHECK_REQ, {
             responseChannel: IpcChannel.SERVER_DIRECTORY_CHECK_RES,
@@ -200,7 +210,7 @@ export class ProjectSettingComponent implements OnInit {
             if (res.isSuccessed && !!res.data) {
               observer.next(null);
             } else {
-              observer.next({ error: true });
+              observer.next({ error: true, notExisted: true });
             }
             observer.complete();
           });
