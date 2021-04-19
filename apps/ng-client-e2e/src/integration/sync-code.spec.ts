@@ -76,7 +76,7 @@ describe('Scenario1: add new project', () => {
     cy.getBySel('save-project-button').should('be.disabled');
   });
 
-  it.only('Case4: add new server address', () => {
+  it('Case4: add new server address', () => {
     cy.getBySel('server-addr-select').click();
     cy.getBySel('new-server-addr-input').type('test');
     cy.getBySel('add-server-addr-button').click();
@@ -151,25 +151,25 @@ describe('Scenario3: sync code', () => {
     cy.get('nz-step').eq(2).as('third');
     cy.get('nz-step').eq(3).as('fourth');
     cy.assertStepStatus('@first', 'process');
-    cy.wait(1000)
+    cy.wait(500)
       .then(finishSyncStep.bind(this, fixture, 1))
       .then(() => {
         cy.assertStepStatus('@first', 'finish');
         cy.assertStepStatus('@second', 'process');
       });
-    cy.wait(1000)
+    cy.wait(500)
       .then(finishSyncStep.bind(this, fixture, 2))
       .then(() => {
         cy.assertStepStatus('@second', 'finish');
         cy.assertStepStatus('@third', 'process');
       });
-    cy.wait(1000)
+    cy.wait(500)
       .then(finishSyncStep.bind(this, fixture, 3))
       .then(() => {
         cy.assertStepStatus('@third', 'finish');
         cy.assertStepStatus('@fourth', 'process');
       });
-    cy.wait(1000)
+    cy.wait(500)
       .then(finishSyncStep.bind(this, fixture, 4))
       .then(() => {
         cy.assertStepStatus('@fourth', 'finish');
@@ -178,16 +178,16 @@ describe('Scenario3: sync code', () => {
 
   it('Case2: step1 failed, then alter error message.', () => {
     const errorMsg = 'Step1 failed';
-    cy.wait(1000).then(finishSyncStep.bind(this, fixture, 1, { isSuccess: false, errorMsg }));
+    cy.wait(500).then(finishSyncStep.bind(this, fixture, 1, { isSuccess: false, errorMsg }));
     cy.get('[ng-reflect-nz-type=close-circle]').should('exist');
     cy.get('.ant-notification-notice-description').should('have.text', errorMsg);
   });
   it('Case3: step2 failed, then alter error message.', () => {
     const errorMsg = 'Step2 failed';
-    cy.wait(1000)
+    cy.wait(500)
       .then(() => {
         finishSyncStep(fixture, 1);
-        return cy.wait(1000);
+        return cy.wait(500);
       })
       .then(() => {
         finishSyncStep(fixture, 2, { isSuccess: false, errorMsg });
@@ -197,14 +197,14 @@ describe('Scenario3: sync code', () => {
   });
   it('Case4: step3 failed, then alter error message.', () => {
     const errorMsg = 'Step3 failed';
-    cy.wait(1000)
+    cy.wait(500)
       .then(() => {
         finishSyncStep(fixture, 1);
-        return cy.wait(1000);
+        return cy.wait(500);
       })
       .then(() => {
         finishSyncStep(fixture, 2);
-        return cy.wait(1000);
+        return cy.wait(500);
       })
       .then(() => {
         finishSyncStep(fixture, 3, { isSuccess: false, errorMsg });
@@ -214,18 +214,18 @@ describe('Scenario3: sync code', () => {
   });
   it('Case5: step4 failed, then alter error message.', () => {
     const errorMsg = 'Step4 failed';
-    cy.wait(1000)
+    cy.wait(500)
       .then(() => {
         finishSyncStep(fixture, 1);
-        return cy.wait(1000);
+        return cy.wait(500);
       })
       .then(() => {
         finishSyncStep(fixture, 2);
-        return cy.wait(1000);
+        return cy.wait(500);
       })
       .then(() => {
         finishSyncStep(fixture, 3);
-        return cy.wait(1000);
+        return cy.wait(500);
       })
       .then(() => {
         finishSyncStep(fixture, 4, { isSuccess: false, errorMsg });

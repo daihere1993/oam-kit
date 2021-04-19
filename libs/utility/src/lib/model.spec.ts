@@ -1,5 +1,5 @@
 import { Model } from './model';
-import { Project, SyncCodeModel } from ''@oam-kit/utility/types'';
+import { Project, SyncCodeModel } from '@oam-kit/utility/types';
 
 const initValue = {
   type: 'A',

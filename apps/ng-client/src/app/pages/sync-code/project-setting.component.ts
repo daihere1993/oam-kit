@@ -56,7 +56,7 @@ export interface DialogRes {
 
         <nz-form-item>
           <nz-form-label [nzSm]="8" nzRequired nzFor="serverAddr">Linsee/EECloud address</nz-form-label>
-          <nz-form-control [nzSm]="13" [nzErrorTip]="serverAddrErrorTpl">
+          <nz-form-control [nzSm]="13" nzHasFeedback nzValidatingTip="Validating..." [nzErrorTip]="serverAddrErrorTpl">
             <nz-select
               nzShowSearch
               nzAllowClear
@@ -99,14 +99,14 @@ export interface DialogRes {
               />
             </nz-input-group>
             <ng-template #folderSelector>
-              <app-path-field [value]="project.localPath" (valueChange)="onLocalPathChange($event)"></app-path-field>
+              <app-path-field [value]="data.localPath" (valueChange)="onLocalPathChange($event)"></app-path-field>
             </ng-template>
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label [nzSm]="8" nzRequired nzFor="remotePath">Remote project path</nz-form-label>
-          <nz-form-control [nzSm]="13" [nzErrorTip]="remotePathErrorTpl">
+          <nz-form-control [nzSm]="13" nzHasFeedback nzValidatingTip="Validating..." [nzErrorTip]="remotePathErrorTpl">
             <input
               nz-input
               name="remotePath"
@@ -131,38 +131,45 @@ export interface DialogRes {
           data-test="save-project-button"
           class="dialog_btn"
           nzType="primary"
-          (click)="toSave()"
+          (click)="save()"
           [disabled]="shouldDisableSaveButton()"
         >
           Save
         </button>
-        <button nz-button data-test="delete-project-button" class="dialog_btn" *ngIf="isEdit" nzType="danger" (click)="toDelete()">
+        <button
+          nz-button
+          data-test="delete-project-button"
+          class="dialog_btn"
+          *ngIf="isEdit"
+          nzType="danger"
+          (click)="delete()"
+        >
           Delete
         </button>
-        <button nz-button class="dialog_btn" (click)="toClose()">Close</button>
+        <button nz-button class="dialog_btn" (click)="close()">Close</button>
       </div>
     </div>
   `,
 })
 export class ProjectSettingComponent implements OnInit {
-  @Input() project: Project = {
+  @Input() data: Project = {
     name: null,
     serverAddr: null,
     localPath: null,
     remotePath: null,
   };
-  @Input() isEdit: boolean;
 
   @ViewChild(NzSelectComponent) selectComp: NzSelectComponent;
 
   public form: FormGroup;
+  public isEdit: boolean;
   public serverList: string[];
   public gModel: Model<GeneralModel>;
 
   serverAddrValidator = (control: FormControl) => {
-    const serverAddr = control.value;
     return new Observable((observer: Observer<ValidationErrors | null>) => {
-      if (serverAddr && this.project.serverAddr !== serverAddr) {
+      const serverAddr = control.value;
+      if (serverAddr && this.data.serverAddr !== serverAddr) {
         this.ipcService
           .send(IpcChannel.SERVER_CHECK_REQ, { responseChannel: IpcChannel.SERVER_CHECK_RES, data: serverAddr })
           .then((res) => {
@@ -181,9 +188,9 @@ export class ProjectSettingComponent implements OnInit {
   };
 
   remotePathValidator = (control: FormControl) => {
-    const remotePath = control.value;
     return new Observable((observer: Observer<ValidationErrors | null>) => {
-      if (remotePath && this.project.remotePath !== remotePath) {
+      const remotePath = control.value;
+      if (remotePath && this.data.remotePath !== remotePath) {
         this.ipcService
           .send(IpcChannel.SERVER_DIRECTORY_CHECK_REQ, {
             responseChannel: IpcChannel.SERVER_DIRECTORY_CHECK_RES,
@@ -213,19 +220,20 @@ export class ProjectSettingComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.isEdit = !!this.data.name;
     this.gModel = this.store.getModel<GeneralModel>(MODEL_NAME.GENERAL);
     this.gModel.subscribe<string[]>('serverList', (data) => {
       this.serverList = data;
     });
     this.form = this.fb.group({
-      name: [this.project.name, [Validators.required]],
-      serverAddr: [this.project.serverAddr, [Validators.required], [this.serverAddrValidator]],
-      localPath: [this.project.localPath, [Validators.required]],
-      remotePath: [this.project.remotePath, [Validators.required], [this.remotePathValidator]],
+      name: [this.data.name, [Validators.required]],
+      serverAddr: [this.data.serverAddr, [Validators.required], [this.serverAddrValidator]],
+      localPath: [this.data.localPath, [Validators.required]],
+      remotePath: [this.data.remotePath, [Validators.required], [this.remotePathValidator]],
     });
   }
 
-  public toSave(): void {
+  public save(): void {
     this.modal.close({
       action: DialogAction.SAVE,
       content: this.form.value,
@@ -233,14 +241,14 @@ export class ProjectSettingComponent implements OnInit {
     this.notification.create('success', 'Success', '', { nzPlacement: 'bottomRight', nzDuration: 1000 });
   }
 
-  public toDelete(): void {
+  public delete(): void {
     this.modal.close({
       action: DialogAction.DELETE,
       content: this.form.value,
     });
   }
 
-  public toClose(): void {
+  public close(): void {
     this.modal.close({
       action: DialogAction.CANCEL,
     });
@@ -261,8 +269,8 @@ export class ProjectSettingComponent implements OnInit {
   }
 
   private isDirty() {
-    for (const key in this.project) {
-      if (this.form?.value[key] !== this.project[key]) {
+    for (const key in this.data) {
+      if (this.form?.value[key] !== this.data[key]) {
         return true;
       }
     }

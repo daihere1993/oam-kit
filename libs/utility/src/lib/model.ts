@@ -1,5 +1,5 @@
 import produce from 'immer';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import * as dotProp from 'dot-prop';
 
 interface ModelOptions<T> {
@@ -82,12 +82,6 @@ export class Model<T> {
   subscribe<R>(key: any, cb: (data: any) => void) {
     const getter = this.get.bind(this, key);
     let currentValue: R = getter();
-    const observer = new BehaviorSubject<R>(null);
-    observer.subscribe((data) => {
-      if (data) {
-        cb(data);
-      }
-    });
     cb(currentValue);
     this.change.subscribe((data) => {
       const newValue = getter();

@@ -10,7 +10,7 @@ import { Model } from '@oam-kit/utility/model';
   selector: 'app-project-selector',
   template: `
     <style>
-      :host(branch-selector) {
+      :host(app-project-selector) {
         display: block;
       }
       .container {
@@ -22,7 +22,7 @@ import { Model } from '@oam-kit/utility/model';
         justify-content: space-between;
         align-items: center;
       }
-      .add_branch_container {
+      .add_project_container {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -42,7 +42,7 @@ import { Model } from '@oam-kit/utility/model';
         data-test="project-select"
         [ngModel]="selected"
         [disabled]="disabled"
-        [nzDropdownRender]="addBranchOption"
+        [nzDropdownRender]="addProjectOption"
         (ngModelChange)="setSelection($event)"
       >
         <nz-option
@@ -56,12 +56,12 @@ import { Model } from '@oam-kit/utility/model';
             <i nz-icon data-test="edit-project-button" nzType="edit" nzTheme="outline" (click)="edit($event, project)"></i>
           </div>
         </nz-option>
-        <ng-template #addBranchOption>
+        <ng-template #addProjectOption>
           <nz-divider></nz-divider>
-          <div class="add_branch_container">
-            <a class="add_branch_btn" data-test="add-project-button" nz-button nzType="link" (click)="addBranch()">
+          <div class="add_project_container">
+            <a data-test="add-project-button" nz-button nzType="link" (click)="edit($event)">
               <i nz-icon nzType="plus"></i>
-              Add branch
+              Add project
             </a>
           </div>
         </ng-template>
@@ -94,45 +94,42 @@ export class ProjectSelectorComponent implements OnInit {
     });
   }
 
-  public addBranch(): void {
-    this.modalService
-      .create({ nzContent: ProjectSettingComponent, nzWidth: 600 })
-      .afterClose.subscribe(({ content, action }: DialogRes = { content: null, action: null }) => {
-        if (action === DialogAction.SAVE) {
-          this.setSelection(content);
-          this.model.set('projects', (draft) => {
-            draft.push(content);
-          });
-        }
-      });
-  }
-
   public setSelection(value: Project) {
     this.selected = value;
     this.projectChange.emit(value);
   }
 
-  public edit(e: Event, project: Project): void {
-    const isEditSelectedBranch = this.selected.name === project.name;
+  public edit(e: Event, project?: Project): void {
+    const isAddAction = !project;
+    const isEditSelectedProject = project?.name === this.selected?.name;
+    const nzComponentParams = isAddAction ? null : { data: project };
     this.modalService
       .create({
         nzWidth: 600,
         nzContent: ProjectSettingComponent,
-        nzComponentParams: { project, isEdit: true },
+        nzComponentParams,
       })
       .afterClose.subscribe(({ content, action }: DialogRes = { content: null, action: null }) => {
         if (action === DialogAction.SAVE) {
-          if (isEditSelectedBranch) {
+          if (isAddAction) {
+            // select added project
             this.setSelection(content);
+            this.model.set('projects', (draft) => {
+              draft.push(content);
+            });
+          } else {
+            if (isEditSelectedProject) {
+              this.setSelection(content);
+            }
+            this.model.set('projects', (draft) => {
+              Object.assign(
+                draft.find((item) => item.name === project.name),
+                content
+              );
+            });
           }
-          this.model.set('projects', (draft) => {
-            Object.assign(
-              draft.find((item) => item.name === project.name),
-              content
-            );
-          });
         } else if (action === DialogAction.DELETE) {
-          if (isEditSelectedBranch) {
+          if (isEditSelectedProject) {
             this.setSelection(null);
           }
           this.model.set('projects', (draft) => {

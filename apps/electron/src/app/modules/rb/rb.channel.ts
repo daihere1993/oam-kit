@@ -54,6 +54,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
   private cookies = '';
   // Cache partialrb for corresponding rb id
   private cachedPartialRb: { [key: string]: PartialRb } = {};
+  private gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
 
   constructor(private store: Store) {
     super();
@@ -326,9 +327,8 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
 
   private async setupSvnCredentials(rbId: number) {
     logger.info('[setupSvnCredentials] start');
-    const gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
-    const nsbAccount = gModel.get('profile').nsbAccount;
-    const svnAccount = gModel.get('profile').svnAccount;
+    const nsbAccount = this.gModel.get('profile').nsbAccount;
+    const svnAccount = this.gModel.get('profile').svnAccount;
     const url = this.getUrlFromTmp(SETUP_SVN_CREDENTIALS, rbId);
     try {
       const { data } = await axios.post(url, `svn_username=${nsbAccount.username}&svn_password=${svnAccount.password}`, {
@@ -359,8 +359,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
    * the seesionid exists in the response header of "set-cookie"
    */
   private async setupRbSessionId(rbId: number) {
-    const gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
-    const nsbAccount = gModel.get('profile').nsbAccount;
+    const nsbAccount = this.gModel.get('profile').nsbAccount;
     try {
       const { headers } = await axios.post(SETUP_RBSESSION_URL, `review_request_id=${rbId}`, {
         headers: {

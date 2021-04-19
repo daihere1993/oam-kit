@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import { NodeSSH } from 'node-ssh';
 import { promisify } from 'util';
 import { IpcChannelInterface } from '@electron/app/interfaces';
-import { GeneralModel, Project, IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/utility/types';
+import { GeneralModel, Project, IpcChannel, IPCRequest, IPCResponse, Profile } from '@oam-kit/utility/types';
 import { Store } from '@electron/app/store';
 import { SyncCodeStep } from '@oam-kit/sync-code';
 import { IpcMainEvent } from 'electron';
@@ -29,7 +29,9 @@ export class SyncCodeChannel implements IpcChannelInterface {
 
   constructor(private store: Store) {
     const gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
-    this.nsbAccount = gModel.get('profile').nsbAccount;
+     gModel.subscribe<Profile>('profile', (profile) => {
+      this.nsbAccount = profile.nsbAccount;
+     });
   }
 
   private handle(event: IpcMainEvent, request: IPCRequest<Project>): void {

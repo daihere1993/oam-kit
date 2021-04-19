@@ -2,7 +2,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import { IpcChannelInterface } from '@electron/app/interfaces';
-import { GeneralModel, IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/utility/types';
+import { GeneralModel, IpcChannel, IPCRequest, IPCResponse, Profile } from '@oam-kit/utility/types';
 import { BrowserWindow, dialog, IpcMainEvent, Notification, shell } from 'electron';
 import { NodeSSH } from 'node-ssh';
 import { Store } from '@electron/app/store';
@@ -29,7 +29,9 @@ export class KitChannel implements IpcChannelInterface {
   constructor(options: KitChannelOptions) {
     this.options = options;
     const gModel = this.options.store.get<GeneralModel>(MODEL_NAME.GENERAL);
-    this.nsbAccount = gModel.get('profile').nsbAccount;
+    gModel.subscribe<Profile>('profile', (profile) => {
+      this.nsbAccount = profile.nsbAccount;
+    });
   }
 
   private async serverDirectoryCheck(event: IpcMainEvent, req: IPCRequest<{ serverAddr: string; directory: string }>) {
