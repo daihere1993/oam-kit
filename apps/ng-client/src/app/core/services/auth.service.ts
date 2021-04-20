@@ -1,27 +1,24 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { MODEL_NAME } from '@oam-kit/utility/overall-config';
-import { GeneralModel, IpcChannel } from '@oam-kit/utility/types';
-import { ElectronService } from './electron.service';
-import { IpcService } from './ipc.service';
+import { GeneralModel } from '@oam-kit/utility/types';
 import { StoreService } from './store.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  constructor(private electronService: ElectronService, private ipcService: IpcService, private store: StoreService) {}
+  constructor(private store: StoreService, private router: Router) {}
 
   async load() {
-    if (this.electronService.isElectron) {
-      const gModel = this.store.getModel<GeneralModel>(MODEL_NAME.GENERAL);
-      const profile = gModel.get('profile');
-      // const isEmpty = this.isEmpty(profile.nsbAccount) || this.isEmpty(profile.svnAccount);
-      const res = await this.ipcService.send(IpcChannel.AUTH_VERIFICATION_REQ, {
-        responseChannel: IpcChannel.AUTH_VERIFICATION_RES,
-      });
-      if (res.isSuccessed) {
-        console.log(res);
-      }
-    } else {
-      return Promise.resolve();
+    if (this.isEmptyAccount()) {
+      this.router.navigateByUrl('profile');
     }
+  }
+
+  private isEmptyAccount() {
+    const gModel = this.store.getModel<GeneralModel>(MODEL_NAME.GENERAL);
+    const profile = gModel.get('profile');
+    const nsbAccount = profile.nsbAccount;
+    const svnAccount = profile.svnAccount;
+    return !nsbAccount.password || !nsbAccount.username || !svnAccount.password;
   }
 }

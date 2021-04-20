@@ -1,5 +1,6 @@
 import { IpcChannel } from '@oam-kit/utility/types';
 import { MainFixture } from '../fixtures/mainFixture';
+import { initDataFixture } from '../fixtures/appData';
 import { getStringFromTemplate } from '@oam-kit/utility/utils';
 import { LOG_TEMPLATES, LOG_TYPE } from '@oam-kit/logger';
 import { LockInfo, ReviewBoard } from '@oam-kit/utility/types';
@@ -98,7 +99,7 @@ function actionCellShouldBackToNormal() {
 }
 
 describe('Scenario1: RB Attach', () => {
-  const fixture = new MainFixture();
+  const fixture = new MainFixture({ initData: initDataFixture });
   describe('1. Input validation', () => {
     beforeEach(() => {
       fixture.visit('auto-commit');
@@ -144,7 +145,7 @@ describe('Scenario1: RB Attach', () => {
 });
 
 describe('Scenario2: Commit code', () => {
-  const fixture = new MainFixture();
+  const fixture = new MainFixture({ initData: initDataFixture });
   describe('1. Check if RB is ready', () => {
     beforeEach(() => {
       fixture.visit('auto-commit');
@@ -230,7 +231,7 @@ describe('Scenario2: Commit code', () => {
 });
 
 describe('Scenario3: Cancel RB commit', () => {
-  const fixture = new MainFixture();
+  const fixture = new MainFixture({ initData: initDataFixture });
   beforeEach(() => {
     fixture.visit('auto-commit');
     attachRb(link, fixture);

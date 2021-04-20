@@ -38,8 +38,7 @@ export class MainFixture {
   private updateData(data: Partial<APPData> = MODEL_INIT_VALUE) {
     const cb = this.ipcResponseCallbackMap[IpcChannel.GET_APP_DATA_RES];
     if (!cb) throw new Error(`Didn't listen IpcChannel.GET_APP_DATA_RES.`);
-    // To totally immulate electron store, need use different object reference for each response
-    const res: IPCResponse<Partial<APPData>> = { isSuccessed: true, data: cloneDeep(data) };
+    const res: IPCResponse<Partial<APPData>> = { isSuccessed: true, data: data };
     cb(null, res);
   }
 

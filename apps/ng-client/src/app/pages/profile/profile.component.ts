@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import { GeneralModel, Profile } from '@oam-kit/utility/types';
+import { GeneralModel, IpcChannel, Profile } from '@oam-kit/utility/types';
 import { StoreService } from '@ng-client/core/services/store.service';
 import { MODEL_NAME } from '@oam-kit/utility/overall-config';
 import { Model } from '@oam-kit/utility/model';
+import { IpcService } from '@ng-client/core/services/ipc.service';
 
 @Component({
   selector: 'app-profile',
@@ -26,16 +27,31 @@ import { Model } from '@oam-kit/utility/model';
     <div class="container">
       <form nz-form [formGroup]="form">
         <nz-form-item>
-          <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="username">Username</nz-form-label>
+          <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="nsbUsername">NSB Username</nz-form-label>
           <nz-form-control [nzSm]="14" [nzXs]="24">
-            <input nz-input name="username" data-test="username-input" formControlName="username" />
+            <input nz-input name="nsbUsername" data-test="nsb-username-input" formControlName="nsbUsername" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
-          <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="password">Password</nz-form-label>
+          <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="nsbPassword">NSB Password</nz-form-label>
           <nz-form-control [nzSm]="14" [nzXs]="24">
-            <input nz-input name="password" data-test="password-input" type="password" formControlName="password" />
+            <input nz-input name="nsbPassword" data-test="nsb-password-input" type="password" formControlName="nsbPassword" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="svnPassword">SVN Password</nz-form-label>
+          <nz-form-control [nzSm]="14" [nzXs]="24">
+            <input nz-input name="svnPassword" type="password" data-test="svn-password-input" formControlName="svnPassword" />
+            <label
+              nz-checkbox
+              data-test="same-password-checkbox"
+              (ngModelChange)="onCheckboxChange($event)"
+              formControlName="isSamePassword"
+            >
+              Same svn password like nsb password
+            </label>
           </nz-form-control>
         </nz-form-item>
 
@@ -45,11 +61,12 @@ import { Model } from '@oam-kit/utility/model';
               nz-button
               data-test="save-button"
               class="button__save"
-              [disabled]="!form.valid"
               nzType="primary"
-              (click)="toSave()"
+              (click)="save()"
+              [disabled]="shouldSaveButtonDisabeld()"
+              [nzLoading]="isSaving"
             >
-              Save
+              {{ isSaving ? 'Auth validating...' : 'Save' }}
             </button>
           </nz-form-control>
         </nz-form-item>
@@ -61,24 +78,90 @@ import { Model } from '@oam-kit/utility/model';
 export class ProfileComponent {
   public form: FormGroup;
   public profile: Profile;
+  public isSaving = false;
 
   private gModel: Model<GeneralModel>;
 
-  constructor(private fb: FormBuilder, private notification: NzNotificationService, private store: StoreService) {
+  constructor(
+    private fb: FormBuilder,
+    private notification: NzNotificationService,
+    private store: StoreService,
+    private ipcService: IpcService,
+    private cdf: ChangeDetectorRef
+  ) {
     this.gModel = this.store.getModel<GeneralModel>(MODEL_NAME.GENERAL);
     this.gModel.subscribe<Profile>('profile', (data) => {
       this.profile = data;
     });
     this.form = this.fb.group({
-      username: [this.profile?.nsbAccount.username, [Validators.required]],
-      password: [this.profile?.nsbAccount.password, [Validators.required]],
+      nsbUsername: [this.profile?.nsbAccount.username, [Validators.required]],
+      nsbPassword: [this.profile?.nsbAccount.password, [Validators.required]],
+      svnPassword: [{ value: this.profile?.svnAccount.password, disabled: true }, [Validators.required]],
+      isSamePassword: [true],
     });
   }
 
-  public toSave(): void {
-    this.gModel.set('profile', (draft) => {
-      draft.nsbAccount = this.form.value;
-    });
-    this.notification.create('success', 'Success', '', { nzPlacement: 'bottomRight' });
+  public save(): void {
+    this.isSaving = true;
+    const nsbAccount = this.form.value.nsbAccount;
+    const nsbPassword = this.form.value.nsbPassword;
+    const svnPassword = this.form.value.svnPassword;
+    Promise.all([
+      this.ipcService.send(IpcChannel.NSB_ACCOUNT_VERIFICATION_REQ, {
+        responseChannel: IpcChannel.NSB_ACCOUNT_VERIFICATION_RES,
+        data: { nsbAccount, nsbPassword },
+      }),
+      this.ipcService.send(IpcChannel.SVN_ACCOUNT_VERIFICATION_REQ, {
+        responseChannel: IpcChannel.SVN_ACCOUNT_VERIFICATION_RES,
+        data: { nsbAccount, svnPassword },
+      }),
+    ])
+      .then(([nsbRes, svnRes]) => {
+        this.isSaving = false;
+        const isRightNsbAccount = nsbRes.data && nsbRes.isSuccessed;
+        const isRightSvnAccount = svnRes.data && svnRes.isSuccessed;
+        if (isRightNsbAccount && isRightSvnAccount) {
+          this.gModel.set('profile', (draft) => {
+            draft.nsbAccount.username = this.form.value.nsbUsername;
+            draft.nsbAccount.password = this.form.value.nsbPassword;
+            draft.svnAccount.password = this.form.value.svnPassword;
+          });
+          this.notification.create('success', 'Success', '', { nzPlacement: 'bottomRight' });
+        } else if (!isRightNsbAccount) {
+          this.notification.create('error', 'Failed', 'Wrong nsb account.', { nzPlacement: 'bottomRight' });
+        } else if (!isRightSvnAccount) {
+          this.notification.create('error', 'Failed', 'Wrong svn account.', { nzPlacement: 'bottomRight' });
+        }
+      })
+      .catch((error) => {
+        this.isSaving = false;
+        this.notification.create('error', 'Failed', error.message, { nzPlacement: 'bottomRight' });
+      })
+      .finally(() => {
+        this.cdf.markForCheck();
+      });
+  }
+
+  public onCheckboxChange(value: boolean) {
+    if (value) {
+      this.form.get('svnPassword').disable();
+    } else {
+      this.form.get('svnPassword').enable();
+    }
+  }
+
+  public shouldSaveButtonDisabeld() {
+    if (this.isDirty() && this.form.valid) {
+      return false;
+    }
+    return true;
+  }
+
+  private isDirty() {
+    return (
+      this.profile.nsbAccount.username !== this.form.value.nsbUsername ||
+      this.profile.nsbAccount.password !== this.form.value.nsbPassword ||
+      this.profile.svnAccount.password !== this.form.value.svnPassword
+    );
   }
 }

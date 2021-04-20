@@ -48,15 +48,13 @@ import { AuthService } from './core/services/auth.service';
     },
     {
       multi: true,
-      deps: [StoreService],
+      deps: [StoreService, AuthService],
       provide: APP_INITIALIZER,
-      useFactory: (store: StoreService) => { return () => store.load() }
-    },
-    {
-      multi: true,
-      deps: [AuthService],
-      provide: APP_INITIALIZER,
-      useFactory: (auth: AuthService) => { return () => auth.load() }
+      useFactory: (store: StoreService, auth: AuthService) => {
+        return () => {
+          return store.load().then(auth.load.bind(auth));
+        };
+      },
     },
     { provide: NZ_I18N, useValue: en_US },
   ],

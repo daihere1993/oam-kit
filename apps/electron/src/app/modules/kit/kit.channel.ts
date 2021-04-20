@@ -28,7 +28,8 @@ export class KitChannel implements IpcChannelInterface {
     { name: IpcChannel.OPEN_EXTERNAL_URL_REQ, fn: this.openExternalUrl },
     { name: IpcChannel.SERVER_CHECK_REQ, fn: this.serverCheck },
     { name: IpcChannel.SERVER_DIRECTORY_CHECK_REQ, fn: this.serverDirectoryCheck },
-    { name: IpcChannel.AUTH_VERIFICATION_REQ, fn: this.authVerification },
+    { name: IpcChannel.NSB_ACCOUNT_VERIFICATION_REQ, fn: this.nsbAccountVerification },
+    { name: IpcChannel.SVN_ACCOUNT_VERIFICATION_REQ, fn: this.svnAccountVerification },
   ];
 
   private options: KitChannelOptions;
@@ -43,16 +44,28 @@ export class KitChannel implements IpcChannelInterface {
     });
   }
 
-  private async authVerification(event: IpcMainEvent, req: IPCRequest<void>) {
-    const res: IPCResponse<boolean> = { isSuccessed: true };
+  private async svnAccountVerification(event: IpcMainEvent, req: IPCRequest<{ username: string; password: string }>) {
+    const res: IPCResponse<boolean> = {};
     try {
-      const isRightNsbAccount = await this.isRightNsbAccount();
-      const isRightSvnAccount = await this.isRightSvnAccount();
-      if (this.isEmptyAccount() && (!isRightNsbAccount || !isRightSvnAccount)) {
-        res.data = false;
-      } else {
-        res.data = true;
-      }
+      const { username, password } = req.data;
+      const isRightAccount = await this.isRightSvnAccount(username, password)
+      res.isSuccessed = true;
+      res.data = isRightAccount;
+    } catch (error) {
+      res.isSuccessed = false;
+      res.error = { message: error.message };
+    } finally {
+      event.reply(req.responseChannel, res);
+    }
+  }
+
+  private async nsbAccountVerification(event: IpcMainEvent, req: IPCRequest<{ username: string; password: string }>) {
+    const res: IPCResponse<boolean> = {};
+    try {
+      const { username, password } = req.data;
+      const isRightAccount = await this.isRightNsbAccount(username, password)
+      res.isSuccessed = true;
+      res.data = isRightAccount;
     } catch (error) {
       res.isSuccessed = false;
       res.error = { message: error.message };
@@ -67,13 +80,9 @@ export class KitChannel implements IpcChannelInterface {
     return !nsbAccount.password || !nsbAccount.username || !svnAccount.password;
   }
 
-  private async isRightNsbAccount() {
-    const nsbAccount = this.profile.nsbAccount;
+  private async isRightNsbAccount(username: string, password: string) {
     try {
-      const { data } = await axios.post(
-        NSB_LOGIN_URL,
-        `USER=${nsbAccount.username}&PASSWORD=${nsbAccount.password}&target=${NSB_LOGIN_TARGET}`
-      );
+      const { data } = await axios.post(NSB_LOGIN_URL, `USER=${username}&PASSWORD=${password}&target=${NSB_LOGIN_TARGET}`);
       if ((data as string).includes('Authentication Error')) {
         logger.error('login nsb account failed due to invalid username or password');
         return false;
@@ -86,13 +95,11 @@ export class KitChannel implements IpcChannelInterface {
     }
   }
 
-  private async isRightSvnAccount() {
-    const nsbAccount = this.profile.nsbAccount;
-    const svnAccount = this.profile.svnAccount;
+  private async isRightSvnAccount(username: string, password: string) {
     try {
       await fetcher.svnCat(REVIEWBOARD_LOGIN_URL, {
-        username: nsbAccount.username,
-        password: svnAccount.password,
+        username: username,
+        password: password,
       });
       return true;
     } catch (error) {

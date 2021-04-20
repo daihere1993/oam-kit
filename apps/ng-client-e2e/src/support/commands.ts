@@ -16,5 +16,8 @@ Cypress.Commands.add('expectNotification', (status: NotificationStatus, message:
   if (status === NotificationStatus.success) {
     cy.get('[ng-reflect-nz-type=check-circle]').should('exist');
     return cy.get('.ant-notification-notice-message').should('have.text', message);
+  } else if (status === NotificationStatus.failed) {
+    cy.get('[ng-reflect-nz-type=close-circle]').should('exist');
+    cy.get('.ant-notification-notice-description').should('have.text', message);
   }
 })

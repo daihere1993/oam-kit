@@ -17,10 +17,10 @@ describe('Page cache: should not reload page that has been visited', () => {
   it('Profile page should not be cached', () => {
     const mainFixture = new MainFixture();
     mainFixture.visit('profile');
-    cy.getBySel('username-input').type('username');
+    cy.getBySel('nsb-username-input').type('username');
     mainFixture.navigate('Sync Code');
     mainFixture.navigate('Profile');
-    cy.getBySel('username-input').should('be.empty');
+    cy.getBySel('nsb-username-input').should('be.empty');
   });
 });
 

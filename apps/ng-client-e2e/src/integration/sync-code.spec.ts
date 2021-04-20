@@ -40,7 +40,13 @@ function selectedLabelShoudBe(label: string) {
 }
 
 describe('Scenario1: add new project', () => {
-  const fixture = new MainFixture();
+  const initData: any = {
+    syncCode: {
+      projects: [],
+    },
+    general: { serverList: [projectFixture.serverAddr], profile: profileFixture },
+  };
+  const fixture = new MainFixture({ initData });
   beforeEach(() => {
     fixture.visit('sync-code');
     cy.getBySel('project-select').click();
@@ -80,7 +86,7 @@ describe('Scenario1: add new project', () => {
     cy.getBySel('server-addr-select').click();
     cy.getBySel('new-server-addr-input').type('test');
     cy.getBySel('add-server-addr-button').click();
-    cy.get('nz-option-item').should('have.length', MODEL_INIT_VALUE.general.serverList.length + 1);
+    cy.get('nz-option-item').should('have.length', 2);
     cy.get('nz-option-item').last().click();
     cy.get('nz-select-item').should('contain.text', 'test');
   });
@@ -100,7 +106,7 @@ describe('Scenario2: project modification', () => {
     syncCode: {
       projects: [projectFixture, project2],
     },
-    general: { serverList: new Set([projectFixture.serverAddr]) },
+    general: { serverList: [projectFixture.serverAddr], profile: profileFixture },
   };
   const fixture = new MainFixture({ initData });
   beforeEach(() => {
