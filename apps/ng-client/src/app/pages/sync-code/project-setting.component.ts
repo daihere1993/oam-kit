@@ -88,7 +88,6 @@ export interface DialogRes {
           <nz-form-control [nzSm]="13">
             <nz-input-group [nzSuffix]="folderSelector">
               <input
-                #localPathInput
                 nz-input
                 name="localPath"
                 data-test="local-project-path-input"
@@ -143,14 +142,7 @@ export interface DialogRes {
         >
           Save
         </button>
-        <button
-          nz-button
-          data-test="delete-project-button"
-          class="dialog_btn"
-          *ngIf="isEdit"
-          nzType="danger"
-          (click)="delete()"
-        >
+        <button nz-button data-test="delete-project-button" class="dialog_btn" *ngIf="isEdit" nzType="danger" (click)="delete()">
           Delete
         </button>
         <button nz-button class="dialog_btn" (click)="close()">Close</button>

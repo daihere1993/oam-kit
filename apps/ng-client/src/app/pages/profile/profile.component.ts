@@ -36,7 +36,7 @@ import { IpcService } from '@ng-client/core/services/ipc.service';
         <nz-form-item>
           <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="nsbPassword">NSB Password</nz-form-label>
           <nz-form-control [nzSm]="14" [nzXs]="24">
-            <input nz-input name="nsbPassword" data-test="nsb-password-input" type="password" formControlName="nsbPassword" />
+            <input nz-input name="nsbPassword" data-test="nsb-password-input" type="password" formControlName="nsbPassword" (ngModelChange)="onNsbPasswordChange($event)" />
           </nz-form-control>
         </nz-form-item>
 
@@ -103,17 +103,17 @@ export class ProfileComponent {
 
   public save(): void {
     this.isSaving = true;
-    const nsbAccount = this.form.value.nsbAccount;
+    const nsbUsername = this.form.value.nsbUsername;
     const nsbPassword = this.form.value.nsbPassword;
     const svnPassword = this.form.value.svnPassword;
     Promise.all([
       this.ipcService.send(IpcChannel.NSB_ACCOUNT_VERIFICATION_REQ, {
         responseChannel: IpcChannel.NSB_ACCOUNT_VERIFICATION_RES,
-        data: { nsbAccount, nsbPassword },
+        data: { username: nsbUsername, password: nsbPassword },
       }),
       this.ipcService.send(IpcChannel.SVN_ACCOUNT_VERIFICATION_REQ, {
         responseChannel: IpcChannel.SVN_ACCOUNT_VERIFICATION_RES,
-        data: { nsbAccount, svnPassword },
+        data: { username: nsbUsername, password: svnPassword },
       }),
     ])
       .then(([nsbRes, svnRes]) => {
@@ -144,8 +144,10 @@ export class ProfileComponent {
 
   public onCheckboxChange(value: boolean) {
     if (value) {
+      this.form.value.svnPassword = this.form.value.nsbPassword;
       this.form.get('svnPassword').disable();
     } else {
+      this.form.value.svnPassword = '';
       this.form.get('svnPassword').enable();
     }
   }
@@ -155,6 +157,12 @@ export class ProfileComponent {
       return false;
     }
     return true;
+  }
+
+  public onNsbPasswordChange(value: string) {
+    if (this.form.value.isSamePassword) {
+      this.form.value.svnPassword = value;
+    }
   }
 
   private isDirty() {
