@@ -150,12 +150,11 @@ export class ProfileComponent {
   }
 
   public onCheckboxChange(value: boolean) {
-    const svnPasswordFormCtrl = this.form.get('svnPassword');
     if (value) {
-      svnPasswordFormCtrl.setValue(this.form.value.nsbPassword);
+      this.form.patchValue({ svnPassword: this.form.value.nsbPassword });
       this.form.get('svnPassword').disable();
     } else {
-      svnPasswordFormCtrl.setValue('');
+      this.form.patchValue({ svnPassword: '' });
       this.form.get('svnPassword').enable();
     }
   }
