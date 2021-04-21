@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { GeneralModel, IpcChannel, Profile } from '@oam-kit/utility/types';
 import { StoreService } from '@ng-client/core/services/store.service';
@@ -88,6 +88,18 @@ export class ProfileComponent {
   public isSaving = false;
 
   private gModel: Model<GeneralModel>;
+  private get nsbUsername(): FormControl {
+    return this.form.get('nsbUsername') as FormControl;
+  }
+  private get nsbPassword(): FormControl {
+    return this.form.get('nsbPassword') as FormControl;
+  }
+  private get svnPassword(): FormControl {
+    return this.form.get('svnPassword') as FormControl;
+  }
+  private get isSamePassword(): FormControl {
+    return this.form.get('isSamePassword') as FormControl;
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -110,9 +122,9 @@ export class ProfileComponent {
 
   public save(): void {
     this.isSaving = true;
-    const nsbUsername = this.form.value.nsbUsername;
-    const nsbPassword = this.form.value.nsbPassword;
-    const svnPassword = this.form.value.svnPassword;
+    const nsbUsername = this.nsbUsername.value;
+    const nsbPassword = this.nsbPassword.value;
+    const svnPassword = this.svnPassword.value;
     Promise.all([
       this.ipcService.send(IpcChannel.NSB_ACCOUNT_VERIFICATION_REQ, {
         responseChannel: IpcChannel.NSB_ACCOUNT_VERIFICATION_RES,
@@ -129,9 +141,9 @@ export class ProfileComponent {
         const isRightSvnAccount = svnRes.data && svnRes.isSuccessed;
         if (isRightNsbAccount && isRightSvnAccount) {
           this.gModel.set('profile', (draft) => {
-            draft.nsbAccount.username = this.form.value.nsbUsername;
-            draft.nsbAccount.password = this.form.value.nsbPassword;
-            draft.svnAccount.password = this.form.value.svnPassword;
+            draft.nsbAccount.username = this.nsbUsername.value;
+            draft.nsbAccount.password = this.nsbPassword.value;
+            draft.svnAccount.password = this.svnPassword.value;
           });
           this.notification.create('success', 'Success', '', { nzPlacement: 'bottomRight' });
         } else if (!isRightNsbAccount) {
@@ -151,7 +163,7 @@ export class ProfileComponent {
 
   public onCheckboxChange(value: boolean) {
     if (value) {
-      this.form.patchValue({ svnPassword: this.form.value.nsbPassword });
+      this.form.patchValue({ svnPassword: this.nsbPassword.value });
       this.form.get('svnPassword').disable();
     } else {
       this.form.patchValue({ svnPassword: '' });
@@ -167,16 +179,16 @@ export class ProfileComponent {
   }
 
   public onNsbPasswordChange(value: string) {
-    if (this.form.value.isSamePassword) {
-      this.form.value.svnPassword = value;
+    if (this.isSamePassword.value) {
+      this.svnPassword.setValue(value);
     }
   }
 
   private isDirty() {
     return (
-      this.profile.nsbAccount.username !== this.form.value.nsbUsername ||
-      this.profile.nsbAccount.password !== this.form.value.nsbPassword ||
-      (this.form.value.isSamePassword ? false : this.profile.svnAccount.password !== this.form.value.svnPassword)
+      this.profile.nsbAccount.username !== this.nsbUsername.value ||
+      this.profile.nsbAccount.password !== this.nsbPassword.value ||
+      (this.isSamePassword.value ? false : this.profile.svnAccount.password !== this.svnPassword.value)
     );
   }
 }
