@@ -36,7 +36,14 @@ import { IpcService } from '@ng-client/core/services/ipc.service';
         <nz-form-item>
           <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="nsbPassword">NSB Password</nz-form-label>
           <nz-form-control [nzSm]="14" [nzXs]="24">
-            <input nz-input name="nsbPassword" data-test="nsb-password-input" type="password" formControlName="nsbPassword" (ngModelChange)="onNsbPasswordChange($event)" />
+            <input
+              nz-input
+              name="nsbPassword"
+              data-test="nsb-password-input"
+              type="password"
+              formControlName="nsbPassword"
+              (ngModelChange)="onNsbPasswordChange($event)"
+            />
           </nz-form-control>
         </nz-form-item>
 
@@ -50,7 +57,7 @@ import { IpcService } from '@ng-client/core/services/ipc.service';
               (ngModelChange)="onCheckboxChange($event)"
               formControlName="isSamePassword"
             >
-              Same svn password like nsb password
+              Same svn password like nsb
             </label>
           </nz-form-control>
         </nz-form-item>
@@ -169,7 +176,7 @@ export class ProfileComponent {
     return (
       this.profile.nsbAccount.username !== this.form.value.nsbUsername ||
       this.profile.nsbAccount.password !== this.form.value.nsbPassword ||
-      this.profile.svnAccount.password !== this.form.value.svnPassword
+      (this.form.value.isSamePassword ? false : this.profile.svnAccount.password !== this.form.value.svnPassword)
     );
   }
 }

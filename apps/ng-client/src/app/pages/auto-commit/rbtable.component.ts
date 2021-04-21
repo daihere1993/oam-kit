@@ -11,7 +11,7 @@ import { RbItem } from './auto-commit.component';
   template: `
     <style>
       nz-table {
-        overflow: auto;
+        /* overflow: auto; */
       }
       .editable-cell {
         position: relative;

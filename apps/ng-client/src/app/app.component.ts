@@ -24,18 +24,21 @@ interface Menu {
         display: flex;
         flex-direction: column;
       }
-      .ant-menu-item {
+      .nav-menu-item {
         flex-grow: 1;
         font-size: 16px;
         display: flex;
         justify-content: center;
         align-items: center;
       }
+      .nav-menu-item:not(.ant-menu-item-selected):hover {
+        background: #f0f2f5;
+      }
     </style>
     <nz-layout class="container">
       <nz-sider nzTheme="light" nzWidth="160px">
         <ul nz-menu nzTheme="light">
-          <li nz-menu-item nzMatchRouter *ngFor="let menu of menus">
+          <li class="nav-menu-item" nz-menu-item nzMatchRouter *ngFor="let menu of menus">
             <a [routerLink]="menu.link">
               <i nz-icon [nzType]="menu.icon" nzTheme="outline"></i>
               <span>{{ menu.name }}</span>
