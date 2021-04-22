@@ -61,7 +61,7 @@ export class LockInfoChannel extends RbBase_ implements IpcChannelInterface {
 
   private async getRepoLockInfo(branch: string, repo: Repo): Promise<RepoLockInfo> {
     const svnPath = `${config.svnroot}/${repo.repository}/LOCKS/locks.conf`;
-    const gModel = this.store.get<GeneralModel>(config.MODEL_NAME.SYNC_CODE);
+    const gModel = this.store.get<GeneralModel>(config.MODEL_NAME.GENERAL);
     const nsbAccount = gModel.get('profile').nsbAccount;
     const svnAccount = gModel.get('profile').svnAccount;
     const locksContent = await fetcher.svnCat(svnPath, {
@@ -78,7 +78,7 @@ export class LockInfoChannel extends RbBase_ implements IpcChannelInterface {
 
   private getJsonBranchLockJson() {
     const jsonPath = `${config.svnroot}/${moduleConf.oam_repository}/conf/BranchFor.json`;
-    const gModel = this.store.get<GeneralModel>(config.MODEL_NAME.SYNC_CODE);
+    const gModel = this.store.get<GeneralModel>(config.MODEL_NAME.GENERAL);
     const nsbAccount = gModel.get('profile').nsbAccount;
     const svnAccount = gModel.get('profile').svnAccount;
     try {
