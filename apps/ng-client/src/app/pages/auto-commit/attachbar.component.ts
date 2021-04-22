@@ -18,6 +18,10 @@ import { RbItem } from './auto-commit.component';
       form > nz-form-item {
         margin: 0;
       }
+      .show-log__button {
+        margin-left: auto;
+        order: 2;
+      }
     </style>
     <form nz-form [formGroup]="validateForm" nzLayout="inline">
       <nz-form-item>
@@ -28,7 +32,7 @@ import { RbItem } from './auto-commit.component';
             class="rb-form__input"
             nz-input
             formControlName="link"
-            placeholder="RB link"
+            placeholder="e.g. http://biedronka.emea.nsn-net.net/r/94233/"
           />
           <ng-template #linkErrorTpl let-control>
             <ng-container *ngIf="control.hasError('notValid')">
@@ -42,20 +46,17 @@ import { RbItem } from './auto-commit.component';
           </ng-template>
         </nz-form-control>
       </nz-form-item>
-      <nz-form-item>
-        <nz-form-control>
-          <button
-            nz-button
-            nzType="primary"
-            data-test="attach-button"
-            [disabled]="!validateForm.valid"
-            [nzLoading]="isAttaching"
-            (click)="attachRb(attachedLink.value)"
-          >
-            {{ isAttaching ? 'Attaching...' : 'Attach' }}
-          </button>
-        </nz-form-control>
-      </nz-form-item>
+      <button
+        nz-button
+        nzType="primary"
+        data-test="attach-button"
+        [disabled]="!validateForm.valid"
+        [nzLoading]="isAttaching"
+        (click)="attachRb(attachedLink.value)"
+      >
+        {{ isAttaching ? 'Attaching...' : 'Attach' }}
+      </button>
+      <button class="show-log__button" nz-button nzType="dashed" (click)="showLogs.emit()">Show logs</button>
     </form>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -64,6 +65,7 @@ export class AttachbarComponent {
   @Input() rbList: RbItem[] = [];
   @Input() onLogChange: Subject<string>;
   @Output() attached = new EventEmitter<RbItem>();
+  @Output() showLogs = new EventEmitter<void>();
 
   public isAttaching = false;
   public validateForm: FormGroup;

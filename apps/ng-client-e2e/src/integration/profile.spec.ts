@@ -16,7 +16,6 @@ describe('Scenario1: update account info', () => {
       fixture.simulateBackendResToClient(IpcChannel.NSB_ACCOUNT_VERIFICATION_RES, true);
       fixture.simulateBackendResToClient(IpcChannel.SVN_ACCOUNT_VERIFICATION_RES, true);
     });
-    cy.getBySel('save-button').should('contain.html', 'Save').should('be.disabled');
     cy.expectNotification(NotificationStatus.success, 'Success');
   });
 
@@ -30,7 +29,6 @@ describe('Scenario1: update account info', () => {
       fixture.simulateBackendResToClient(IpcChannel.NSB_ACCOUNT_VERIFICATION_RES, true);
       fixture.simulateBackendResToClient(IpcChannel.SVN_ACCOUNT_VERIFICATION_RES, true);
     });
-    cy.getBySel('save-button').should('contain.html', 'Save').should('be.disabled');
     cy.expectNotification(NotificationStatus.success, 'Success');
   });
 });
@@ -50,9 +48,9 @@ describe('Scenario2: failed', () => {
       fixture.simulateBackendResToClient(IpcChannel.SVN_ACCOUNT_VERIFICATION_RES, false);
     });
     cy.getBySel('save-button').should('contain.html', 'Save').should('be.enabled');
-    cy.expectNotification(NotificationStatus.failed, 'Wrong nsb account.');
+    cy.expectNotification(NotificationStatus.failed, 'Incorrect NSB accout and password.');
   });
-  it('Case1: nsb account verification failed', () => {
+  it('Case2: svn account verification failed', () => {
     cy.getBySel('nsb-username-input').type(profileFixture.nsbAccount.username);
     cy.getBySel('nsb-password-input').type(profileFixture.nsbAccount.password);
     cy.getBySel('same-password-checkbox').click();
@@ -63,6 +61,6 @@ describe('Scenario2: failed', () => {
       fixture.simulateBackendResToClient(IpcChannel.SVN_ACCOUNT_VERIFICATION_RES, false);
     });
     cy.getBySel('save-button').should('contain.html', 'Save').should('be.enabled');
-    cy.expectNotification(NotificationStatus.failed, 'Wrong svn account.');
+    cy.expectNotification(NotificationStatus.failed, 'Incorrect SVN accout and password.');
   });
 });

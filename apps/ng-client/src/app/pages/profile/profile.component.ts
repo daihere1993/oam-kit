@@ -15,13 +15,14 @@ import { IpcService } from '@ng-client/core/services/ipc.service';
         display: flex;
         flex-direction: column;
       }
-
       .field_item {
         margin-bottom: 10px;
       }
-
       .button__save {
         width: 200px;
+      }
+      .checkbox-item {
+        margin-top: -24px;
       }
     </style>
     <div class="container">
@@ -47,10 +48,16 @@ import { IpcService } from '@ng-client/core/services/ipc.service';
           </nz-form-control>
         </nz-form-item>
 
-        <nz-form-item>
+        <nz-form-item *ngIf="!form.value.isSamePassword">
           <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="svnPassword">SVN Password</nz-form-label>
           <nz-form-control [nzSm]="14" [nzXs]="24">
             <input nz-input name="svnPassword" type="password" data-test="svn-password-input" formControlName="svnPassword" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item class="checkbox-item">
+          <nz-form-label [nzSm]="6" [nzXs]="24" [nzNoColon]="true"></nz-form-label>
+          <nz-form-control [nzSm]="14" [nzXs]="24">
             <label
               nz-checkbox
               data-test="same-password-checkbox"
@@ -115,7 +122,7 @@ export class ProfileComponent {
     this.form = this.fb.group({
       nsbUsername: [this.profile?.nsbAccount.username, [Validators.required]],
       nsbPassword: [this.profile?.nsbAccount.password, [Validators.required]],
-      svnPassword: [{ value: this.profile?.svnAccount.password, disabled: true }, [Validators.required]],
+      svnPassword: [this.profile?.svnAccount.password, [Validators.required]],
       isSamePassword: [true],
     });
   }
@@ -147,9 +154,9 @@ export class ProfileComponent {
           });
           this.notification.create('success', 'Success', '', { nzPlacement: 'bottomRight' });
         } else if (!isRightNsbAccount) {
-          this.notification.create('error', 'Failed', 'Wrong nsb account.', { nzPlacement: 'bottomRight' });
+          this.notification.create('error', 'Failed', 'Incorrect NSB accout and password.', { nzPlacement: 'bottomRight' });
         } else if (!isRightSvnAccount) {
-          this.notification.create('error', 'Failed', 'Wrong svn account.', { nzPlacement: 'bottomRight' });
+          this.notification.create('error', 'Failed', 'Incorrect SVN accout and password.', { nzPlacement: 'bottomRight' });
         }
       })
       .catch((error) => {
@@ -164,10 +171,8 @@ export class ProfileComponent {
   public onCheckboxChange(value: boolean) {
     if (value) {
       this.form.patchValue({ svnPassword: this.nsbPassword.value });
-      this.form.get('svnPassword').disable();
     } else {
       this.form.patchValue({ svnPassword: '' });
-      this.form.get('svnPassword').enable();
     }
   }
 
@@ -185,10 +190,6 @@ export class ProfileComponent {
   }
 
   private isDirty() {
-    return (
-      this.profile.nsbAccount.username !== this.nsbUsername.value ||
-      this.profile.nsbAccount.password !== this.nsbPassword.value ||
-      (this.isSamePassword.value ? false : this.profile.svnAccount.password !== this.svnPassword.value)
-    );
+    return this.nsbUsername.dirty || this.nsbPassword.dirty || this.svnPassword.dirty;
   }
 }

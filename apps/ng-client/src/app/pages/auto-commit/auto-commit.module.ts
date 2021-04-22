@@ -15,6 +15,8 @@ import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzGridModule } from 'ng-zorro-antd/grid';
+import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzEmptyModule } from 'ng-zorro-antd/empty';
 
 import { OverlayModule } from '@angular/cdk/overlay';
 
@@ -34,6 +36,8 @@ import { OverlayModule } from '@angular/cdk/overlay';
     NzFormModule,
     NzGridModule,
     OverlayModule,
+    NzDrawerModule,
+    NzEmptyModule,
     AutoCommitRoutingModule,
   ],
 })

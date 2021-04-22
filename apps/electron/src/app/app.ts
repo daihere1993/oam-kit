@@ -108,7 +108,7 @@ export default class App {
   private static initMainWindow() {
     const workAreaSize = screen.getPrimaryDisplay().workAreaSize;
     const width = 1150;
-    const height = 800;
+    const height = 600;
 
     // Create the browser window.
     App.mainWindow = new BrowserWindow({
