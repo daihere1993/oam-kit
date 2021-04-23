@@ -319,7 +319,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
    */
   private getBranchFromBasedir(basedir: string): string {
     if (basedir.includes('trunk') || basedir.includes('TRUNK')) {
-      return 'TRUNK';
+      return 'trunk';
     } else {
       const tmp = this.reverseStr(basedir).match(/(\w+)\//);
       if (tmp) {
