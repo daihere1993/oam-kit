@@ -315,9 +315,18 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
 
   /**
    *  get branch from basedir, like: from "/mantanence/5G21A" to get "5G21A"
+   *  TODO(bug): if basedir is "trunk/", below regex would crash
    */
   private getBranchFromBasedir(basedir: string): string {
-    return basedir.includes('/') ? this.reverseStr(this.reverseStr(basedir).match(/(\w+)\//)[1]) : basedir;
+    if (basedir.includes('trunk') || basedir.includes('TRUNK')) {
+      return 'TRUNK';
+    } else {
+      const tmp = this.reverseStr(basedir).match(/(\w+)\//);
+      if (tmp) {
+        return this.reverseStr(tmp[1]);
+      }
+      return basedir;
+    }
   }
 
   private async setupAuthentication(rbId: number) {
