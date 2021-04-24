@@ -13,9 +13,9 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      -run: yarn lint
+      - run: yarn lint
   ut-and-e2e:
     runs-on: ubuntu-latest
     steps:
-      - run: yarn e2e
+      - run: yarn lint
       - run: yarn ut
