@@ -587,3 +587,41 @@
 2021-04-24 09:21:53:070 info/store: [isRbReady] success.
 2021-04-24 09:21:53:181 info/store: [isRbReady] start.
 2021-04-24 09:21:53:182 info/store: [isRbReady] success.
+2021-04-24 12:53:06:854 info/store: [getPartialRbInfo] start.
+2021-04-24 12:53:06:858 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 12:53:06:860 info/store: [getInfoFromReviewRequest] success
+2021-04-24 12:53:06:861 info/store: [getPartialRbInfo] success.
+2021-04-24 12:53:06:970 info/store: [getPartialRbInfo] start.
+2021-04-24 12:53:06:971 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 12:53:06:971 info/store: [getInfoFromReviewRequest] success
+2021-04-24 12:53:06:972 info/store: [getPartialRbInfo] success.
+2021-04-24 12:53:07:082 info/store: [isRbReady] start.
+2021-04-24 12:53:07:082 info/store: [isRbReady] success.
+2021-04-24 12:53:07:083 info/store: [getPartialRbInfo] start.
+2021-04-24 12:53:07:083 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 12:53:07:084 info/store: [getInfoFromReviewRequest] success
+2021-04-24 12:53:07:084 info/store: [getPartialRbInfo] success.
+2021-04-24 12:53:07:085 info/store: [svnCommit] start.
+2021-04-24 12:53:07:086 info/store: [setupSvnCredentials] start
+2021-04-24 12:53:07:086 info/store: [setupSvnCredentials] success.
+2021-04-24 12:53:07:087 info/store: [sendSvnCommitReq] start.
+2021-04-24 12:53:07:087 info/store: [sendSvnCommitReq] success.
+2021-04-24 12:53:07:088 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'close_description' ]
+2021-04-24 12:53:07:088 info/store: [getInfoFromReviewRequest] success
+2021-04-24 12:53:07:089 info/store: [svnCommit] success.
+2021-04-24 12:53:07:193 info/store: [isRbReady] start.
+2021-04-24 12:53:07:194 info/store: [isRbReady] success.
+2021-04-24 12:53:07:194 info/store: [getPartialRbInfo] start.
+2021-04-24 12:53:07:194 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 12:53:07:195 info/store: [getInfoFromReviewRequest] success
+2021-04-24 12:53:07:195 info/store: [getPartialRbInfo] success.
+2021-04-24 12:53:07:196 info/store: [svnCommit] start.
+2021-04-24 12:53:07:196 info/store: [setupSvnCredentials] start
+2021-04-24 12:53:07:197 info/store: [setupSvnCredentials] success.
+2021-04-24 12:53:07:198 info/store: [sendSvnCommitReq] start.
+2021-04-24 12:53:07:198 error/store: [sendSvnCommitReq] failed: { isAxiosError: true, response: [Object] }
+2021-04-24 12:53:07:199 error/store: [svnCommit] there are some commit message issue: { isAxiosError: true, response: [Object] }
+2021-04-24 12:53:07:303 info/store: [isRbReady] start.
+2021-04-24 12:53:07:304 info/store: [isRbReady] success.
+2021-04-24 12:53:07:415 info/store: [isRbReady] start.
+2021-04-24 12:53:07:415 info/store: [isRbReady] success.
