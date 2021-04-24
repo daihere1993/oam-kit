@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
 import { formatDate } from '@angular/common';
-import { Repo, ReviewBoard } from '@oam-kit/store';
+import { Repo, ReviewBoard } from '@oam-kit/utility/types';
 import { LOG_PHASE, LOG_TEMPLATES, LOG_TYPE } from '@oam-kit/logger';
 import { getStringFromTemplate } from '@oam-kit/utility/utils';
 import { Subject } from 'rxjs';
@@ -18,11 +18,7 @@ import { Subject } from 'rxjs';
       .action-bar__container {
         margin-bottom: 10px;
       }
-      .logs-wrapper {
-        margin-top: 20px;
-      }
-      .logs-container {
-        height: 300px;
+      ::ng-deep .ant-drawer-body {
         padding: 10px;
         background: #f0f2f5;
         overflow-y: auto;
@@ -31,20 +27,33 @@ import { Subject } from 'rxjs';
     <div class="rb-form-wrapper">
       <h2>RB Table</h2>
       <div class="action-bar__container">
-        <app-attachbar [onLogChange]="onLogChange" [rbList]="rbList" (attached)="onRbAttached($event)"></app-attachbar>
+        <app-attachbar
+          [onLogChange]="onLogChange"
+          (showLogs)="showLogs = !showLogs"
+          [rbList]="rbList"
+          (attached)="onRbAttached($event)"
+        ></app-attachbar>
       </div>
       <div class="rbtable__container">
         <app-rbtable [rbList]="rbList" (rowDelete)="onRbDelete($event)"></app-rbtable>
       </div>
     </div>
-    <div class="logs-wrapper">
-      <h2>Commit Logs</h2>
-      <div class="logs-container">
-        <p class="logs__paragraph" *ngFor="let log of logs">
-          {{ log }}
-        </p>
+    <nz-drawer
+      [nzClosable]="false"
+      [nzVisible]="showLogs"
+      nzPlacement="bottom"
+      nzTitle="Commit Logs"
+      (nzOnClose)="showLogs = false"
+    >
+      <nz-empty *ngIf="!logs.length"></nz-empty>
+      <div *ngIf="logs.length" class="logs-wrapper">
+        <div class="logs-container">
+          <p data-test="log-paragraph" class="logs__paragraph" *ngFor="let log of logs">
+            {{ log }}
+          </p>
+        </div>
       </div>
-    </div>
+    </nz-drawer>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -52,6 +61,7 @@ export class AutoCommitComponent {
   public logs: string[] = [];
   public rbList: RbItem[] = [];
   public onLogChange = new Subject<string>();
+  public showLogs = false;
 
   constructor(private cdr: ChangeDetectorRef) {
     this.onLogChange.subscribe((nLog) => {
@@ -99,14 +109,12 @@ class Logger {
 export class RbItem implements ReviewBoard {
   public get data(): ReviewBoard {
     return {
-      id: this.id,
       name: this.name,
       link: this.link,
       branch: this.branch,
       repo: this.repo,
       revision: this.revision,
       committedDate: this.committedDate,
-      logs: this.logger.logs,
     };
   }
   public readonly id: number;

@@ -16,3 +16,7 @@ export function getStringFromTemplate(tmp: string, info: { [key: string]: any } 
     return tmp;
   }
 }
+
+export function isObject(o: any) {
+  return typeof o === 'object' && o !== null;
+}

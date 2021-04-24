@@ -1,14 +1,7 @@
-import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
-import { Model, Store, modelConfig } from '@oam-kit/store';
-import { BrowserSolid } from '@oam-kit/store/solid/browser-solid';
-import { APPData, ModelType, StoreAction, StoreData } from '@oam-kit/store/types';
-import { merge, cloneDeep } from 'lodash-es';
+import { IpcChannel, IPCResponse, APPData } from '@oam-kit/utility/types';
+import { merge } from 'lodash-es';
 import { Subject } from 'rxjs';
-
-interface ChangedData {
-  model: string;
-  content: any;
-}
+import { MODEL_INIT_VALUE } from '@oam-kit/utility/overall-config';
 
 /** Notice: each MainFixture instance maintain a data of whole app thus we don't need to mock specific data in e2e */
 export class MainFixture {
@@ -18,27 +11,12 @@ export class MainFixture {
 
   // Below four Subjects are used to know when need to update local data which stored in localStorage
   private onPullData = new Subject<void>();
-  private onCreateData = new Subject<ChangedData>();
-  private onUpdateData = new Subject<ChangedData>();
-  private onDeleteData = new Subject<ChangedData>();
 
   private mockedIpcRenderer = {
-    send: (channel: IpcChannel, req: IPCRequest<StoreData<ChangedData>>) => {
+    send: (channel: IpcChannel) => {
       // if there was a data opertaion request sent from front, should intercept it then update the local data.
       if (channel === IpcChannel.GET_APP_DATA_REQ) {
         this.onPullData.next();
-      } else if (channel === IpcChannel.STORE_DATA_REQ) {
-        switch (req.data.action) {
-          case StoreAction.ADD_ITEM:
-            this.onCreateData.next({ model: req.data.model, content: req.data.content });
-            break;
-          case StoreAction.EDIT_ITEM:
-            this.onUpdateData.next({ model: req.data.model, content: req.data.content });
-            break;
-          case StoreAction.DELETE_ITEM:
-            this.onDeleteData.next({ model: req.data.model, content: req.data.content });
-            break;
-        }
       }
     },
     on: (channel: IpcChannel, cb: (event: any, res: any) => void) => {
@@ -51,41 +29,16 @@ export class MainFixture {
     removeListener: () => {},
   };
 
-  public store: Store = new Store({ solid: new BrowserSolid() });
-
-  constructor() {
-    this.store.add(new Model(modelConfig.syncCodeBranch.name));
-    // this.store.add(new Model(modelConfig.lockInfoBranch.name));
-    // this.store.add(new Model(modelConfig.visibleRepos.name));
-    // this.store.add(new Model(modelConfig.visibleBranches.name));
-    this.store.add(new Model(modelConfig.profile.name, { type: ModelType.PLANE }));
-    // All of below subscribes just to update data then return the latest data
-    // by invoke corresponding ipc response callback
+  constructor(options: { initData?: Partial<APPData> } = {}) {
     this.onPullData.subscribe(() => {
-      this.updateData();
-    });
-    this.onCreateData.subscribe(async ({ model, content }) => {
-      const m = this.store.get(model);
-      m.create(content);
-      this.updateData();
-    });
-    this.onUpdateData.subscribe(async ({ model, content }) => {
-      const m = this.store.get(model);
-      m.edit(content);
-      this.updateData();
-    });
-    this.onDeleteData.subscribe(async ({ model, content }) => {
-      const m = this.store.get(model);
-      m.delete(content);
-      this.updateData();
+      this.updateData(options.initData);
     });
   }
 
-  private updateData() {
+  private updateData(data: Partial<APPData> = MODEL_INIT_VALUE) {
     const cb = this.ipcResponseCallbackMap[IpcChannel.GET_APP_DATA_RES];
     if (!cb) throw new Error(`Didn't listen IpcChannel.GET_APP_DATA_RES.`);
-    // To totally immulate electron store, need use different object reference for each response
-    const res: IPCResponse<APPData> = { isSuccessed: true, data: cloneDeep(this.store.getAllData()) };
+    const res: IPCResponse<Partial<APPData>> = { isSuccessed: true, data: data };
     cb(null, res);
   }
 
@@ -141,9 +94,6 @@ export class MainFixture {
 
   public destroy() {
     this.onPullData.unsubscribe();
-    this.onCreateData.unsubscribe();
-    this.onUpdateData.unsubscribe();
-    this.onDeleteData.unsubscribe();
   }
 
   private isObject(v: any): boolean {

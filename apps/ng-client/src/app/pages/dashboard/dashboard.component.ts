@@ -1,5 +1,5 @@
 // import { Component } from '@angular/core';
-// import { Branch, modelConfig, Repo } from '@oam-kit/store';
+// import { Branch, modelConfig, Repo } from '@oam-kit/utility/types';
 // import { StoreService } from '../../core/services/store.service';
 
 // @Component({

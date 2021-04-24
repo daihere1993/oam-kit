@@ -1,6 +1,6 @@
 // import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 // import { StoreService } from '@ng-client/core/services/store.service';
-// import { Branch, modelConfig, Repo } from '@oam-kit/store';
+// import { Branch, modelConfig, Repo } from '@oam-kit/utility/types';
 // import { cloneDeep } from 'lodash-es';
 
 // @Component({

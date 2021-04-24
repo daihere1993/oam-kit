@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, In
 import { IpcService } from '@ng-client/core/services/ipc.service';
 import { LockInfoService } from '@ng-client/core/services/lock-info.service';
 import { RbService } from '@ng-client/core/services/rb.service';
-import { IpcChannel, IPCRequest } from '@oam-kit/ipc';
+import { IpcChannel, IPCRequest } from '@oam-kit/utility/types';
 import { LOG_PHASE, LOG_TYPE } from '@oam-kit/logger';
 import { RbItem } from './auto-commit.component';
 
@@ -11,7 +11,7 @@ import { RbItem } from './auto-commit.component';
   template: `
     <style>
       nz-table {
-        overflow: auto;
+        /* overflow: auto; */
       }
       .editable-cell {
         position: relative;
@@ -48,17 +48,26 @@ import { RbItem } from './auto-commit.component';
           </td>
           <td>{{ data.branch.toUpperCase() }}</td>
           <td>{{ data.repo.name }}({{ data.repo.repository }})</td>
-          <td class="rb-table__cell--revision">{{ data.revision }}</td>
-          <td class="rb-table__cell--committed-date">{{ data.committedDate | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+          <td data-test="rbcell-revision" class="rb-table__cell--revision">{{ data.revision }}</td>
+          <td data-test="rbcell-committed-data" class="rb-table__cell--committed-date">
+            {{ data.committedDate | date: 'yyyy-MM-dd HH:mm:ss' }}
+          </td>
           <td class="rb-table__cell--actions">
             <ng-container *ngIf="data.isCommitting; then rbSpin; else rbActions"></ng-container>
             <ng-template #rbSpin>
-              <a nz-button nzType="link" nzLoading></a>
-              <a nz-button data-btn-type="cancel" nzType="link" (click)="cancel(data)">Cancel</a>
+              <a data-test="rbcell-button__loading" nz-button nzType="link" nzLoading></a>
+              <a data-test="rbcell-button__cancel" nz-button data-btn-type="cancel" nzType="link" (click)="cancel(data)">Cancel</a>
             </ng-template>
             <ng-template #rbActions>
-              <a nz-button data-btn-type="commit" nzType="link" (click)="commit(data)">Commit</a>
-              <a nz-button nzType="link" nz-popconfirm nzPopconfirmTitle="Sure to delete?" (nzOnConfirm)="rowDelete.next(i)">
+              <a data-test="rbcell-button__commit" nz-button data-btn-type="commit" nzType="link" (click)="commit(data)">Commit</a>
+              <a
+                data-test="rbcell-button__delete"
+                nz-button
+                nzType="link"
+                nz-popconfirm
+                nzPopconfirmTitle="Sure to delete?"
+                (nzOnConfirm)="rowDelete.next(i)"
+              >
                 Delete
               </a>
             </ng-template>

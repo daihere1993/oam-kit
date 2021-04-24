@@ -1,30 +1,26 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-} from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import { Branch } from '@oam-kit/store/types';
+import { GeneralModel, Project } from '@oam-kit/utility/types';
 import { SyncCodeStep } from '@oam-kit/sync-code';
-import { IpcChannel } from '@oam-kit/ipc';
-import { IpcService,  } from '../../core/services/ipc.service';
+import { IpcChannel } from '@oam-kit/utility/types';
+import { IpcService } from '../../core/services/ipc.service';
 import { Stepper, StepStatus, StepperStatus, Step } from '@oam-kit/utility';
-import { ProfileService } from '../../core/services/profile.service';
+import { StoreService } from '@ng-client/core/services/store.service';
+import { MODEL_NAME } from '@oam-kit/utility/overall-config';
 
 @Component({
   selector: 'app-sync-code',
   template: `
     <div class="container">
       <div class="sync_form">
-        <app-branch-selector (branchChange)="onBranchChange($event)"></app-branch-selector>
+        <app-project-selector (projectChange)="onSelectChange($event)"></app-project-selector>
 
         <div class="sync_containner">
           <button
-            data-btn-type="sync"
+            data-test="sync-code-button"
             class="sync_button"
             nz-button
+            [disabled]="!currentProject"
             nzType="primary"
             [nzLoading]="isSyncOnGoing"
             (click)="sync()"
@@ -44,26 +40,27 @@ import { ProfileService } from '../../core/services/profile.service';
         ></nz-step>
       </nz-steps>
 
-      <p *ngIf="lastSyncDate" class="last_sync_date">Last sync: {{ lastSyncDate | date:'short' }}</p>
+      <p *ngIf="lastSyncDate" class="last_sync_date">Last sync: {{ lastSyncDate | date: 'short' }}</p>
     </div>
   `,
   styleUrls: ['./sync-code.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SyncCodeComponent implements OnInit, OnDestroy {
-  private currentBranch: Branch;
   public syncStepper: Stepper;
   public lastSyncDate: Date;
   public get isSyncOnGoing(): boolean {
-    return this.syncStepper.status === StepperStatus.ONGOING
+    return this.syncStepper.status === StepperStatus.ONGOING;
   }
 
+  public currentProject: Project;
+
   private get isReady(): boolean {
-    if (!this.profileService.isReady()) {
+    if (!this.isProfileReady()) {
       this.alertMessage = 'Please fill corresponding setting.';
       return false;
-    } else if (!this.currentBranch) {
-      this.alertMessage = 'Please add a branch first.';
+    } else if (!this.currentProject) {
+      this.alertMessage = 'Please add a project first.';
       return false;
     } else if (this.isSyncOnGoing) {
       this.alertMessage = 'Sync is on going.';
@@ -80,9 +77,9 @@ export class SyncCodeComponent implements OnInit, OnDestroy {
 
   constructor(
     private ipcService: IpcService,
-    private profileService: ProfileService,
     private notification: NzNotificationService,
     private cd: ChangeDetectorRef,
+    private store: StoreService
   ) {}
 
   ngOnInit(): void {
@@ -99,27 +96,29 @@ export class SyncCodeComponent implements OnInit, OnDestroy {
     if (this.isReady) {
       this.syncStepper.start();
 
-      this.ipcService.send$<Branch, SyncCodeStep>(IpcChannel.SYNC_CODE_REQ, {
-        data: this.currentBranch,
-        responseChannel: IpcChannel.SYNC_CODE_RES
-      }).subscribe(response => {
-        this.lastSyncDate = new Date();
-  
-        if (response.isSuccessed) {
-          this.syncStepper.setStatusForSingleStep(response.data, StepStatus.FINISHED);
-        } else {
-          const { error } = response;
-          this.syncStepper.errorInfo = error.message;
-          this.syncStepper.setStatusForSingleStep(error.name, StepStatus.FAILED);
-          this.alertMessage = error.message;
-        }
-        this.cd.markForCheck();
-      });
+      this.ipcService
+        .send$<Project, SyncCodeStep>(IpcChannel.SYNC_CODE_REQ, {
+          data: this.currentProject,
+          responseChannel: IpcChannel.SYNC_CODE_RES,
+        })
+        .subscribe((response) => {
+          this.lastSyncDate = new Date();
+
+          if (response.isSuccessed) {
+            this.syncStepper.setStatusForSingleStep(response.data, StepStatus.FINISHED);
+          } else {
+            const { error } = response;
+            this.syncStepper.errorInfo = error.message;
+            this.syncStepper.setStatusForSingleStep(error.name, StepStatus.FAILED);
+            this.alertMessage = error.message;
+          }
+          this.cd.markForCheck();
+        });
     }
   }
 
-  public onBranchChange(branch: Branch) {
-    this.currentBranch = branch;
+  public onSelectChange(project: Project) {
+    this.currentProject = project;
   }
 
   private initStepper(): void {
@@ -141,5 +140,11 @@ export class SyncCodeComponent implements OnInit, OnDestroy {
 
   public trackFn(index: number, item: Step) {
     return item.index;
+  }
+
+  private isProfileReady() {
+    const gModel = this.store.getModel<GeneralModel>(MODEL_NAME.GENERAL);
+    const profile = gModel.get('profile');
+    return profile.nsbAccount.password && profile.nsbAccount.username;
   }
 }

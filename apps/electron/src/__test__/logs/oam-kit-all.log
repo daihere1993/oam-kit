@@ -1,0 +1,627 @@
+2021-04-23 21:34:28:563 info/RbChannel: [isRbReady] start.
+2021-04-23 21:34:28:565 info/RbChannel: [isRbReady] success.
+2021-04-23 21:34:28:566 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:34:28:566 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:34:28:568 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:34:28:568 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:34:28:569 info/RbChannel: [svnCommit] start.
+2021-04-23 21:34:28:569 error/RbChannel: [svnCommit] failed: TypeError: Cannot read property 'get' of undefined
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:371:36)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupRbSessionId (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:386:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:333:16)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupAuthentication (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:345:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:99:18)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.svnCommit (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:90:24)
+    at D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.spec.ts:131:21
+    at Generator.next (<anonymous>)
+    at fulfilled (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:114:62)
+    at processTicksAndRejections (internal/process/task_queues.js:93:5)
+2021-04-23 21:36:08:121 info/RbChannel: [isRbReady] start.
+2021-04-23 21:36:08:126 info/RbChannel: [isRbReady] success.
+2021-04-23 21:36:08:127 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:36:08:128 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:36:08:131 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:36:08:132 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:36:08:133 info/RbChannel: [svnCommit] start.
+2021-04-23 21:36:08:134 error/RbChannel: [svnCommit] failed: TypeError: Cannot read property 'get' of undefined
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:373:36)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupRbSessionId (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:386:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:335:16)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupAuthentication (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:345:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:101:18)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.svnCommit (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:90:24)
+    at D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.spec.ts:131:21
+    at Generator.next (<anonymous>)
+    at fulfilled (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:114:62)
+2021-04-23 21:36:38:632 info/RbChannel: [isRbReady] start.
+2021-04-23 21:36:38:637 info/RbChannel: [isRbReady] success.
+2021-04-23 21:36:38:638 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:36:38:639 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:36:38:642 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:36:38:643 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:36:38:644 info/RbChannel: [svnCommit] start.
+2021-04-23 21:37:30:599 error/RbChannel: [svnCommit] failed: TypeError: Cannot read property 'get' of undefined
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:373:36)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupRbSessionId (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:386:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:335:16)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupAuthentication (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:345:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:101:18)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.svnCommit (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:90:24)
+    at D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.spec.ts:131:21
+    at Generator.next (<anonymous>)
+    at fulfilled (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:114:62)
+2021-04-23 21:39:07:164 info/RbChannel: [isRbReady] start.
+2021-04-23 21:39:07:166 info/RbChannel: [isRbReady] success.
+2021-04-23 21:39:07:166 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:39:07:167 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:39:07:169 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:39:07:169 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:39:07:169 info/RbChannel: [svnCommit] start.
+2021-04-23 21:39:07:170 error/RbChannel: [svnCommit] failed: TypeError: Cannot read property 'nsbAccount' of undefined
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:373:50)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupRbSessionId (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:386:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:335:16)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupAuthentication (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:345:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:101:18)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.svnCommit (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:90:24)
+    at D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.spec.ts:133:21
+    at Generator.next (<anonymous>)
+    at fulfilled (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:114:62)
+    at processTicksAndRejections (internal/process/task_queues.js:93:5)
+2021-04-23 21:39:29:470 info/RbChannel: [isRbReady] start.
+2021-04-23 21:39:29:475 info/RbChannel: [isRbReady] success.
+2021-04-23 21:39:29:476 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:39:29:477 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:39:29:480 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:39:29:481 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:39:29:482 info/RbChannel: [svnCommit] start.
+2021-04-23 21:39:29:484 error/RbChannel: [svnCommit] failed: TypeError: Cannot read property 'nsbAccount' of undefined
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:373:50)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupRbSessionId (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:386:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:335:16)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupAuthentication (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:345:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:101:18)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.svnCommit (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:90:24)
+    at D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.spec.ts:133:21
+    at Generator.next (<anonymous>)
+    at fulfilled (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:114:62)
+2021-04-23 21:39:41:504 info/RbChannel: [isRbReady] start.
+2021-04-23 21:39:41:509 info/RbChannel: [isRbReady] success.
+2021-04-23 21:39:41:510 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:39:41:511 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:39:41:514 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:39:41:515 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:39:41:516 info/RbChannel: [svnCommit] start.
+2021-04-23 21:39:41:518 error/RbChannel: [svnCommit] failed: TypeError: Cannot read property 'nsbAccount' of undefined
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:373:50)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupRbSessionId (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:386:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:335:16)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupAuthentication (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:345:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:101:18)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.svnCommit (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:90:24)
+    at D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.spec.ts:133:21
+    at Generator.next (<anonymous>)
+    at fulfilled (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:114:62)
+2021-04-23 21:44:01:829 info/RbChannel: [isRbReady] start.
+2021-04-23 21:44:01:833 info/RbChannel: [isRbReady] success.
+2021-04-23 21:44:41:552 info/RbChannel: [isRbReady] start.
+2021-04-23 21:44:41:554 info/RbChannel: [isRbReady] success.
+2021-04-23 21:44:41:555 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:44:41:555 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:44:41:557 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:44:41:557 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:44:41:558 info/RbChannel: [svnCommit] start.
+2021-04-23 21:44:41:558 error/RbChannel: [svnCommit] failed: TypeError: Cannot read property 'get' of undefined
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:373:36)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupRbSessionId (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:386:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:335:16)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupAuthentication (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:345:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:101:18)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.svnCommit (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:90:24)
+    at D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.spec.ts:140:21
+    at Generator.next (<anonymous>)
+    at fulfilled (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:114:62)
+2021-04-23 21:44:41:678 info/RbChannel: [isRbReady] start.
+2021-04-23 21:44:41:678 info/RbChannel: [isRbReady] success.
+2021-04-23 21:44:41:678 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:44:41:678 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:44:41:679 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:44:41:679 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:44:41:679 info/RbChannel: [svnCommit] start.
+2021-04-23 21:44:41:679 error/RbChannel: [svnCommit] failed: TypeError: Cannot read property 'get' of undefined
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:373:36)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupRbSessionId (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:386:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:335:16)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupAuthentication (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:345:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:101:18)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.svnCommit (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:90:24)
+    at D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.spec.ts:207:21
+    at Generator.next (<anonymous>)
+    at fulfilled (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:114:62)
+2021-04-23 21:45:07:039 info/RbChannel: [isRbReady] start.
+2021-04-23 21:45:07:048 info/RbChannel: [isRbReady] success.
+2021-04-23 21:45:07:050 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:45:07:052 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:45:07:055 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:45:07:056 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:45:07:057 info/RbChannel: [svnCommit] start.
+2021-04-23 21:45:08:821 error/RbChannel: [svnCommit] failed: TypeError: Cannot read property 'get' of undefined
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:373:36)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupRbSessionId (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:386:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:335:16)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupAuthentication (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:345:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:101:18)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.svnCommit (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:90:24)
+    at D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.spec.ts:140:21
+    at Generator.next (<anonymous>)
+    at fulfilled (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:114:62)
+2021-04-23 21:46:42:146 info/RbChannel: [isRbReady] start.
+2021-04-23 21:46:42:151 info/RbChannel: [isRbReady] success.
+2021-04-23 21:46:42:152 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:46:42:153 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:46:42:157 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:46:42:158 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:46:42:159 info/RbChannel: [svnCommit] start.
+2021-04-23 21:46:42:161 info/RbChannel: [setupSvnCredentials] start
+2021-04-23 21:46:42:162 info/RbChannel: [setupSvnCredentials] success.
+2021-04-23 21:46:42:163 info/RbChannel: [sendSvnCommitReq] start.
+2021-04-23 21:46:42:164 info/RbChannel: [sendSvnCommitReq] success.
+2021-04-23 21:46:42:164 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'close_description' ]
+2021-04-23 21:46:42:166 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:46:42:166 info/RbChannel: [svnCommit] success.
+2021-04-23 21:48:39:825 info/RbChannel: [isRbReady] start.
+2021-04-23 21:48:39:827 info/RbChannel: [isRbReady] success.
+2021-04-23 21:48:39:828 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:48:39:828 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:48:39:830 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:48:39:830 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:48:39:831 info/RbChannel: [svnCommit] start.
+2021-04-23 21:48:39:831 info/RbChannel: [setupSvnCredentials] start
+2021-04-23 21:48:39:831 info/RbChannel: [setupSvnCredentials] success.
+2021-04-23 21:48:39:832 info/RbChannel: [sendSvnCommitReq] start.
+2021-04-23 21:48:39:832 info/RbChannel: [sendSvnCommitReq] success.
+2021-04-23 21:48:39:832 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'close_description' ]
+2021-04-23 21:48:39:832 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:48:39:832 info/RbChannel: [svnCommit] success.
+2021-04-23 21:49:06:183 info/RbChannel: [isRbReady] start.
+2021-04-23 21:49:06:185 info/RbChannel: [isRbReady] success.
+2021-04-23 21:49:06:186 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:49:06:186 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:49:06:188 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:49:06:189 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:49:06:189 info/RbChannel: [svnCommit] start.
+2021-04-23 21:49:06:190 info/RbChannel: [setupSvnCredentials] start
+2021-04-23 21:49:06:190 info/RbChannel: [setupSvnCredentials] success.
+2021-04-23 21:49:06:190 info/RbChannel: [sendSvnCommitReq] start.
+2021-04-23 21:49:06:191 info/RbChannel: [sendSvnCommitReq] success.
+2021-04-23 21:49:06:191 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'close_description' ]
+2021-04-23 21:49:06:191 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:49:06:191 info/RbChannel: [svnCommit] success.
+2021-04-23 21:49:26:742 info/RbChannel: [isRbReady] start.
+2021-04-23 21:49:26:745 info/RbChannel: [isRbReady] success.
+2021-04-23 21:49:26:745 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:49:26:746 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:49:26:747 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:49:26:748 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:49:26:748 info/RbChannel: [svnCommit] start.
+2021-04-23 21:49:26:749 info/RbChannel: [setupSvnCredentials] start
+2021-04-23 21:49:26:749 info/RbChannel: [setupSvnCredentials] success.
+2021-04-23 21:49:26:749 info/RbChannel: [sendSvnCommitReq] start.
+2021-04-23 21:49:26:749 info/RbChannel: [sendSvnCommitReq] success.
+2021-04-23 21:49:26:749 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'close_description' ]
+2021-04-23 21:49:26:750 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:49:26:750 info/RbChannel: [svnCommit] success.
+2021-04-23 21:50:04:956 info/RbChannel: [isRbReady] start.
+2021-04-23 21:50:04:959 info/RbChannel: [isRbReady] success.
+2021-04-23 21:50:04:959 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:50:04:960 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:50:04:962 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:50:04:962 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:50:04:963 info/RbChannel: [svnCommit] start.
+2021-04-23 21:50:04:964 info/RbChannel: [setupSvnCredentials] start
+2021-04-23 21:50:04:964 info/RbChannel: [setupSvnCredentials] success.
+2021-04-23 21:50:04:964 info/RbChannel: [sendSvnCommitReq] start.
+2021-04-23 21:50:04:965 error/RbChannel: [sendSvnCommitReq] failed: { isAxiosError: true, response: [Object] }
+2021-04-23 21:50:04:965 error/RbChannel: [svnCommit] there are some commit message issue: { isAxiosError: true, response: [Object] }
+2021-04-23 21:50:22:502 info/RbChannel: [isRbReady] start.
+2021-04-23 21:50:22:504 info/RbChannel: [isRbReady] success.
+2021-04-23 21:50:22:504 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:50:22:505 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:50:22:507 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:50:22:507 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:50:22:507 info/RbChannel: [svnCommit] start.
+2021-04-23 21:50:22:508 info/RbChannel: [setupSvnCredentials] start
+2021-04-23 21:50:22:508 info/RbChannel: [setupSvnCredentials] success.
+2021-04-23 21:50:22:508 info/RbChannel: [sendSvnCommitReq] start.
+2021-04-23 21:50:22:509 error/RbChannel: [sendSvnCommitReq] failed: { isAxiosError: true, response: [Object] }
+2021-04-23 21:50:22:509 error/RbChannel: [svnCommit] there are some commit message issue: { isAxiosError: true, response: [Object] }
+2021-04-23 21:50:29:012 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:50:29:016 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:50:29:019 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:50:29:019 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:50:29:124 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:50:29:125 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:50:29:125 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:50:29:125 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:50:29:236 info/RbChannel: [isRbReady] start.
+2021-04-23 21:50:29:237 info/RbChannel: [isRbReady] success.
+2021-04-23 21:50:29:237 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:50:29:237 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:50:29:237 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:50:29:238 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:50:29:238 info/RbChannel: [svnCommit] start.
+2021-04-23 21:50:29:239 info/RbChannel: [setupSvnCredentials] start
+2021-04-23 21:50:29:239 info/RbChannel: [setupSvnCredentials] success.
+2021-04-23 21:50:29:239 info/RbChannel: [sendSvnCommitReq] start.
+2021-04-23 21:50:29:239 info/RbChannel: [sendSvnCommitReq] success.
+2021-04-23 21:50:29:240 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'close_description' ]
+2021-04-23 21:50:29:240 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:50:29:240 info/RbChannel: [svnCommit] success.
+2021-04-23 21:50:29:348 info/RbChannel: [isRbReady] start.
+2021-04-23 21:50:29:348 info/RbChannel: [isRbReady] success.
+2021-04-23 21:50:29:349 info/RbChannel: [getPartialRbInfo] start.
+2021-04-23 21:50:29:349 info/RbChannel: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-23 21:50:29:349 info/RbChannel: [getInfoFromReviewRequest] success
+2021-04-23 21:50:29:349 info/RbChannel: [getPartialRbInfo] success.
+2021-04-23 21:50:29:349 info/RbChannel: [svnCommit] start.
+2021-04-23 21:50:29:350 info/RbChannel: [setupSvnCredentials] start
+2021-04-23 21:50:29:350 info/RbChannel: [setupSvnCredentials] success.
+2021-04-23 21:50:29:350 info/RbChannel: [sendSvnCommitReq] start.
+2021-04-23 21:50:29:350 error/RbChannel: [sendSvnCommitReq] failed: { isAxiosError: true, response: [Object] }
+2021-04-23 21:50:29:351 error/RbChannel: [svnCommit] there are some commit message issue: { isAxiosError: true, response: [Object] }
+2021-04-23 21:50:29:460 info/RbChannel: [isRbReady] start.
+2021-04-23 21:50:29:460 info/RbChannel: [isRbReady] success.
+2021-04-23 21:50:29:570 info/RbChannel: [isRbReady] start.
+2021-04-23 21:50:29:570 info/RbChannel: [isRbReady] success.
+2021-04-24 08:57:57:079 error/store: init failed, TypeError: Cannot read property 'path' of undefined
+    at new Store (D:\dev\p_project\oam-kit\apps\electron\src\app\store\store.ts:21:28)
+    at Object.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.spec.ts:46:19)
+    at Runtime._execModule (d:\dev\p_project\oam-kit\node_modules\jest-runtime\build\index.js:1299:24)
+    at Runtime._loadModule (d:\dev\p_project\oam-kit\node_modules\jest-runtime\build\index.js:898:12)
+    at Runtime.requireModule (d:\dev\p_project\oam-kit\node_modules\jest-runtime\build\index.js:746:10)
+    at jasmine2 (D:\dev\p_project\oam-kit\node_modules\jest-jasmine2\build\index.js:230:13)
+    at runTestInternal (d:\dev\p_project\oam-kit\node_modules\jest-runner\build\runTest.js:380:22)
+    at processTicksAndRejections (internal/process/task_queues.js:93:5)
+    at runTest (d:\dev\p_project\oam-kit\node_modules\jest-runner\build\runTest.js:472:34)
+2021-04-24 08:57:57:128 info/store: [isRbReady] start.
+2021-04-24 08:57:57:129 info/store: [isRbReady] success.
+2021-04-24 08:57:57:130 info/store: [getPartialRbInfo] start.
+2021-04-24 08:57:57:130 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 08:57:57:131 info/store: [getInfoFromReviewRequest] success
+2021-04-24 08:57:57:132 info/store: [getPartialRbInfo] success.
+2021-04-24 08:57:57:132 info/store: [svnCommit] start.
+2021-04-24 08:57:57:133 error/store: [svnCommit] failed: TypeError: Cannot read property 'nsbAccount' of undefined
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:373:50)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupRbSessionId (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:386:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:335:16)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupAuthentication (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:345:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:101:18)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.svnCommit (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:90:24)
+    at D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.spec.ts:138:21
+    at Generator.next (<anonymous>)
+    at fulfilled (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:114:62)
+    at processTicksAndRejections (internal/process/task_queues.js:93:5)
+2021-04-24 08:59:27:325 error/store: init failed, TypeError: Cannot read property 'path' of undefined
+    at new Store (D:\dev\p_project\oam-kit\apps\electron\src\app\store\store.ts:21:28)
+    at Object.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.spec.ts:46:19)
+    at Runtime._execModule (D:\dev\p_project\oam-kit\node_modules\jest-runtime\build\index.js:1299:24)
+    at Runtime._loadModule (D:\dev\p_project\oam-kit\node_modules\jest-runtime\build\index.js:898:12)
+    at Runtime.requireModule (D:\dev\p_project\oam-kit\node_modules\jest-runtime\build\index.js:746:10)
+    at jasmine2 (D:\dev\p_project\oam-kit\node_modules\jest-jasmine2\build\index.js:230:13)
+    at runTestInternal (D:\dev\p_project\oam-kit\node_modules\jest-runner\build\runTest.js:380:22)
+    at runTest (D:\dev\p_project\oam-kit\node_modules\jest-runner\build\runTest.js:472:34)
+2021-04-24 08:59:27:353 info/store: [isRbReady] start.
+2021-04-24 08:59:27:355 info/store: [isRbReady] success.
+2021-04-24 08:59:27:356 info/store: [getPartialRbInfo] start.
+2021-04-24 08:59:27:357 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 08:59:27:360 info/store: [getInfoFromReviewRequest] success
+2021-04-24 08:59:27:361 info/store: [getPartialRbInfo] success.
+2021-04-24 08:59:27:362 info/store: [svnCommit] start.
+2021-04-24 08:59:27:363 error/store: [svnCommit] failed: TypeError: Cannot read property 'nsbAccount' of undefined
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:373:50)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupRbSessionId (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:386:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:335:16)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.setupAuthentication (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:345:24)
+    at RbChannel.<anonymous> (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:101:18)
+    at Generator.next (<anonymous>)
+    at D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:117:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:113:16)
+    at RbChannel.svnCommit (D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.ts:90:24)
+    at D:\dev\p_project\oam-kit\apps\electron\src\app\modules\rb\rb.channel.spec.ts:138:21
+    at Generator.next (<anonymous>)
+    at fulfilled (D:\dev\p_project\oam-kit\node_modules\tslib\tslib.js:114:62)
+2021-04-24 08:59:57:047 info/store: [isRbReady] start.
+2021-04-24 08:59:57:051 info/store: [isRbReady] success.
+2021-04-24 08:59:57:052 info/store: [getPartialRbInfo] start.
+2021-04-24 08:59:57:054 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 08:59:57:056 info/store: [getInfoFromReviewRequest] success
+2021-04-24 08:59:57:058 info/store: [getPartialRbInfo] success.
+2021-04-24 08:59:57:059 info/store: [svnCommit] start.
+2021-04-24 08:59:57:060 info/store: [setupSvnCredentials] start
+2021-04-24 08:59:57:061 info/store: [setupSvnCredentials] success.
+2021-04-24 08:59:57:062 info/store: [sendSvnCommitReq] start.
+2021-04-24 08:59:57:063 info/store: [sendSvnCommitReq] success.
+2021-04-24 08:59:57:064 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'close_description' ]
+2021-04-24 08:59:57:065 info/store: [getInfoFromReviewRequest] success
+2021-04-24 08:59:57:066 info/store: [svnCommit] success.
+2021-04-24 09:00:04:746 info/store: [getPartialRbInfo] start.
+2021-04-24 09:00:04:748 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 09:00:04:750 info/store: [getInfoFromReviewRequest] success
+2021-04-24 09:00:04:751 info/store: [getPartialRbInfo] success.
+2021-04-24 09:00:04:858 info/store: [getPartialRbInfo] start.
+2021-04-24 09:00:04:858 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 09:00:04:859 info/store: [getInfoFromReviewRequest] success
+2021-04-24 09:00:04:859 info/store: [getPartialRbInfo] success.
+2021-04-24 09:00:04:969 info/store: [isRbReady] start.
+2021-04-24 09:00:04:970 info/store: [isRbReady] success.
+2021-04-24 09:00:04:970 info/store: [getPartialRbInfo] start.
+2021-04-24 09:00:04:970 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 09:00:04:970 info/store: [getInfoFromReviewRequest] success
+2021-04-24 09:00:04:970 info/store: [getPartialRbInfo] success.
+2021-04-24 09:00:04:970 info/store: [svnCommit] start.
+2021-04-24 09:00:04:971 info/store: [setupSvnCredentials] start
+2021-04-24 09:00:04:971 info/store: [setupSvnCredentials] success.
+2021-04-24 09:00:04:971 info/store: [sendSvnCommitReq] start.
+2021-04-24 09:00:04:972 info/store: [sendSvnCommitReq] success.
+2021-04-24 09:00:04:972 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'close_description' ]
+2021-04-24 09:00:04:972 info/store: [getInfoFromReviewRequest] success
+2021-04-24 09:00:04:972 info/store: [svnCommit] success.
+2021-04-24 09:00:05:081 info/store: [isRbReady] start.
+2021-04-24 09:00:05:082 info/store: [isRbReady] success.
+2021-04-24 09:00:05:082 info/store: [getPartialRbInfo] start.
+2021-04-24 09:00:05:082 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 09:00:05:082 info/store: [getInfoFromReviewRequest] success
+2021-04-24 09:00:05:082 info/store: [getPartialRbInfo] success.
+2021-04-24 09:00:05:082 info/store: [svnCommit] start.
+2021-04-24 09:00:05:082 info/store: [setupSvnCredentials] start
+2021-04-24 09:00:05:083 info/store: [setupSvnCredentials] success.
+2021-04-24 09:00:05:083 info/store: [sendSvnCommitReq] start.
+2021-04-24 09:00:05:083 error/store: [sendSvnCommitReq] failed: { isAxiosError: true, response: [Object] }
+2021-04-24 09:00:05:083 error/store: [svnCommit] there are some commit message issue: { isAxiosError: true, response: [Object] }
+2021-04-24 09:00:05:194 info/store: [isRbReady] start.
+2021-04-24 09:00:05:194 info/store: [isRbReady] success.
+2021-04-24 09:00:05:304 info/store: [isRbReady] start.
+2021-04-24 09:00:05:304 info/store: [isRbReady] success.
+2021-04-24 09:19:57:919 info/store: [getPartialRbInfo] start.
+2021-04-24 09:19:57:923 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 09:19:57:925 info/store: [getInfoFromReviewRequest] success
+2021-04-24 09:19:57:926 info/store: [getPartialRbInfo] success.
+2021-04-24 09:19:58:042 info/store: [getPartialRbInfo] start.
+2021-04-24 09:19:58:043 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 09:19:58:043 info/store: [getInfoFromReviewRequest] success
+2021-04-24 09:19:58:044 info/store: [getPartialRbInfo] success.
+2021-04-24 09:19:58:155 info/store: [isRbReady] start.
+2021-04-24 09:19:58:155 info/store: [isRbReady] success.
+2021-04-24 09:19:58:156 info/store: [getPartialRbInfo] start.
+2021-04-24 09:19:58:156 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 09:19:58:157 info/store: [getInfoFromReviewRequest] success
+2021-04-24 09:19:58:157 info/store: [getPartialRbInfo] success.
+2021-04-24 09:19:58:158 info/store: [svnCommit] start.
+2021-04-24 09:19:58:159 info/store: [setupSvnCredentials] start
+2021-04-24 09:19:58:159 info/store: [setupSvnCredentials] success.
+2021-04-24 09:19:58:160 info/store: [sendSvnCommitReq] start.
+2021-04-24 09:19:58:160 info/store: [sendSvnCommitReq] success.
+2021-04-24 09:19:58:161 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'close_description' ]
+2021-04-24 09:19:58:161 info/store: [getInfoFromReviewRequest] success
+2021-04-24 09:19:58:162 info/store: [svnCommit] success.
+2021-04-24 09:19:58:266 info/store: [isRbReady] start.
+2021-04-24 09:19:58:267 info/store: [isRbReady] success.
+2021-04-24 09:19:58:267 info/store: [getPartialRbInfo] start.
+2021-04-24 09:19:58:267 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 09:19:58:268 info/store: [getInfoFromReviewRequest] success
+2021-04-24 09:19:58:268 info/store: [getPartialRbInfo] success.
+2021-04-24 09:19:58:269 info/store: [svnCommit] start.
+2021-04-24 09:19:58:269 info/store: [setupSvnCredentials] start
+2021-04-24 09:19:58:270 info/store: [setupSvnCredentials] success.
+2021-04-24 09:19:58:270 info/store: [sendSvnCommitReq] start.
+2021-04-24 09:19:58:271 error/store: [sendSvnCommitReq] failed: { isAxiosError: true, response: [Object] }
+2021-04-24 09:19:58:272 error/store: [svnCommit] there are some commit message issue: { isAxiosError: true, response: [Object] }
+2021-04-24 09:19:58:378 info/store: [isRbReady] start.
+2021-04-24 09:19:58:378 info/store: [isRbReady] success.
+2021-04-24 09:19:58:490 info/store: [isRbReady] start.
+2021-04-24 09:19:58:491 info/store: [isRbReady] success.
+2021-04-24 09:21:52:608 info/store: [getPartialRbInfo] start.
+2021-04-24 09:21:52:612 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 09:21:52:614 info/store: [getInfoFromReviewRequest] success
+2021-04-24 09:21:52:618 info/store: [getPartialRbInfo] success.
+2021-04-24 09:21:52:734 info/store: [getPartialRbInfo] start.
+2021-04-24 09:21:52:734 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 09:21:52:735 info/store: [getInfoFromReviewRequest] success
+2021-04-24 09:21:52:735 info/store: [getPartialRbInfo] success.
+2021-04-24 09:21:52:846 info/store: [isRbReady] start.
+2021-04-24 09:21:52:846 info/store: [isRbReady] success.
+2021-04-24 09:21:52:847 info/store: [getPartialRbInfo] start.
+2021-04-24 09:21:52:847 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 09:21:52:847 info/store: [getInfoFromReviewRequest] success
+2021-04-24 09:21:52:848 info/store: [getPartialRbInfo] success.
+2021-04-24 09:21:52:848 info/store: [svnCommit] start.
+2021-04-24 09:21:52:849 info/store: [setupSvnCredentials] start
+2021-04-24 09:21:52:849 info/store: [setupSvnCredentials] success.
+2021-04-24 09:21:52:850 info/store: [sendSvnCommitReq] start.
+2021-04-24 09:21:52:850 info/store: [sendSvnCommitReq] success.
+2021-04-24 09:21:52:850 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'close_description' ]
+2021-04-24 09:21:52:851 info/store: [getInfoFromReviewRequest] success
+2021-04-24 09:21:52:851 info/store: [svnCommit] success.
+2021-04-24 09:21:52:957 info/store: [isRbReady] start.
+2021-04-24 09:21:52:958 info/store: [isRbReady] success.
+2021-04-24 09:21:52:958 info/store: [getPartialRbInfo] start.
+2021-04-24 09:21:52:959 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 09:21:52:959 info/store: [getInfoFromReviewRequest] success
+2021-04-24 09:21:52:960 info/store: [getPartialRbInfo] success.
+2021-04-24 09:21:52:960 info/store: [svnCommit] start.
+2021-04-24 09:21:52:961 info/store: [setupSvnCredentials] start
+2021-04-24 09:21:52:962 info/store: [setupSvnCredentials] success.
+2021-04-24 09:21:52:962 info/store: [sendSvnCommitReq] start.
+2021-04-24 09:21:52:963 error/store: [sendSvnCommitReq] failed: { isAxiosError: true, response: [Object] }
+2021-04-24 09:21:52:964 error/store: [svnCommit] there are some commit message issue: { isAxiosError: true, response: [Object] }
+2021-04-24 09:21:53:069 info/store: [isRbReady] start.
+2021-04-24 09:21:53:070 info/store: [isRbReady] success.
+2021-04-24 09:21:53:181 info/store: [isRbReady] start.
+2021-04-24 09:21:53:182 info/store: [isRbReady] success.
+2021-04-24 12:53:06:854 info/store: [getPartialRbInfo] start.
+2021-04-24 12:53:06:858 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 12:53:06:860 info/store: [getInfoFromReviewRequest] success
+2021-04-24 12:53:06:861 info/store: [getPartialRbInfo] success.
+2021-04-24 12:53:06:970 info/store: [getPartialRbInfo] start.
+2021-04-24 12:53:06:971 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 12:53:06:971 info/store: [getInfoFromReviewRequest] success
+2021-04-24 12:53:06:972 info/store: [getPartialRbInfo] success.
+2021-04-24 12:53:07:082 info/store: [isRbReady] start.
+2021-04-24 12:53:07:082 info/store: [isRbReady] success.
+2021-04-24 12:53:07:083 info/store: [getPartialRbInfo] start.
+2021-04-24 12:53:07:083 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 12:53:07:084 info/store: [getInfoFromReviewRequest] success
+2021-04-24 12:53:07:084 info/store: [getPartialRbInfo] success.
+2021-04-24 12:53:07:085 info/store: [svnCommit] start.
+2021-04-24 12:53:07:086 info/store: [setupSvnCredentials] start
+2021-04-24 12:53:07:086 info/store: [setupSvnCredentials] success.
+2021-04-24 12:53:07:087 info/store: [sendSvnCommitReq] start.
+2021-04-24 12:53:07:087 info/store: [sendSvnCommitReq] success.
+2021-04-24 12:53:07:088 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'close_description' ]
+2021-04-24 12:53:07:088 info/store: [getInfoFromReviewRequest] success
+2021-04-24 12:53:07:089 info/store: [svnCommit] success.
+2021-04-24 12:53:07:193 info/store: [isRbReady] start.
+2021-04-24 12:53:07:194 info/store: [isRbReady] success.
+2021-04-24 12:53:07:194 info/store: [getPartialRbInfo] start.
+2021-04-24 12:53:07:194 info/store: [getInfoFromReviewRequest] start, rbid: 92407, fields: [ 'summary', 'links' ]
+2021-04-24 12:53:07:195 info/store: [getInfoFromReviewRequest] success
+2021-04-24 12:53:07:195 info/store: [getPartialRbInfo] success.
+2021-04-24 12:53:07:196 info/store: [svnCommit] start.
+2021-04-24 12:53:07:196 info/store: [setupSvnCredentials] start
+2021-04-24 12:53:07:197 info/store: [setupSvnCredentials] success.
+2021-04-24 12:53:07:198 info/store: [sendSvnCommitReq] start.
+2021-04-24 12:53:07:198 error/store: [sendSvnCommitReq] failed: { isAxiosError: true, response: [Object] }
+2021-04-24 12:53:07:199 error/store: [svnCommit] there are some commit message issue: { isAxiosError: true, response: [Object] }
+2021-04-24 12:53:07:303 info/store: [isRbReady] start.
+2021-04-24 12:53:07:304 info/store: [isRbReady] success.
+2021-04-24 12:53:07:415 info/store: [isRbReady] start.
+2021-04-24 12:53:07:415 info/store: [isRbReady] success.

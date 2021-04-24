@@ -1,35 +1,26 @@
-import { Profile } from "@oam-kit/store/types";
 import { MainFixture } from "../fixtures/mainFixture";
-import { fullProfileInfoAndExpected } from "../fixtures/profileFixture";
-import { addBranchAndExpectTheResult } from "../fixtures/sycnCodeFixture";
+import { profileFixture, projectFixture } from '../fixtures/appData';
 
 describe('Page cache: should not reload page that has been visited', () => {
   it('Sycn code page should be cached', () => {
-    const mainFixture = new MainFixture();
-    mainFixture.visit('profile');
-    fullProfileInfoAndExpected();
-    mainFixture.navigate('Sync Code');
-    addBranchAndExpectTheResult();
-    cy.get('[data-btn-type=sync]').click();
+    const initData: any = { general: { profile: profileFixture }, syncCode: { projects: [projectFixture] } };
+    const fixture = new MainFixture({ initData });
+    fixture.visit('sync-code');
+    cy.getBySel('sync-code-button').click();
     cy.get('nz-step').eq(0).as('first');
     cy.assertStepStatus('@first', 'process');
-    mainFixture.navigate('Profile');
-    mainFixture.navigate('Sync Code');
+    fixture.navigate('Profile');
+    fixture.navigate('Sync Code');
     cy.assertStepStatus('@first', 'process');
   });
 
   it('Profile page should not be cached', () => {
     const mainFixture = new MainFixture();
-    const profile: Profile = { remote: 'test1', username: 'test2', password: 'test3' };
     mainFixture.visit('profile');
-    cy.get('input[name="remote"]').as('remote').type(profile.remote);
-    cy.get('input[name="username"]').as('username').type(profile.username);
-    cy.get('input[name="password"]').as('password').type(profile.password);
+    cy.getBySel('nsb-username-input').type('username');
     mainFixture.navigate('Sync Code');
     mainFixture.navigate('Profile');
-    cy.get('@remote').should('be.empty');
-    cy.get('@username').should('be.empty');
-    cy.get('@password').should('be.empty');
+    cy.getBySel('nsb-username-input').should('be.empty');
   });
 });
 

@@ -1,11 +1,11 @@
-import { BranchLockInfo, LockInfo, Profile, Repo, RepoLockInfo, ReviewBoard } from '@oam-kit/store/types';
+import { GeneralModel, Repo, ReviewBoard, LockInfo, BranchLockInfo, RepoLockInfo } from '@oam-kit/utility/types';
 import { IpcChannelInterface } from '@electron/app/interfaces';
-import { Store, modelConfig } from '@oam-kit/store';
+import { Store } from '@electron/app/store';
 import * as config from '@oam-kit/utility/overall-config';
 import * as branchLockParser from '@electron/app/utils/branchLockParser';
 import * as fetcher from '@electron/app/utils/fetcher';
 import Logger from '@electron/app/utils/logger';
-import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
+import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/utility/types';
 import { IpcMainEvent } from 'electron/main';
 import { RbBase_ } from '../rb';
 
@@ -42,7 +42,7 @@ export class LockInfoChannel extends RbBase_ implements IpcChannelInterface {
     } catch (error) {
       res.isSuccessed = false;
       res.error = { name: 'getLockInfo', message: error.message };
-      logger.info('[getLockInfo] failed: %s', error);
+      logger.error('[getLockInfo] failed: %s', error);
     } finally {
       event.reply(req.responseChannel, res);
     }
@@ -52,6 +52,9 @@ export class LockInfoChannel extends RbBase_ implements IpcChannelInterface {
     const json = await this.getJsonBranchLockJson();
     const lockedBranches = JSON.parse(json);
     const lockedBranch = lockedBranches[branch];
+    if (!lockedBranch) {
+      throw new Error(`can not find lock info for: ${branch}`);
+    }
     return {
       name: branch,
       locked: lockedBranch['locked_by_BC'] || false,
@@ -61,10 +64,12 @@ export class LockInfoChannel extends RbBase_ implements IpcChannelInterface {
 
   private async getRepoLockInfo(branch: string, repo: Repo): Promise<RepoLockInfo> {
     const svnPath = `${config.svnroot}/${repo.repository}/LOCKS/locks.conf`;
-    const profile = this.store.get<Profile>(modelConfig.profile.name).data as Profile;
+    const gModel = this.store.get<GeneralModel>(config.MODEL_NAME.GENERAL);
+    const nsbAccount = gModel.get('profile').nsbAccount;
+    const svnAccount = gModel.get('profile').svnAccount;
     const locksContent = await fetcher.svnCat(svnPath, {
-      username: profile.username,
-      password: profile.password,
+      username: nsbAccount.username,
+      password: svnAccount.password,
     });
     return {
       name: repo.name,
@@ -76,9 +81,11 @@ export class LockInfoChannel extends RbBase_ implements IpcChannelInterface {
 
   private getJsonBranchLockJson() {
     const jsonPath = `${config.svnroot}/${moduleConf.oam_repository}/conf/BranchFor.json`;
-    const profile = this.store.get<Profile>(modelConfig.profile.name).data as Profile;
+    const gModel = this.store.get<GeneralModel>(config.MODEL_NAME.GENERAL);
+    const nsbAccount = gModel.get('profile').nsbAccount;
+    const svnAccount = gModel.get('profile').svnAccount;
     try {
-      return fetcher.svnCat(jsonPath, { username: profile.username, password: profile.password });
+      return fetcher.svnCat(jsonPath, { username: nsbAccount.username, password: svnAccount.password });
     } catch(error) {
       if (!this.isCustomError(error)) {
         throw new Error(`[oam-kit][getJsonBranchLockJson] ${error.message}`);

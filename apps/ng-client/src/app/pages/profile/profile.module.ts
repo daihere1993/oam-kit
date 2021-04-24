@@ -6,6 +6,8 @@ import { NzNotificationServiceModule } from 'ng-zorro-antd/notification';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 
 import { ProfileComponent } from './profile.component';
 import { ProfileRoutingModule } from './profile-routing.module';
@@ -21,6 +23,8 @@ import { ProfileRoutingModule } from './profile-routing.module';
     NzInputModule,
     NzButtonModule,
     NzNotificationServiceModule,
+    NzCheckboxModule,
+    NzSpinModule,
   ],
 })
 export class ProfileModule {}

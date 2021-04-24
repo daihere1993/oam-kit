@@ -1,10 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as XLSX from 'xlsx';
 import axios from 'axios';
 import { app, remote } from 'electron';
 import { Observable } from 'rxjs';
-import { WorkSheet } from 'xlsx/types';
+import { storeName } from '@oam-kit/utility/overall-config';
 
 export function getTestDir(): string {
   return path.join(__dirname, '../../__test__');
@@ -12,9 +11,14 @@ export function getTestDir(): string {
 
 export function getUserDataPath(): string {
   if (app || remote) {
-    return (app || remote.app).getPath('userData');
+    return path.join((app || remote.app).getPath('userData'), '/data');
   }
-  return path.join(getTestDir(), 'tmp');
+  return getTestDir();
+}
+
+export function isFirstLoad() {
+  const targetPath = path.join(getUserDataPath(), storeName);
+  return !fs.existsSync(targetPath);
 }
 
 export function getTmpDir(): string {
@@ -64,16 +68,6 @@ export function getChangedFiles(diffContent: string, filter?: (a: string) => boo
   }
 
   return changedFiles;
-}
-
-export function createASheet(data: any): WorkSheet {
-  const aoa = [['Changed File', 'Total Amount', 'Legacy Amount']];
-
-  for (const [key, value] of Object.entries(data)) {
-    aoa.push([key, value['total'], value['legacy'] ]);
-  }
-
-  return XLSX.utils.aoa_to_sheet(aoa);
 }
 
 export function downLoadDiff(url: string, target: string): Observable<string> {

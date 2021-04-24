@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy, Output, EventEmitter } from '@angular/core';
-import { IpcChannel } from '@oam-kit/ipc';
+import { IpcChannel } from '@oam-kit/utility/types';
 import { IpcService } from '../../services/ipc.service';
 
 enum Type {
@@ -28,7 +28,6 @@ export class PathInputComponent implements OnDestroy {
   }
 
   public setValue(value: string) {
-    this.value = value;
     this.valueChange.emit(value);
   }
 

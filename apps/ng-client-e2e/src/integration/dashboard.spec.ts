@@ -1,5 +1,5 @@
-// import { modelConfig } from '@oam-kit/store';
-// import { Branch, Repo } from '@oam-kit/store/types';
+// import { modelConfig } from '@oam-kit/utility/types';
+// import { Branch, Repo } from '@oam-kit/utility/types';
 // import { cloneDeep } from 'lodash';
 // import { MainFixture } from '../fixtures/mainFixture';
 

@@ -3,8 +3,11 @@ import { assert } from 'console';
 import Logger from '../../utils/logger';
 import { IpcMainEvent } from 'electron/main';
 import { IpcChannelInterface } from '@electron/app/interfaces';
-import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/ipc';
-import { modelConfig, Profile, ReviewBoard, Store } from '@oam-kit/store';
+import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/utility/types';
+import { GeneralModel, ReviewBoard } from '@oam-kit/utility/types';
+import { Store } from '@electron/app/store';
+import { MODEL_NAME } from '@oam-kit/utility/overall-config';
+import { Model } from '@oam-kit/utility/model';
 
 const logger = Logger.for('RbChannel');
 
@@ -52,9 +55,11 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
   private cookies = '';
   // Cache partialrb for corresponding rb id
   private cachedPartialRb: { [key: string]: PartialRb } = {};
+  private gModel: Model<GeneralModel>;
 
   constructor(private store: Store) {
     super();
+    this.gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
   }
 
   public async getPartialRbInfo(event: IpcMainEvent, req: IPCRequest<string>) {
@@ -63,7 +68,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
     const rbId = this.getRbId(req.data);
     try {
       res.isSuccessed = true;
-      if (this.haveCachedPartialRb(rbId)) {
+      if (this.isCachedRb(rbId)) {
         res.data = this.cachedPartialRb[rbId];
       } else {
         await this.initPartialRb(req.data);
@@ -199,7 +204,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
     return (close_description as string).match(/@r(\d+)/)[1].trim();
   }
 
-  private haveCachedPartialRb(rbId: number): boolean {
+  private isCachedRb(rbId: number): boolean {
     return !!(
       rbId in this.cachedPartialRb &&
       this.cachedPartialRb[rbId].repo &&
@@ -314,7 +319,16 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
    *  get branch from basedir, like: from "/mantanence/5G21A" to get "5G21A"
    */
   private getBranchFromBasedir(basedir: string): string {
-    return basedir.includes('/') ? this.reverseStr(this.reverseStr(basedir).match(/(\w+)\//)[1]) : basedir;
+    if (basedir.includes('trunk') || basedir.includes('TRUNK')) {
+      return 'trunk';
+    } else {
+      const tmp = this.reverseStr(basedir).match(/(\w+)\//);
+      if (tmp) {
+        return this.reverseStr(tmp[1]);
+      }
+      logger.warn(`couldn't parse branch name for ${basedir}`);
+      return basedir;
+    }
   }
 
   private async setupAuthentication(rbId: number) {
@@ -324,11 +338,11 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
 
   private async setupSvnCredentials(rbId: number) {
     logger.info('[setupSvnCredentials] start');
-    const profileModel = this.store.get<Profile>(modelConfig.profile.name);
-    const profile = profileModel.data as Profile;
+    const nsbAccount = this.gModel.get('profile').nsbAccount;
+    const svnAccount = this.gModel.get('profile').svnAccount;
     const url = this.getUrlFromTmp(SETUP_SVN_CREDENTIALS, rbId);
     try {
-      const { data } = await axios.post(url, `svn_username=${profile.username}&svn_password=${profile.password}`, {
+      const { data } = await axios.post(url, `svn_username=${nsbAccount.username}&svn_password=${svnAccount.password}`, {
         headers: {
           Cookie: this.cookies,
           'X-Requested-With': 'XMLHttpRequest',
@@ -356,13 +370,12 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
    * the seesionid exists in the response header of "set-cookie"
    */
   private async setupRbSessionId(rbId: number) {
-    const profileModel = this.store.get<Profile>(modelConfig.profile.name);
-    const profile = profileModel.data as Profile;
+    const nsbAccount = this.gModel.get('profile').nsbAccount;
     try {
       const { headers } = await axios.post(SETUP_RBSESSION_URL, `review_request_id=${rbId}`, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          Authorization: `Basic ${Buffer.from(`${profile.username}:${profile.password}`).toString('base64')}`,
+          Authorization: `Basic ${Buffer.from(`${nsbAccount.username}:${nsbAccount.password}`).toString('base64')}`,
         },
       });
       this.cookies += headers['set-cookie'][0].match(/(.+?);/)[0];

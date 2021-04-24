@@ -1,16 +1,15 @@
-import * as fs from 'fs'
+import * as fs from 'fs';
 
-import { BrowserWindow, shell, screen, ipcMain } from 'electron';
+import { BrowserWindow, shell, ipcMain } from 'electron';
 import { rendererAppName, rendererAppPort, storeName } from '@oam-kit/utility/overall-config';
 import { environment } from '../environments/environment';
 import { join } from 'path';
 import { format } from 'url';
-import * as utils from './utils'
-import { Store } from '@oam-kit/store';
+import * as utils from './utils';
+import { Store } from './store';
 import { KitChannel } from './modules/kit';
 import { ModelChannel } from './modules/model';
 import { SyncCodeChannel } from './modules/sync-code';
-import { ElectronSolid } from '@oam-kit/store/solid/electron-solid';
 import { LockInfoChannel } from './modules/lock-info';
 import { RbChannel } from './modules/rb';
 
@@ -89,16 +88,14 @@ export default class App {
   private static async initChannels$() {
     const targetPath = join(utils.getUserDataPath(), storeName);
     console.debug(`data file: ${targetPath}`);
-    const store = new Store({ solid: new ElectronSolid(targetPath) });
-    await store.startup$();
+    const store = new Store();
     const modelChannel = new ModelChannel(store);
-    await modelChannel.startup$();
     const channels: any[] = [
       modelChannel,
-      new KitChannel({ mainWindow: App.mainWindow }),
+      new KitChannel({ store, mainWindow: App.mainWindow }),
       new SyncCodeChannel(store),
       new LockInfoChannel(store),
-      new RbChannel(store)
+      new RbChannel(store),
     ];
     for (const channel of channels) {
       for (const handler of channel.handlers) {
@@ -108,9 +105,8 @@ export default class App {
   }
 
   private static initMainWindow() {
-    const workAreaSize = screen.getPrimaryDisplay().workAreaSize;
-    const width = Math.min(900, workAreaSize.width || 900);
-    const height = App.application.isPackaged? Math.min(540, workAreaSize.height || 540) : Math.min(720, workAreaSize.height || 720);
+    const width = 1150;
+    const height = 600;
 
     // Create the browser window.
     App.mainWindow = new BrowserWindow({
@@ -124,12 +120,12 @@ export default class App {
     });
     App.mainWindow.setMenu(null);
     App.mainWindow.center();
-    App.mainWindow.maximize();
+    // App.mainWindow.maximize();
 
     // if main window is ready to show, close the splash window and show the main window
     App.mainWindow.once('ready-to-show', () => {
       App.mainWindow.show();
-      const enableChromeDebugger = App.application.isPackaged? false : true;
+      const enableChromeDebugger = App.application.isPackaged ? false : true;
       if (enableChromeDebugger) {
         App.mainWindow.webContents.toggleDevTools();
       }
