@@ -12,7 +12,7 @@
   "description": "A tool platform for Nokia oam.",
   "scripts": {
     "ng": "nx",
-    "postinstall": "exitzero electron-builder install-app-deps && husky install",
+    "postinstall": "exitzero electron-builder install-app-deps",
     "nx": "nx",
     "dev": "nx e2e ng-client-e2e --watch",
     "start": "ng serve",
@@ -97,7 +97,6 @@
     "eslint-config-prettier": "6.0.0",
     "eslint-plugin-cypress": "^2.10.3",
     "exitzero": "^1.0.1",
-    "husky": "^5.0.9",
     "jest": "26.2.2",
     "jest-preset-angular": "8.3.1",
     "lint-staged": "^10.5.4",
