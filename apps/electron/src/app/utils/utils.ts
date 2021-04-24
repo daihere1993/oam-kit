@@ -3,7 +3,7 @@ import * as path from 'path';
 import axios from 'axios';
 import { app, remote } from 'electron';
 import { Observable } from 'rxjs';
-import {storeName } from '@oam-kit/utility/overall-config';
+import { storeName } from '@oam-kit/utility/overall-config';
 
 export function getTestDir(): string {
   return path.join(__dirname, '../../__test__');
@@ -13,9 +13,8 @@ export function getUserDataPath(): string {
   if (app || remote) {
     return path.join((app || remote.app).getPath('userData'), '/data');
   }
-  return path.join(getTestDir(), 'tmp');
+  return getTestDir();
 }
-
 
 export function isFirstLoad() {
   const targetPath = path.join(getUserDataPath(), storeName);

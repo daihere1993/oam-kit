@@ -28,7 +28,10 @@
     },
     {
       "files": ["*.js", "*.jsx"],
-      "extends": ["plugin:@nrwl/nx/javascript"]
+      "extends": ["plugin:@nrwl/nx/javascript"],
+      "rules": {
+        "no-var-requires": "off"
+      }
     }
   ]
 }

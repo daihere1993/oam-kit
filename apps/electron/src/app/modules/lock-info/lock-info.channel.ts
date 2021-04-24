@@ -42,7 +42,7 @@ export class LockInfoChannel extends RbBase_ implements IpcChannelInterface {
     } catch (error) {
       res.isSuccessed = false;
       res.error = { name: 'getLockInfo', message: error.message };
-      logger.info('[getLockInfo] failed: %s', error);
+      logger.error('[getLockInfo] failed: %s', error);
     } finally {
       event.reply(req.responseChannel, res);
     }
@@ -52,6 +52,9 @@ export class LockInfoChannel extends RbBase_ implements IpcChannelInterface {
     const json = await this.getJsonBranchLockJson();
     const lockedBranches = JSON.parse(json);
     const lockedBranch = lockedBranches[branch];
+    if (!lockedBranch) {
+      throw new Error(`can not find lock info for: ${branch}`);
+    }
     return {
       name: branch,
       locked: lockedBranch['locked_by_BC'] || false,

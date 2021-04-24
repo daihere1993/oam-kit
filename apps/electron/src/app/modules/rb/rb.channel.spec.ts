@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { IpcChannel } from '@oam-kit/utility/types';
+import { GeneralModel, IpcChannel } from '@oam-kit/utility/types';
 import { RbChannel } from './rb.channel';
 import {
   IS_COMMIT_ALLOWED,
@@ -9,6 +9,9 @@ import {
   REVIEW_REQUEST_RESPONSE,
   REVIEW_REQUEST_RESPONSE__SPECIAL_SUMMARY,
 } from './__test__/api_response';
+import { Store } from '@electron/app/store';
+import { Model } from '@oam-kit/utility/model';
+import { MODEL_INIT_VALUE, MODEL_NAME } from '@oam-kit/utility/overall-config';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -23,11 +26,6 @@ const SETUP_RBSESSION_URL = 'http://biedronka.emea.nsn-net.net/api/extensions/rb
 const SETUP_SVN_CREDENTIALS_URL = `http://biedronka.emea.nsn-net.net/r/${rbId}/rb_svncommit/ajax/encrypt_svn_credentials/`;
 const SVN_COMMIT_URL = `http://biedronka.emea.nsn-net.net/r/${rbId}/rb_svncommit/ajax/commit/`;
 const IS_COMMIT_ALLOWED_URL = `http://biedronka.emea.nsn-net.net/r/${rbId}/rb_svncommit/ajax/is_commit_allowed/`;
-const fakeStore: any = {
-  get() {
-    return { data: { username: 'username', password: 'password' } };
-  },
-};
 
 async function getPartialRbInfo(channel: RbChannel, mockEvent: any) {
   // mock review_request response
@@ -44,6 +42,12 @@ async function isRbReady(channel: RbChannel, mockEvent: any) {
   mockedAxios.get.mockResolvedValueOnce({ data: IS_COMMIT_ALLOWED });
   await channel.isRbReady(mockEvent, { responseChannel: IpcChannel.IS_RB_READY_RES, data: link });
 }
+
+const fakeStore = new Store();
+fakeStore.add(new Model<GeneralModel>({
+  name: MODEL_NAME.GENERAL,
+  initValue: MODEL_INIT_VALUE.general
+}));
 
 describe('RbChannel', () => {
   describe('getPartialRbInfo', () => {
@@ -102,7 +106,7 @@ describe('RbChannel', () => {
 
   describe('svnCommit', () => {
     let mockEvent: any;
-    beforeEach(() => {
+    beforeAll(async () => {
       mockEvent = { reply: jest.fn() };
     });
     afterEach(async () => {
@@ -143,14 +147,14 @@ describe('RbChannel', () => {
           {
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
-              Authorization: 'Basic dXNlcm5hbWU6cGFzc3dvcmQ=',
+              Authorization: 'Basic bnNidXNlcm5hbWU6bnNicGFzc3dvcmQ=',
             },
           },
         ],
         // expect setup svn credentials request
         [
           SETUP_SVN_CREDENTIALS_URL,
-          'svn_username=username&svn_password=password',
+          'svn_username=nsbusername&svn_password=svnpassword',
           {
             headers: {
               'X-Requested-With': 'XMLHttpRequest',
@@ -213,14 +217,14 @@ describe('RbChannel', () => {
           {
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
-              Authorization: 'Basic dXNlcm5hbWU6cGFzc3dvcmQ=',
+              Authorization: 'Basic bnNidXNlcm5hbWU6bnNicGFzc3dvcmQ=',
             },
           },
         ],
         // expect setup svn credentials request
         [
           SETUP_SVN_CREDENTIALS_URL,
-          'svn_username=username&svn_password=password',
+          'svn_username=nsbusername&svn_password=svnpassword',
           {
             headers: {
               'X-Requested-With': 'XMLHttpRequest',
@@ -248,7 +252,7 @@ describe('RbChannel', () => {
 
   describe('isRbReady', () => {
     let mockEvent: any;
-    beforeEach(() => {
+    beforeAll(async () => {
       mockEvent = { reply: jest.fn() };
     });
     afterEach(async () => {

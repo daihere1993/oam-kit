@@ -20,10 +20,7 @@
     "ng-client-e2e": { "tags": [], "implicitDependencies": ["ng-client"] },
     "utility": { "tags": [] },
     "electron": { "tags": [] },
-    "store": { "tags": [] },
-    "ipc": { "tags": [] },
     "sync-code": { "tags": [] },
-    "logger": { "tags": [] },
-    "model": { "tags": [] }
+    "logger": { "tags": [] }
   }
 }

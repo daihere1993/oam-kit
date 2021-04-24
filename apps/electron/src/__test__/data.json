@@ -1,0 +1,20 @@
+{
+  "general": {
+    "profile": {
+      "nsbAccount": { "username": "nsbusername", "password": "nsbpassword" },
+      "svnAccount": { "password": "svnpassword" }
+    },
+    "serverList": []
+  },
+  "syncCode": {
+    "projects": [
+      {
+        "name": "TRUNK",
+        "serverAddr": "hzlinb35.china.nsn-net.net",
+        "localPath": "/moam/trunk",
+        "remotePath": "/var/fpwork/zowu/moam/trunk"
+      }
+    ]
+  },
+  "rbTools": { "rbs": [], "preferences": { "checkLockInfoInterval": 300000 } }
+}

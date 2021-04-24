@@ -7,6 +7,7 @@ import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/utility/types';
 import { GeneralModel, ReviewBoard } from '@oam-kit/utility/types';
 import { Store } from '@electron/app/store';
 import { MODEL_NAME } from '@oam-kit/utility/overall-config';
+import { Model } from '@oam-kit/utility/model';
 
 const logger = Logger.for('RbChannel');
 
@@ -54,10 +55,11 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
   private cookies = '';
   // Cache partialrb for corresponding rb id
   private cachedPartialRb: { [key: string]: PartialRb } = {};
-  private gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
+  private gModel: Model<GeneralModel>;
 
   constructor(private store: Store) {
     super();
+    this.gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
   }
 
   public async getPartialRbInfo(event: IpcMainEvent, req: IPCRequest<string>) {
@@ -66,7 +68,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
     const rbId = this.getRbId(req.data);
     try {
       res.isSuccessed = true;
-      if (this.haveCachedPartialRb(rbId)) {
+      if (this.isCachedRb(rbId)) {
         res.data = this.cachedPartialRb[rbId];
       } else {
         await this.initPartialRb(req.data);
@@ -202,7 +204,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
     return (close_description as string).match(/@r(\d+)/)[1].trim();
   }
 
-  private haveCachedPartialRb(rbId: number): boolean {
+  private isCachedRb(rbId: number): boolean {
     return !!(
       rbId in this.cachedPartialRb &&
       this.cachedPartialRb[rbId].repo &&
@@ -315,7 +317,6 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
 
   /**
    *  get branch from basedir, like: from "/mantanence/5G21A" to get "5G21A"
-   *  TODO(bug): if basedir is "trunk/", below regex would crash
    */
   private getBranchFromBasedir(basedir: string): string {
     if (basedir.includes('trunk') || basedir.includes('TRUNK')) {
@@ -325,6 +326,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
       if (tmp) {
         return this.reverseStr(tmp[1]);
       }
+      logger.warn(`couldn't parse branch name for ${basedir}`);
       return basedir;
     }
   }

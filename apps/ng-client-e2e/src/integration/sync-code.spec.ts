@@ -2,7 +2,6 @@
 ///<reference path="../global.d.ts" />
 
 import { SyncCodeStep } from '@oam-kit/sync-code';
-import { MODEL_INIT_VALUE } from '@oam-kit/utility/overall-config';
 import { IpcChannel } from '@oam-kit/utility/types';
 import { profileFixture, projectFixture } from '../fixtures/appData';
 import { MainFixture } from '../fixtures/mainFixture';

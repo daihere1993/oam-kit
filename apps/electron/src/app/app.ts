@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 
-import { BrowserWindow, shell, screen, ipcMain } from 'electron';
+import { BrowserWindow, shell, ipcMain } from 'electron';
 import { rendererAppName, rendererAppPort, storeName } from '@oam-kit/utility/overall-config';
 import { environment } from '../environments/environment';
 import { join } from 'path';
@@ -88,8 +88,7 @@ export default class App {
   private static async initChannels$() {
     const targetPath = join(utils.getUserDataPath(), storeName);
     console.debug(`data file: ${targetPath}`);
-    const store = new Store(targetPath);
-    await store.startup();
+    const store = new Store();
     const modelChannel = new ModelChannel(store);
     const channels: any[] = [
       modelChannel,
@@ -106,7 +105,6 @@ export default class App {
   }
 
   private static initMainWindow() {
-    const workAreaSize = screen.getPrimaryDisplay().workAreaSize;
     const width = 1150;
     const height = 600;
 

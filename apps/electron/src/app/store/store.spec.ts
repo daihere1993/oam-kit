@@ -21,7 +21,7 @@ describe('Store', () => {
 
   it('should save data into disk successfully when reset model', (done) => {
     isFirstLoad_();
-    const store = new Store(dataPath);
+    const store = new Store({ path: dataPath });
     store.add(
       new Model<{ content: string }>({
         name: 'test-model',
@@ -42,8 +42,7 @@ describe('Store', () => {
     };
     isFirstLoad_();
     fs.writeFileSync(dataPath, JSON.stringify(existedData));
-    const store = new Store(dataPath);
-    await store.startup();
+    const store = new Store({ path: dataPath });
     store.add(
       new Model<{ content: string }>({
         name: 'test-model',
@@ -58,8 +57,7 @@ describe('Store', () => {
     };
     isNotFirstLoad_();
     fs.writeFileSync(dataPath, JSON.stringify(existedData));
-    const store = new Store(dataPath);
-    await store.startup();
+    const store = new Store({ path: dataPath });
     store.add(
       new Model<{ content: string }>({
         name: 'test-model',

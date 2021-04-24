@@ -1,24 +1,31 @@
 import * as fs from 'fs';
 import * as util from 'util';
 import { Model } from '@oam-kit/utility/model';
-import { isFirstLoad } from '../utils';
+import { getUserDataPath, isFirstLoad } from '../utils';
 import { APPData } from '@oam-kit/utility/types';
+import Logger from '../utils/logger';
+import { storeName } from '@oam-kit/utility/overall-config';
+import { join } from 'path';
 
-const readFile = util.promisify(fs.readFile);
+const logger = Logger.for('store');
 const writeFile = util.promisify(fs.writeFile);
 
 export class Store {
   private data: Partial<APPData> = {};
   private models: Model<any>[] = [];
   private isFirstLoad_: boolean;
+  private dataPath: string;
 
-  constructor(private path: string) {}
-
-  async startup() {
-    this.isFirstLoad_ = isFirstLoad();
-    if (!this.isFirstLoad_) {
-      const buffer = await readFile(this.path);
-      this.data = JSON.parse(buffer.toString());
+  constructor(opts: { path: string } = { path: '' }) {
+    try {
+      this.dataPath = opts.path || join(getUserDataPath(), storeName);
+      this.isFirstLoad_ = isFirstLoad();
+      if (!this.isFirstLoad_) {
+        const buffer = fs.readFileSync(this.dataPath);
+        this.data = JSON.parse(buffer.toString());
+      }
+    } catch (error) {
+      logger.error(`init failed, %s`, error);
     }
   }
 
@@ -36,7 +43,7 @@ export class Store {
   }
 
   get<T>(name: string): Model<T> {
-    return this.models.find(m => m.name === name);
+    return this.models.find((m) => m.name === name);
   }
 
   getAllData() {
@@ -44,6 +51,6 @@ export class Store {
   }
 
   private async saveDataIntoDisk() {
-    await writeFile(this.path, JSON.stringify(this.data));
+    await writeFile(this.dataPath, JSON.stringify(this.data));
   }
 }
