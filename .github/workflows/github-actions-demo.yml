@@ -9,3 +9,7 @@ jobs:
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@master
+      - name: ut and e2e
+        uses: mansagroup/nrwl-nx-action@v2
+        with:
+          targets: lint,test
