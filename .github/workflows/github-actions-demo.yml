@@ -1,5 +1,7 @@
 name: oam-kit CI
-on: [push]
+on:
+  pull_request:
+    branches: [master]
 jobs:
   ut-and-e2e:
     runs-on: ubuntu-latest
@@ -9,7 +11,6 @@ jobs:
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@master
-      - name: ut and e2e
-        uses: mansagroup/nrwl-nx-action
-        with:
-          targets: lint,test
+      - run: npm install
+      - run: npm run lint
+        
