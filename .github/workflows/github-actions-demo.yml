@@ -10,6 +10,6 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@master
       - name: ut and e2e
-        uses: mansagroup/nrwl-nx-action@v2
+        uses: mansagroup/nrwl-nx-action
         with:
           targets: lint,test
