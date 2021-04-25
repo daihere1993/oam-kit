@@ -173,7 +173,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
       logger.info('[isRbReady] success.');
     } catch (error) {
       let message = error.message;
-      if (error.isAxiosError) {
+      if (error.isAxiosError && error.response) {
         const response = error.response;
         message = `${response.status}, ${JSON.stringify(response.data)}`;
       }
@@ -261,10 +261,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
         throw new Error(`[oam-kit][getInfoFromReviewRequest] data.state is not ok, row response: ${data}`);
       }
     } catch (error) {
-      let message = error.message;
-      if (error.isAxiosError) {
-        message = JSON.stringify(error.response.data);
-      }
+      const message = error.message;
       logger.info('[getInfoFromReviewRequest] failed: %s', error);
       throw new Error(message);
     }
@@ -283,10 +280,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
         return branch;
       }
     } catch (error) {
-      let message = error.message;
-      if (error.isAxiosError) {
-        message = JSON.stringify(error.response.data);
-      }
+      const message = error.message;
       throw new Error(message);
     }
   }
@@ -303,10 +297,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
         return this.getRepositoryFromUrl(data.info?.url);
       }
     } catch (error) {
-      let message = error.message;
-      if (error.isAxiosError) {
-        message = JSON.stringify(error.response.data);
-      }
+      const message = error.message;
       throw new Error(message);
     }
   }
@@ -356,10 +347,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
       assert(this.cookies.includes('svn_password'));
       logger.info('[setupSvnCredentials] success.');
     } catch (error) {
-      let message = error.message;
-      if (error.isAxiosError) {
-        message = JSON.stringify(error.response.data);
-      }
+      const message = error.message;
       logger.info('[setupSvnCredentials] failed: %s', error);
       throw new Error(message);
     }
@@ -381,10 +369,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
       this.cookies += headers['set-cookie'][0].match(/(.+?);/)[0];
       assert(this.cookies.includes('rbsessionid'));
     } catch (error) {
-      let message = error.message;
-      if (error.isAxiosError) {
-        message = JSON.stringify(error.response.data);
-      }
+      const message = error.message;
       throw new Error(message);
     }
   }
