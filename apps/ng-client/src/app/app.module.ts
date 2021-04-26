@@ -26,12 +26,16 @@ import { AutoCommitModule } from './pages/auto-commit/auto-commit.module';
 import { StoreService } from './core/services/store.service';
 import { AuthService } from './core/services/auth.service';
 
+/** Global zorro module */
+import { NzNotificationModule } from 'ng-zorro-antd/notification';
+
 @NgModule({
   declarations: [AppComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
+    NzNotificationModule,
     AppRoutingModule,
     NzLayoutModule,
     NzMenuModule,
