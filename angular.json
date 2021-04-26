@@ -15,6 +15,7 @@
             "main": "apps/ng-client/src/main.ts",
             "polyfills": "apps/ng-client/src/polyfills.ts",
             "tsConfig": "apps/ng-client/tsconfig.app.json",
+            "allowedCommonJsDependencies": ["dot-prop"],
             "aot": true,
             "assets": [
               "apps/ng-client/src/favicon.ico",
