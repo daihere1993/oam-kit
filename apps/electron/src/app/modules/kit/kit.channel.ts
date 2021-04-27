@@ -119,9 +119,13 @@ export class KitChannel implements IpcChannelInterface {
         password: nsbAccount.password,
         algorithms: sftp_algorithms,
       });
-      const { stderr } = await this.ssh.execCommand(`cd ${directory}`);
-      const isExistedDirectory = !stderr;
-      res.data = isExistedDirectory;
+      const { stdout, stderr } = await this.ssh.execCommand('pwd', { cwd: directory });
+      if (stdout === directory) {
+        res.data = true;
+      } else {
+        res.data = false;
+        logger.error(`serverDirectoryCheck failed: ${stderr}`);
+      }
       this.ssh.dispose();
     } catch (error) {
       res.error = { message: error.message };

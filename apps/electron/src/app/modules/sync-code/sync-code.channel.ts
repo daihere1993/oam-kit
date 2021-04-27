@@ -152,7 +152,7 @@ export class SyncCodeChannel implements IpcChannelInterface {
     logger.info('applyPatchToServer: start.');
     const command = this.preparePatchCmd();
     return this.ssh.execCommand(command, { cwd: this.project.remotePath }).then(({ stdout, stderr }) => {
-      if (stderr) {
+      if (stdout.includes('conflicts:') || stdout.includes('rejected hunk')) {
         const error = new Error(`Apply patch to server failed: ${stdout}`);
         error.name = SyncCodeStep.APPLY_DIFF;
         throw error;

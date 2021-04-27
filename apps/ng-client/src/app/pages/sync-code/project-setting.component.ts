@@ -189,7 +189,7 @@ export class ProjectSettingComponent implements OnInit {
   remotePathValidator = (control: FormControl) => {
     return new Observable((observer: Observer<ValidationErrors | null>) => {
       const remotePath = control.value;
-      if (!this.form.value.serverAddr) {
+      if (!this.form?.value.serverAddr) {
         observer.next({ error: true, serverAddrIsEmpty: true });
         observer.complete();
       } else if (remotePath && this.data.remotePath !== remotePath) {
