@@ -26,12 +26,16 @@ export class SyncCodeChannel implements IpcChannelInterface {
   private addedFiles: string[];
   private ssh: NodeSSH = new NodeSSH();
   private nsbAccount: { username: string; password: string };
+  private doesUserChange = false;
 
   constructor(private store: Store) {
     const gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
-     gModel.subscribe<Profile>('profile', (profile) => {
+    gModel.subscribe<Profile>('profile', (profile) => {
+      if (this.nsbAccount && this.nsbAccount.username !== profile.nsbAccount.username) {
+        this.doesUserChange = true;
+      }
       this.nsbAccount = profile.nsbAccount;
-     });
+    });
   }
 
   private handle(event: IpcMainEvent, request: IPCRequest<Project>): void {
@@ -54,7 +58,8 @@ export class SyncCodeChannel implements IpcChannelInterface {
     logger.info('connectServer: start.');
 
     try {
-      if (this.ssh.isConnected()) {
+      if (this.ssh.isConnected() && !this.doesUserChange) {
+        this.doesUserChange = false;
         return Promise.resolve();
       } else {
         await this.ssh.connect({
