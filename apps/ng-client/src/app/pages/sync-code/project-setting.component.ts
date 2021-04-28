@@ -1,7 +1,6 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { GeneralModel, IpcChannel, Project } from '@oam-kit/utility/types';
 import { NzModalRef } from 'ng-zorro-antd/modal';
-import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { FormGroup, FormBuilder, Validators, FormControl, ValidationErrors } from '@angular/forms';
 import { StoreService } from '@ng-client/core/services/store.service';
 import { MODEL_NAME } from '@oam-kit/utility/overall-config';
@@ -9,6 +8,7 @@ import { NzSelectComponent } from 'ng-zorro-antd/select';
 import { Observable, Observer } from 'rxjs';
 import { IpcService } from '@ng-client/core/services/ipc.service';
 import { Model } from '@oam-kit/utility/model';
+import { NotificationService } from '@ng-client/core/services/notification.service';
 
 export enum DialogAction {
   CANCEL = 'cancel',
@@ -189,7 +189,7 @@ export class ProjectSettingComponent implements OnInit {
   remotePathValidator = (control: FormControl) => {
     return new Observable((observer: Observer<ValidationErrors | null>) => {
       const remotePath = control.value;
-      if (!this.form.value.serverAddr) {
+      if (!this.form?.value.serverAddr) {
         observer.next({ error: true, serverAddrIsEmpty: true });
         observer.complete();
       } else if (remotePath && this.data.remotePath !== remotePath) {
@@ -216,7 +216,7 @@ export class ProjectSettingComponent implements OnInit {
   constructor(
     private modal: NzModalRef,
     private fb: FormBuilder,
-    private notification: NzNotificationService,
+    private notification: NotificationService,
     private store: StoreService,
     private ipcService: IpcService
   ) {}
@@ -240,7 +240,7 @@ export class ProjectSettingComponent implements OnInit {
       action: DialogAction.SAVE,
       content: this.form.value,
     });
-    this.notification.create('success', 'Success', '', { nzPlacement: 'bottomRight', nzDuration: 1000 });
+    this.notification.success('Success', '', { nzDuration: 1000 });
   }
 
   public delete(): void {

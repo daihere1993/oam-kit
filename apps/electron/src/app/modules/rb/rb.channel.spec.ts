@@ -61,8 +61,8 @@ describe('RbChannel', () => {
       const channel = new RbChannel(fakeStore);
       const expectedPartialRbInfo = {
         link,
-        name: 'PR575809',
         branch: '5G21A',
+        name: REVIEW_REQUEST_RESPONSE.review_request.summary,
         repo: { name: 'MOAM', repository: 'BTS_SC_MOAM_LTE' },
       };
 
@@ -118,8 +118,8 @@ describe('RbChannel', () => {
       const expectedCookies =
         'rbsessionid=rveen6bmfdddobeckqjomuj9jm9ccawl;svn_username=fake_svn_username;svn_password=fake_svn_password;';
       const channel = new RbChannel(fakeStore);
-      await isRbReady(channel, mockEvent);
       await getPartialRbInfo(channel, mockEvent);
+      await isRbReady(channel, mockEvent);
       // mock get rbsessionid response
       mockedAxios.post.mockResolvedValueOnce({
         headers: {
@@ -182,8 +182,8 @@ describe('RbChannel', () => {
       const expectedCookies =
         'rbsessionid=rveen6bmfdddobeckqjomuj9jm9ccawl;svn_username=fake_svn_username;svn_password=fake_svn_password;';
       const channel = new RbChannel(fakeStore);
-      await isRbReady(channel, mockEvent);
       await getPartialRbInfo(channel, mockEvent);
+      await isRbReady(channel, mockEvent);
       // mock get rbsessionid response
       mockedAxios.post.mockResolvedValueOnce({
         headers: {

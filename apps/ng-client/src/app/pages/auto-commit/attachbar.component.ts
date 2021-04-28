@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import { NotificationService } from '@ng-client/core/services/notification.service';
 import { RbService } from '@ng-client/core/services/rb.service';
 import { LOG_PHASE, LOG_TYPE } from '@oam-kit/logger';
 import { Observable, Observer, Subject } from 'rxjs';
@@ -85,7 +86,12 @@ export class AttachbarComponent {
       }, 500);
     });
 
-  constructor(private fb: FormBuilder, private rbService: RbService, private cdr: ChangeDetectorRef) {
+  constructor(
+    private fb: FormBuilder,
+    private rbService: RbService,
+    private cdr: ChangeDetectorRef,
+    private notification: NotificationService
+  ) {
     this.validateForm = this.fb.group({
       link: ['', [Validators.required], [this.linkValidator]],
     });
@@ -101,6 +107,8 @@ export class AttachbarComponent {
     const { isSuccessed } = await this.rbService.completeRbInfo(rb);
     if (isSuccessed) {
       this.attached.next(rb);
+    } else {
+      this.notification.error('Attach failed', 'More details please click "Show logs" button to check.');
     }
     this.isAttaching = false;
     this.cdr.detectChanges();

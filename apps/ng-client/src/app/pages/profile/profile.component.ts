@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
-import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { GeneralModel, IpcChannel, Profile } from '@oam-kit/utility/types';
 import { StoreService } from '@ng-client/core/services/store.service';
 import { MODEL_NAME } from '@oam-kit/utility/overall-config';
 import { Model } from '@oam-kit/utility/model';
 import { IpcService } from '@ng-client/core/services/ipc.service';
+import { NotificationService } from '@ng-client/core/services/notification.service';
 
 @Component({
   selector: 'app-profile',
@@ -110,7 +110,7 @@ export class ProfileComponent {
 
   constructor(
     private fb: FormBuilder,
-    private notification: NzNotificationService,
+    private notification: NotificationService,
     private store: StoreService,
     private ipcService: IpcService,
     private cdf: ChangeDetectorRef
@@ -152,16 +152,16 @@ export class ProfileComponent {
             draft.nsbAccount.password = this.nsbPassword.value;
             draft.svnAccount.password = this.svnPassword.value;
           });
-          this.notification.create('success', 'Success', '', { nzPlacement: 'bottomRight' });
+          this.notification.success('Success', '');
         } else if (!isRightNsbAccount) {
-          this.notification.create('error', 'Failed', 'Incorrect NSB accout and password.', { nzPlacement: 'bottomRight' });
+          this.notification.error('Failed', 'Incorrect NSB accout and password.');
         } else if (!isRightSvnAccount) {
-          this.notification.create('error', 'Failed', 'Incorrect SVN accout and password.', { nzPlacement: 'bottomRight' });
+          this.notification.error('Failed', 'Incorrect SVN accout and password.');
         }
       })
       .catch((error) => {
         this.isSaving = false;
-        this.notification.create('error', 'Failed', error.message, { nzPlacement: 'bottomRight' });
+        this.notification.error('Failed', error.message);
       })
       .finally(() => {
         this.cdf.markForCheck();

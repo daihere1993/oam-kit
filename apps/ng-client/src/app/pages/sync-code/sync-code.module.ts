@@ -6,7 +6,6 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
-import { NzNotificationServiceModule } from 'ng-zorro-antd/notification';
 import { NzStepsModule } from 'ng-zorro-antd/steps';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -37,7 +36,6 @@ import { PathInputModule } from '@ng-client/core/components/path-field';
     NzSpinModule,
     NzSelectModule,
     NzDividerModule,
-    NzNotificationServiceModule,
     NzModalModule,
     NzStepsModule,
     NzToolTipModule,

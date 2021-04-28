@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { GeneralModel, Project } from '@oam-kit/utility/types';
 import { SyncCodeStep } from '@oam-kit/sync-code';
 import { IpcChannel } from '@oam-kit/utility/types';
@@ -7,6 +6,7 @@ import { IpcService } from '../../core/services/ipc.service';
 import { Stepper, StepStatus, StepperStatus, Step } from '@oam-kit/utility';
 import { StoreService } from '@ng-client/core/services/store.service';
 import { MODEL_NAME } from '@oam-kit/utility/overall-config';
+import { NotificationService } from '@ng-client/core/services/notification.service';
 
 @Component({
   selector: 'app-sync-code',
@@ -71,13 +71,13 @@ export class SyncCodeComponent implements OnInit, OnDestroy {
 
   private set alertMessage(message: string) {
     if (message) {
-      this.notification.create('error', 'Error', message, { nzPlacement: 'bottomRight' });
+      this.notification.error('Error', message);
     }
   }
 
   constructor(
     private ipcService: IpcService,
-    private notification: NzNotificationService,
+    private notification: NotificationService,
     private cd: ChangeDetectorRef,
     private store: StoreService
   ) {}

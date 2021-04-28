@@ -10,29 +10,12 @@ import { RbItem } from './auto-commit.component';
   selector: 'app-rbtable',
   template: `
     <style>
-      nz-table {
-        /* overflow: auto; */
-      }
-      .editable-cell {
-        position: relative;
-        padding: 5px 12px;
-        cursor: pointer;
-      }
-      td > input {
-        display: none;
-      }
-      .rb-table__cell--actions {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-      }
     </style>
-    <nz-table #editRowTable nzBordered nzFrontPagination="false" [nzData]="rbList">
+    <nz-table #editRowTable nzBordered nzSize="small" nzFrontPagination="false" [nzData]="rbList">
       <thead>
         <tr>
-          <th>Name</th>
-          <th nzWidth="30%">RB Link</th>
+          <th nzWidth="30%">Name</th>
+          <th>RB Link</th>
           <th>Branch</th>
           <th>Repository</th>
           <th>Revision</th>

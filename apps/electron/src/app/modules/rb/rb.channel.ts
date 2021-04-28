@@ -53,13 +53,18 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
   ];
 
   private cookies = '';
+  private hasAuthenticationReady = false;
+  private gModel: Model<GeneralModel>;
   // Cache partialrb for corresponding rb id
   private cachedPartialRb: { [key: string]: PartialRb } = {};
-  private gModel: Model<GeneralModel>;
 
   constructor(private store: Store) {
     super();
     this.gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
+    // if user account got changed, need to resetup anthentication
+    this.gModel.subscribe('profile', () => {
+      this.hasAuthenticationReady = false;
+    });
   }
 
   public async getPartialRbInfo(event: IpcMainEvent, req: IPCRequest<string>) {
@@ -71,14 +76,53 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
       if (this.isCachedRb(rbId)) {
         res.data = this.cachedPartialRb[rbId];
       } else {
-        await this.initPartialRb(req.data);
+        res.data = await this.getPartialRbByAjax(req.data);
         logger.info('[getPartialRbInfo] success.');
-        res.data = this.cachedPartialRb[rbId];
       }
     } catch (error) {
       res.isSuccessed = false;
       res.error = { message: error.message };
       logger.error('[getPartialRbInfo] failed: %s', error);
+    } finally {
+      event.reply(req.responseChannel, res);
+    }
+  }
+
+  /**
+   * Check if those mandatory requirements before code commitment like: ship number, CI passed, test case have done.
+   */
+  public async isRbReady(event: IpcMainEvent, req: IPCRequest<string>) {
+    logger.info('[isRbReady] start.');
+    const res: IPCResponse<{ ready: boolean; message?: string }> = {};
+    const link = req.data;
+    const rbId = this.getRbId(link);
+    const url = this.getUrlFromTmp(IS_COMMIT_ALLOWED_TMP, rbId);
+    try {
+      const { data } = await axios.get(url, { headers: { Referer: link } });
+      res.isSuccessed = true;
+      res.data = { ready: true };
+
+      // if there is a "message" field in data which means RB is not ready.
+      if (Object.prototype.hasOwnProperty.call(data, 'message')) {
+        res.data.ready = false;
+        res.data.message = data.message;
+      } else if (Object.prototype.hasOwnProperty.call(data, 'error')) {
+        throw new Error(data.error);
+      } else {
+        this.cachedPartialRb[rbId] = this.cachedPartialRb[rbId] || {};
+        // store diffset_revision which would be used in svn commit request
+        this.cachedPartialRb[rbId].diffset_revision = data.diffset_revision;
+      }
+      logger.info('[isRbReady] success.');
+    } catch (error) {
+      let message = error.message;
+      if (error.isAxiosError && error.response) {
+        const { status, data } = error.response;
+        message = `${status}, ${JSON.stringify(data)}`;
+      }
+      res.isSuccessed = false;
+      res.error = { message };
+      logger.error('[isRbReady] failed: %s', error);
     } finally {
       event.reply(req.responseChannel, res);
     }
@@ -94,11 +138,13 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
    */
   public async svnCommit(event: IpcMainEvent, req: IPCRequest<string>) {
     logger.info('[svnCommit] start.');
-    const res: IPCResponse<{ revision?: string, message?: string }> = {};
+    const res: IPCResponse<{ revision?: string; message?: string }> = {};
     try {
       const link = req.data;
       const rbId = this.getRbId(link);
-      await this.setupAuthentication(rbId);
+      if (!this.hasAuthenticationReady) {
+        await this.setupAuthentication(rbId);
+      }
       const { message } = await this.sendSvnCommitReq(link);
       this.checkCommitResult(message);
       const revision = await this.getRevision(rbId);
@@ -146,47 +192,6 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
   }
 
   /**
-   * Check if those mandatory requirement before code committment like: ship number, CI passed, test case have done.
-   */
-  public async isRbReady(event: IpcMainEvent, req: IPCRequest<string>) {
-    logger.info('[isRbReady] start.');
-    const res: IPCResponse<{ ready: boolean, message?: string }> = {};
-    const link = req.data;
-    const rbId = this.getRbId(link);
-    const url = this.getUrlFromTmp(IS_COMMIT_ALLOWED_TMP, rbId);
-    try {
-      const { data } = await axios.get(url, { headers: { Referer: link } });
-      res.isSuccessed = true;
-      res.data = { ready: true };
-      
-      // if there is a message field in data which means RB is not ready.
-      if (Object.prototype.hasOwnProperty.call(data, 'message')) {
-        res.data.ready = false;
-        res.data.message = data.message;
-      } else if (Object.prototype.hasOwnProperty.call(data, 'error')) {
-        throw new Error(data.error);
-      } else {
-        this.cachedPartialRb[rbId] = this.cachedPartialRb[rbId] || {};
-        // store diffset_revision which would be used in svn commit request
-        this.cachedPartialRb[rbId].diffset_revision = data.diffset_revision;
-      }
-      logger.info('[isRbReady] success.');
-    } catch (error) {
-      let message = error.message;
-      if (error.isAxiosError && error.response) {
-        const response = error.response;
-        message = `${response.status}, ${JSON.stringify(response.data)}`;
-      }
-      logger.error(error);
-      res.isSuccessed = false;
-      res.error = { message };
-      logger.error('[isRbReady] failed: %s', error);
-    } finally {
-      event.reply(req.responseChannel, res);
-    }
-  }
-
-  /**
    * There are different response messages corresponded to different results:
    * 1. Success: {"message": "Review was successfully committed to svn repository"}
    * 2. No authentication: {"message": "No SVN credentials were set by administrator."}
@@ -200,7 +205,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
   }
 
   private async getRevision(rbId: number) {
-    const { close_description } = await this.getInfoFromReviewRequest(rbId, ['close_description']);
+    const { close_description } = await this.getPartialInfo(rbId, ['close_description']);
     return (close_description as string).match(/@r(\d+)/)[1].trim();
   }
 
@@ -213,34 +218,26 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
     );
   }
 
-  private async initPartialRb(link: string) {
+  private async getPartialRbByAjax(link: string): Promise<PartialRb> {
     const rbId = this.getRbId(link);
     const fields = ['summary', 'links'];
-    const info = await this.getInfoFromReviewRequest(rbId, fields);
+    const info = await this.getPartialInfo(rbId, fields);
     const latestDiffUrl = info?.links.latest_diff.href;
     const repoInfoUrl = info?.links.repository.href + 'info/';
-    this.cachedPartialRb[rbId] = this.cachedPartialRb[rbId] || {};
-    Object.assign(this.cachedPartialRb[rbId], {
+    const partialRb = {
       link,
-      name: this.getRbName(info.summary),
+      name: info.summary,
       branch: await this.getBranchForSpecificRb(latestDiffUrl),
       repo: {
         name: info?.links.repository.title.toUpperCase(),
         repository: await this.getRepositoryForSpecificRb(repoInfoUrl),
       },
-    });
+    };
+    this.cachedPartialRb[rbId] = partialRb;
+    return partialRb;
   }
 
-  private getRbName(summary: string) {
-    // try to get PR id
-    const m = summary.match(/(.+):/);
-    if (m) {
-      return m[1];
-    }
-    return summary;
-  }
-
-  private async getInfoFromReviewRequest(rbId: number, fields: string[]) {
+  private async getPartialInfo(rbId: number, fields: string[]) {
     try {
       logger.info('[getInfoFromReviewRequest] start, rbid: %d, fields: %s', rbId, fields);
       const ret: any = {};
@@ -252,7 +249,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
           if (Object.prototype.hasOwnProperty.call(reviewRequest, field)) {
             ret[field] = reviewRequest[field];
           } else {
-            logger.warn('[getInfoFromReviewRequest] couldn\'t find %s in review_request', field);
+            logger.warn("[getInfoFromReviewRequest] couldn't find %s in review_request", field);
           }
         }
         logger.info('[getInfoFromReviewRequest] success');
@@ -276,8 +273,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
     try {
       const { data } = await axios.get(latestDiffUrl);
       if (data.stat === 'ok') {
-        const branch = this.getBranchFromBasedir(data.diff?.basedir);
-        return branch;
+        return this.getBranchFromBasedir(data.diff?.basedir);
       }
     } catch (error) {
       const message = error.message;
@@ -302,12 +298,17 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
     }
   }
 
+  /**
+   * From "https://wrscmi.inside.nsn.com/isource/svnroot/BTS_SC_MOAM_LTE" to get "BTS_SC_MOAM_LTE"
+   */
   private getRepositoryFromUrl(url: string): string {
     return this.reverseStr(this.reverseStr(url).match(/(\w+)\//)[1]);
   }
 
   /**
-   *  get branch from basedir, like: from "/mantanence/5G21A" to get "5G21A"
+   *  get branch from basedir
+   *  1. from "trunk" or "trunk/" to get "trunk"
+   *  2. from "/mantanence/5G21A" to get "5G21A"
    */
   private getBranchFromBasedir(basedir: string): string {
     if (basedir.includes('trunk') || basedir.includes('TRUNK')) {
@@ -325,6 +326,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
   private async setupAuthentication(rbId: number) {
     await this.setupRbSessionId(rbId);
     await this.setupSvnCredentials(rbId);
+    this.hasAuthenticationReady = true;
   }
 
   private async setupSvnCredentials(rbId: number) {

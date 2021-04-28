@@ -26,12 +26,16 @@ export class SyncCodeChannel implements IpcChannelInterface {
   private addedFiles: string[];
   private ssh: NodeSSH = new NodeSSH();
   private nsbAccount: { username: string; password: string };
+  private doesUserChange = false;
 
   constructor(private store: Store) {
     const gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
-     gModel.subscribe<Profile>('profile', (profile) => {
+    gModel.subscribe<Profile>('profile', (profile) => {
+      if (this.nsbAccount && this.nsbAccount.username !== profile.nsbAccount.username) {
+        this.doesUserChange = true;
+      }
       this.nsbAccount = profile.nsbAccount;
-     });
+    });
   }
 
   private handle(event: IpcMainEvent, request: IPCRequest<Project>): void {
@@ -54,7 +58,8 @@ export class SyncCodeChannel implements IpcChannelInterface {
     logger.info('connectServer: start.');
 
     try {
-      if (this.ssh.isConnected()) {
+      if (this.ssh.isConnected() && !this.doesUserChange) {
+        this.doesUserChange = false;
         return Promise.resolve();
       } else {
         await this.ssh.connect({
@@ -151,8 +156,8 @@ export class SyncCodeChannel implements IpcChannelInterface {
   private async applyPatchToServer(event: IpcMainEvent): Promise<any> {
     logger.info('applyPatchToServer: start.');
     const command = this.preparePatchCmd();
-    return this.ssh.execCommand(command, { cwd: this.project.remotePath }).then(({ stdout, stderr }) => {
-      if (stderr) {
+    return this.ssh.execCommand(command, { cwd: this.project.remotePath }).then(({ stdout }) => {
+      if (stdout.includes('conflicts:') || stdout.includes('rejected hunk')) {
         const error = new Error(`Apply patch to server failed: ${stdout}`);
         error.name = SyncCodeStep.APPLY_DIFF;
         throw error;
