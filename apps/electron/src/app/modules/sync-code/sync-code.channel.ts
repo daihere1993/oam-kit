@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import { NodeSSH } from 'node-ssh';
 import { promisify } from 'util';
 import { IpcChannelInterface } from '@electron/app/interfaces';
-import { GeneralModel, Project, IpcChannel, IPCRequest, IPCResponse, Profile } from '@oam-kit/utility/types';
+import { GeneralModel, Project, IpcChannel, IPCRequest, IPCResponse, Profile, VersionControl } from '@oam-kit/utility/types';
 import { Store } from '@electron/app/store';
 import { SyncCodeStep } from '@oam-kit/sync-code';
 import { IpcMainEvent } from 'electron';
@@ -45,6 +45,7 @@ export class SyncCodeChannel implements IpcChannelInterface {
       .then(this.diffAnalysis.bind(this, event))
       .then(this.uploadPatchToServer.bind(this, event))
       .then(this.applyPatchToServer.bind(this, event))
+      .then(this.cleanup.bind(this, event))
       .catch((err) => {
         logger.error(`${err.name} failed: ${err.message}`);
         event.reply(IpcChannel.SYNC_CODE_RES, {
@@ -82,8 +83,11 @@ export class SyncCodeChannel implements IpcChannelInterface {
 
   private async createDiff(event: IpcMainEvent): Promise<any> {
     logger.info('createDiff: start.');
+
+    const cmd = this.isSvnVersionControl ? `svn di > ${DIFF_PATH}` : `git diff > ${DIFF_PATH}`;
+
     return new Promise((resolve) => {
-      shell.cd(this.project.localPath).exec(`svn di > ${DIFF_PATH}`, (code, stdout, stderr) => {
+      shell.cd(this.project.localPath).exec(cmd, (code, stdout, stderr) => {
         if (code === 0) {
           logger.info('createDiff: done.');
           event.reply(IpcChannel.SYNC_CODE_RES, { isSuccessed: true, data: SyncCodeStep.CREATE_DIFF });
@@ -153,22 +157,21 @@ export class SyncCodeChannel implements IpcChannelInterface {
   /**
    * Notice: the older svn don't have command `svn patch`
    */
-  private async applyPatchToServer(event: IpcMainEvent): Promise<any> {
+  private async applyPatchToServer(): Promise<any> {
     logger.info('applyPatchToServer: start.');
-    const command = this.preparePatchCmd();
-    return this.ssh.execCommand(command, { cwd: this.project.remotePath }).then(({ stdout }) => {
+    const cmd = this.preparePatchCmd();
+    return this.ssh.execCommand(cmd, { cwd: this.project.remotePath }).then(({ stdout }) => {
       if (stdout.includes('conflicts:') || stdout.includes('rejected hunk')) {
         const error = new Error(`Apply patch to server failed: ${stdout}`);
         error.name = SyncCodeStep.APPLY_DIFF;
         throw error;
       }
       logger.info('applyPatchToServer: done.');
-      event.reply(IpcChannel.SYNC_CODE_RES, { isSuccessed: true, data: SyncCodeStep.APPLY_DIFF });
     });
   }
 
   private preparePatchCmd() {
-    let cmd = `svn revert -R .`;
+    let cmd = this.isSvnVersionControl ? `svn revert -R .` : `git checkout .`;
 
     if (this.addedFiles.length > 0) {
       cmd += ' && rm -rf ';
@@ -176,7 +179,23 @@ export class SyncCodeChannel implements IpcChannelInterface {
         cmd += `${file} `;
       }
     }
-    cmd += `&& svn patch ${moduleConf.diffName}`;
+    cmd += this.isSvnVersionControl ? ` && svn patch ` : ` && git apply `;
+    cmd += moduleConf.diffName;
     return cmd;
+  }
+
+  private async cleanup(event: IpcMainEvent) {
+    const cmd = this.isSvnVersionControl ? `svn st | grep '^?' | awk '{print $2}' | xargs rm -rf` : `git clean -fd`;
+    return this.ssh.execCommand(cmd, { cwd: this.project.remotePath }).then(({ stderr }) => {
+      if (stderr) {
+        logger.error(`Cleanup failed, %s`, stderr);
+      }
+      logger.info('Cleanup: done.');
+      event.reply(IpcChannel.SYNC_CODE_RES, { isSuccessed: true, data: SyncCodeStep.APPLY_DIFF });
+    })
+  }
+
+  private get isSvnVersionControl(): boolean {
+    return this.project.versionControl === VersionControl.SVN;
   }
 }

@@ -15,11 +15,17 @@ export interface GeneralModel {
   profile: Profile;
 }
 
+export enum VersionControl {
+  GIT = 'git',
+  SVN = 'svn',
+}
+
 export interface Project {
   name: string;
   localPath: string;
   remotePath: string;
   serverAddr: string;
+  versionControl: VersionControl;
 }
 
 export interface SyncCodeModel {

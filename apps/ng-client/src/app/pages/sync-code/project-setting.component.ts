@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { GeneralModel, IpcChannel, Project } from '@oam-kit/utility/types';
+import { GeneralModel, IpcChannel, Project, VersionControl } from '@oam-kit/utility/types';
 import { NzModalRef } from 'ng-zorro-antd/modal';
 import { FormGroup, FormBuilder, Validators, FormControl, ValidationErrors } from '@angular/forms';
 import { StoreService } from '@ng-client/core/services/store.service';
@@ -51,6 +51,16 @@ export interface DialogRes {
           <nz-form-label [nzSm]="8" nzRequired nzFor="name">Name</nz-form-label>
           <nz-form-control [nzSm]="13">
             <input nz-input name="name" data-test="project-name-input" formControlName="name" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSm]="8" nzRequired nzFor="versionControl">VersionControl</nz-form-label>
+          <nz-form-control [nzSm]="13">
+            <nz-select formControlName="versionControl" data-test="project-versionControl-input">
+              <nz-option nzLabel="svn" nzValue="svn"></nz-option>
+              <nz-option nzLabel="git" nzValue="git"></nz-option>
+            </nz-select>
           </nz-form-control>
         </nz-form-item>
 
@@ -156,6 +166,7 @@ export class ProjectSettingComponent implements OnInit {
     serverAddr: null,
     localPath: null,
     remotePath: null,
+    versionControl: VersionControl.SVN,
   };
 
   @ViewChild(NzSelectComponent) selectComp: NzSelectComponent;
@@ -232,6 +243,7 @@ export class ProjectSettingComponent implements OnInit {
       serverAddr: [this.data.serverAddr, [Validators.required], [this.serverAddrValidator]],
       localPath: [this.data.localPath, [Validators.required]],
       remotePath: [this.data.remotePath, [Validators.required], [this.remotePathValidator]],
+      versionControl: [this.data.versionControl, [Validators.required]],
     });
   }
 
