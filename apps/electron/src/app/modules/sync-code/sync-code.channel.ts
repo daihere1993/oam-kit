@@ -45,7 +45,7 @@ export class SyncCodeChannel implements IpcChannelInterface {
       .then(this.diffAnalysis.bind(this, event))
       .then(this.uploadPatchToServer.bind(this, event))
       .then(this.applyPatchToServer.bind(this, event))
-      // .then(this.cleanup.bind(this, event))
+      .then(this.cleanup.bind(this, event))
       .catch((err) => {
         logger.error(`${err.name} failed: ${err.message}`);
         event.reply(IpcChannel.SYNC_CODE_RES, {
@@ -185,7 +185,8 @@ export class SyncCodeChannel implements IpcChannelInterface {
   }
 
   private async cleanup(event: IpcMainEvent) {
-    const cmd = this.isSvnVersionControl ? `svn st | grep '^?' | awk '{print $2}' | xargs rm -rf` : `git clean -fd`;
+    const cmd = this.isSvnVersionControl ? `` : `git clean -fd`;
+    // const cmd = this.isSvnVersionControl ? `svn st | grep '^?' | awk '{print $2}' | xargs rm -rf` : `git clean -fd`;
     return this.ssh.execCommand(cmd, { cwd: this.project.remotePath }).then(({ stderr }) => {
       if (stderr) {
         logger.error(`Cleanup failed, %s`, stderr);
