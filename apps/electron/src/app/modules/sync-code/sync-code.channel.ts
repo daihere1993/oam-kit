@@ -45,7 +45,7 @@ export class SyncCodeChannel implements IpcChannelInterface {
       .then(this.diffAnalysis.bind(this, event))
       .then(this.uploadPatchToServer.bind(this, event))
       .then(this.applyPatchToServer.bind(this, event))
-      .then(this.cleanup.bind(this, event))
+      // .then(this.cleanup.bind(this, event))
       .catch((err) => {
         logger.error(`${err.name} failed: ${err.message}`);
         event.reply(IpcChannel.SYNC_CODE_RES, {

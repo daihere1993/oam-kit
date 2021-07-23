@@ -21,7 +21,7 @@ export function isFirstLoad() {
   return !fs.existsSync(targetPath);
 }
 
-export function getTmpDir(): string {
+export function getTempDir(): string {
   return path.join(getUserDataPath(), 'tmp');
 }
 
