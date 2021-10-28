@@ -10,7 +10,7 @@ const profile: Partial<Profile> = {
 
 describe('getLockStatus()', () => {
   it('should return right lock status', async (done) => {
-    const lockStatus = await gerritBranchLock.getLockStatus(profile as Profile, 'master', 'template');
+    const lockStatus = await gerritBranchLock.getLockStatus(profile as Profile, 'master', 'moam');
     expect(lockStatus.locked).toBeFalsy();
     expect(lockStatus.lockMsg).toBe('');
     done();

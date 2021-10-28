@@ -61,4 +61,5 @@ export default {
     const branchLockStatus = await getLockStatus(profile, branch, 'template');
     const repoLockStatus = await getLockStatus(profile, branch, repo.name);
   },
+  getLockStatus,
 };
