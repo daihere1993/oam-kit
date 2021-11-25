@@ -68,7 +68,7 @@ export default class App {
   }
 
   private static initTmpFolders() {
-    const tmpDir = utils.getTmpDir();
+    const tmpDir = utils.getTempDir();
     if (!fs.existsSync(tmpDir)) {
       fs.mkdirSync(tmpDir);
     } else {
