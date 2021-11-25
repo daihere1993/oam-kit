@@ -1,10 +1,10 @@
 import { Model } from './model';
-import { Project, SyncCodeModel } from '@oam-kit/utility/types';
+import { Project, SyncCodeModel, VersionControl } from '@oam-kit/utility/types';
 
 const initValue = {
   type: 'A',
   preferences: { theme: 'white', list: [] },
-  projects: [{ name: 'TRUNK', localPath: '/locak', remotePath: '/remote', serverAddr: '/server' }],
+  projects: [{ name: 'TRUNK', localPath: '/locak', remotePath: '/remote', serverAddr: '/server', versionControl: VersionControl.SVN }],
 };
 
 describe('API', () => {
@@ -43,7 +43,7 @@ describe('API', () => {
       expect(model.get('preferences')).toEqual({ theme: 'dark' });
     });
     it(`- with callback to add new item`, () => {
-      const newProject: Project = { name: 'SBTS21A', localPath: '/locak', remotePath: '/remote', serverAddr: '/server' };
+      const newProject: Project = { name: 'SBTS21A', localPath: '/locak', remotePath: '/remote', serverAddr: '/server', versionControl: VersionControl.SVN };
       model.set('projects', (draft) => {
         draft.push(newProject);
       });
