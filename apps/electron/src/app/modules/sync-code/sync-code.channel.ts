@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import { NodeSSH } from 'node-ssh';
 import { promisify } from 'util';
 import { IpcChannelInterface } from '@electron/app/interfaces';
-import { GeneralModel, Project, IpcChannel, IPCRequest, IPCResponse, Profile, VersionControl } from '@oam-kit/utility/types';
+import { GeneralModel, Project, IpcChannel, IPCRequest, IPCResponse, Profile, RepositoryType } from '@oam-kit/utility/types';
 import { Store } from '@electron/app/store';
 import { SyncCodeStep } from '@oam-kit/sync-code';
 import { IpcMainEvent } from 'electron';
@@ -197,6 +197,6 @@ export class SyncCodeChannel implements IpcChannelInterface {
   }
 
   private get isSvnVersionControl(): boolean {
-    return this.project.versionControl === VersionControl.SVN;
+    return this.project.versionControl === RepositoryType.SVN;
   }
 }

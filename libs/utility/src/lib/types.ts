@@ -15,7 +15,7 @@ export interface GeneralModel {
   profile: Profile;
 }
 
-export enum VersionControl {
+export enum RepositoryType {
   GIT = 'git',
   SVN = 'svn',
 }
@@ -25,7 +25,7 @@ export interface Project {
   localPath: string;
   remotePath: string;
   serverAddr: string;
-  versionControl: VersionControl;
+  versionControl: RepositoryType;
 }
 
 export interface SyncCodeModel {
@@ -111,6 +111,8 @@ export enum IpcChannel {
   NSB_ACCOUNT_VERIFICATION_RES = 'nsb_account_verification_res',
   SVN_ACCOUNT_VERIFICATION_REQ = 'svn_account_verification_req',
   SVN_ACCOUNT_VERIFICATION_RES = 'svn_account_verification_res',
+  KNIFE_GENERATOR_REQ = 'knife_generator_req',
+  KNIFE_GENERATOR_RES = 'knife_generator_res',
 }
 
 export interface IPCRequest<T> {

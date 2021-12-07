@@ -12,6 +12,7 @@ import { ModelChannel } from './modules/model';
 import { SyncCodeChannel } from './modules/sync-code';
 import { LockInfoChannel } from './modules/lock-info';
 import { RbChannel } from './modules/rb';
+import { KnifeGeneratorChannel } from './modules/knife-generator';
 
 export default class App {
   // Keep a global reference of the window object, if you don't, the window will
@@ -96,6 +97,7 @@ export default class App {
       new SyncCodeChannel(store),
       new LockInfoChannel(store),
       new RbChannel(store),
+      new KnifeGeneratorChannel(),
     ];
     for (const channel of channels) {
       for (const handler of channel.handlers) {

@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { GeneralModel, IpcChannel, Project, VersionControl } from '@oam-kit/utility/types';
+import { GeneralModel, IpcChannel, Project, RepositoryType } from '@oam-kit/utility/types';
 import { NzModalRef } from 'ng-zorro-antd/modal';
 import { FormGroup, FormBuilder, Validators, FormControl, ValidationErrors } from '@angular/forms';
 import { StoreService } from '@ng-client/core/services/store.service';
@@ -166,7 +166,7 @@ export class ProjectSettingComponent implements OnInit {
     serverAddr: null,
     localPath: null,
     remotePath: null,
-    versionControl: VersionControl.SVN,
+    versionControl: RepositoryType.SVN,
   };
 
   @ViewChild(NzSelectComponent) selectComp: NzSelectComponent;

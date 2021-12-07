@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
+import { NzIconService } from 'ng-zorro-antd/icon';
 
 interface Menu {
   name: string;
   icon: string;
   link: string;
+  isCustomIcon: boolean;
 }
 
 @Component({
@@ -40,7 +42,10 @@ interface Menu {
         <ul nz-menu nzTheme="light">
           <li class="nav-menu-item" nz-menu-item nzMatchRouter *ngFor="let menu of menus">
             <a [routerLink]="menu.link">
-              <i nz-icon [nzType]="menu.icon" nzTheme="outline"></i>
+              <i *ngIf="!menu.isCustomIcon; else custom_icon" nz-icon [nzType]="menu.icon" nzTheme="outline"></i>
+              <ng-template #custom_icon>
+                <i nz-icon [nzIconfont]="menu.icon"></i>
+              </ng-template>
               <span>{{ menu.name }}</span>
             </a>
           </li>
@@ -58,8 +63,16 @@ interface Menu {
 })
 export class AppComponent {
   menus: Menu[] = [
-    { name: 'Sync Code', icon: 'sync', link: '/sync-code' },
-    { name: 'Auto Commit', icon: 'field-time', link: '/auto-commit' },
-    { name: 'Profile', icon: 'profile', link: '/profile' },
+    { name: 'Sync Code', icon: 'sync', link: '/sync-code', isCustomIcon: false },
+    { name: 'Auto Commit', icon: 'field-time', link: '/auto-commit', isCustomIcon: false },
+    { name: 'Knife Generator', icon: 'icon-jenkins', link: '/knife-generator', isCustomIcon: true },
+    { name: 'Profile', icon: 'profile', link: '/profile', isCustomIcon: false },
   ];
+
+  constructor(private iconService: NzIconService) {
+    this.iconService.fetchFromIconfont({
+      scriptUrl:
+        'https://at.alicdn.com/t/font_2991525_fxgpbb2k265.js?spm=a313x.7781069.1998910419.71&file=font_2991525_fxgpbb2k265.js',
+    });
+  }
 }
