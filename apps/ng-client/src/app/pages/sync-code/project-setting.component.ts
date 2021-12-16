@@ -1,5 +1,12 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { GeneralModel, IpcChannel, Project, RepositoryType } from '@oam-kit/utility/types';
+import {
+  GeneralModel,
+  IpcChannel,
+  Project,
+  RepositoryType,
+  ServerCheckReqData,
+  ServerDirCheckReqData,
+} from '@oam-kit/utility/types';
 import { NzModalRef } from 'ng-zorro-antd/modal';
 import { FormGroup, FormBuilder, Validators, FormControl, ValidationErrors } from '@angular/forms';
 import { StoreService } from '@ng-client/core/services/store.service';
@@ -181,9 +188,9 @@ export class ProjectSettingComponent implements OnInit {
       const serverAddr = control.value;
       if (serverAddr && this.data.serverAddr !== serverAddr) {
         this.ipcService
-          .send(IpcChannel.SERVER_CHECK_REQ, { responseChannel: IpcChannel.SERVER_CHECK_RES, data: serverAddr })
+          .send<ServerCheckReqData, null>(IpcChannel.SERVER_CHECK, { host: serverAddr })
           .then((res) => {
-            if (res.isSuccessed && !!res.data) {
+            if (res.isOk) {
               observer.next(null);
             } else {
               observer.next({ error: true });
@@ -205,12 +212,12 @@ export class ProjectSettingComponent implements OnInit {
         observer.complete();
       } else if (remotePath && this.data.remotePath !== remotePath) {
         this.ipcService
-          .send(IpcChannel.SERVER_DIRECTORY_CHECK_REQ, {
-            responseChannel: IpcChannel.SERVER_DIRECTORY_CHECK_RES,
-            data: { serverAddr: this.form.value.serverAddr, directory: remotePath },
+          .send<ServerDirCheckReqData, null>(IpcChannel.SERVER_DIRECTORY_CHECK, {
+            host: this.form.value.serverAddr,
+            directory: remotePath,
           })
           .then((res) => {
-            if (res.isSuccessed && !!res.data) {
+            if (res.isOk) {
               observer.next(null);
             } else {
               observer.next({ error: true, notExisted: true });

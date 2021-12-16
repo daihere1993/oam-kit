@@ -1,20 +1,20 @@
-import { IpcChannelInterface } from "@electron/app/interfaces";
-import { IpcChannel, IPCRequest, IPCResponse, RepositoryType } from "@oam-kit/utility/types";
-import { IpcMainEvent } from "electron/main";
-import commandExists from 'command-exists'
+import { IpcChannel, IpcRequest, RepositoryType, KnifeGeneratorReqData, KnifeGeneratorResData } from '@oam-kit/utility/types';
+import commandExists from 'command-exists';
 import downloadsFolder from 'downloads-folder';
 import * as shell from 'shelljs';
 import * as fs from 'fs';
 import * as path from 'path';
 import Logger from '@electron/app/utils/logger';
 import { zip } from 'zip-a-folder';
+import { IpcService } from '@electron/app/utils/ipcService';
+import { IpcChannelBase } from '../ipcChannelBase';
 
-const logger = Logger.for('KnifeGenerator');
 // W/A for shell.exec not working at electron app
 shell.config.execPath = shell.which('node').toString();
 
-export class KnifeGeneratorChannel implements IpcChannelInterface {
-  handlers = [{ name: IpcChannel.KNIFE_GENERATOR_REQ, fn: this.generateKnife }];
+export default class KnifeGeneratorChannel extends IpcChannelBase {
+  logger = Logger.for('KnifeGenerator');
+  handlers = [{ name: IpcChannel.KNIFE_GENERATOR, fn: this.generateKnife }];
 
   get _downloadsFolderPath(): string {
     return downloadsFolder();
@@ -28,17 +28,27 @@ export class KnifeGeneratorChannel implements IpcChannelInterface {
     return rootPath;
   }
 
-  public async generateKnife(event: IpcMainEvent, req: IPCRequest<{ projectPath: string, targetVersion: string }>) {
-    const isValidEnv = await this.checkEnvironment();
-    if (isValidEnv) {
-      const repositoryType = this.getRepositoryType(req.data.projectPath);
-      const isGit = repositoryType === RepositoryType.GIT;
-      if (this.isValidVersion(req.data.projectPath, req.data.targetVersion, isGit)) {
-        const changedFiles = this.getChangedFiles(req.data.projectPath, isGit);
-        await this.createZipFile(changedFiles, req.data.projectPath);
-        const res: IPCResponse<{ knifePath: string }> = { data: { knifePath: `${this._downloadsFolderPath}/knife.zip` } };
-        event.reply(req.responseChannel, res);
+  public async generateKnife(ipcService: IpcService, req: IpcRequest<KnifeGeneratorReqData>) {
+    try {
+      const isValidEnv = await this.checkEnvironment();
+      if (isValidEnv) {
+        const repositoryType = this.getRepositoryType(req.data.projectPath);
+        const isGit = repositoryType === RepositoryType.GIT;
+        if (this.isValidVersion(req.data.projectPath, req.data.targetVersion, isGit)) {
+          const changedFiles = this.getChangedFiles(req.data.projectPath, isGit);
+          await this.createZipFile(changedFiles, req.data.projectPath);
+          ipcService.replyOkWithData<KnifeGeneratorResData>({ knifePath: path.join(this._downloadsFolderPath, 'knife.zip') });
+        } else {
+          const message = `Failed due to the current revision doesn't equal the target revision of knife`;
+          ipcService.replyNokWithNoData(message);
+        }
+      } else {
+        const message = `Failed due to there there is no 'svn' or 'git' command`;
+        ipcService.replyNokWithNoData(message);
       }
+    } catch (error) {
+      const message = `Failed due to ${error.message}`;
+      ipcService.replyNokWithNoData(message);
     }
   }
 
@@ -70,7 +80,7 @@ export class KnifeGeneratorChannel implements IpcChannelInterface {
   public isSvnRepository(projectPath: string): boolean {
     let isSvnRepository: boolean;
     try {
-      isSvnRepository = !!(shell.cd(projectPath).exec('svn info'));
+      isSvnRepository = !!shell.cd(projectPath).exec('svn info');
     } catch (error) {
       isSvnRepository = false;
     }
@@ -90,24 +100,28 @@ export class KnifeGeneratorChannel implements IpcChannelInterface {
     const shellUnderTheProject = shell.cd(projectPath);
     if (isGit) {
       const modifiedFiles = shellUnderTheProject
-        .exec(getModifiedFilesCmd).split('\n')
-        .filter(item => !!item);
+        .exec(getModifiedFilesCmd)
+        .split('\n')
+        .filter((item) => !!item);
       const untrackedFiles = shellUnderTheProject
-        .exec(getUntrackedFilesCmd).split('\n')
-        .filter(item => !!item);
+        .exec(getUntrackedFilesCmd)
+        .split('\n')
+        .filter((item) => !!item);
       changedFiles.push(...modifiedFiles);
       changedFiles.push(...untrackedFiles);
     } else {
       const modifiedFiles = shellUnderTheProject
-        .exec(getModifiedFilesCmd).split('\n')
-        .filter(item => !!item)
-        .map(item => {
+        .exec(getModifiedFilesCmd)
+        .split('\n')
+        .filter((item) => !!item)
+        .map((item) => {
           return item.match(/M(.*)/)[1].trim();
         });
       const untrackedFiles = shellUnderTheProject
-        .exec(getUntrackedFilesCmd).split('\n')
-        .filter(item => !!item)
-        .map(item => item.match(/\?(.*)/)[1].trim());
+        .exec(getUntrackedFilesCmd)
+        .split('\n')
+        .filter((item) => !!item)
+        .map((item) => item.match(/\?(.*)/)[1].trim());
       changedFiles.push(...modifiedFiles, ...untrackedFiles);
     }
     return changedFiles;
@@ -145,9 +159,8 @@ export class KnifeGeneratorChannel implements IpcChannelInterface {
       fs.copyFileSync(src, dest);
     } catch (error) {
       const errorMsg = `create folder failed, changedFile: ${changedFile}, error: ${error.message}`;
-      logger.error(errorMsg);
+      this.logger.error(errorMsg);
       throw Error(errorMsg);
     }
   }
 }
-

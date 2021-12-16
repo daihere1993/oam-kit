@@ -1,25 +1,24 @@
-import { IpcChannelInterface } from '@electron/app/interfaces';
-import { Store } from '@electron/app/store';
 import { Model } from '@oam-kit/utility/model';
-import { IpcMainEvent } from 'electron/main';
 import { MODEL_INIT_VALUE, MODEL_NAME } from '@oam-kit/utility/overall-config';
-import { SyncCodeModel, GeneralModel, RbToolsModel, IpcChannel, IPCRequest } from '@oam-kit/utility/types';
+import { SyncCodeModel, GeneralModel, RbToolsModel, IpcChannel, IpcRequest, APPData } from '@oam-kit/utility/types';
+import Logger from '@electron/app/utils/logger';
+import { IpcService } from '@electron/app/utils/ipcService';
+import { IpcChannelBase } from '../ipcChannelBase';
 
-export class ModelChannel implements IpcChannelInterface {
-  private store: Store;
+export default class ModelChannel extends IpcChannelBase {
+  logger = Logger.for('ModelChannel');
   handlers = [
     {
-      name: IpcChannel.GET_APP_DATA_REQ,
+      name: IpcChannel.GET_APP_DATA,
       fn: this.onGetData,
     },
     {
-      name: IpcChannel.SYNC_DATA_REQ,
+      name: IpcChannel.SYNC_DATA,
       fn: this.syncData,
     },
   ];
 
-  constructor(store: Store) {
-    this.store = store;
+  startup(): void {
     this.store.add(
       new Model<GeneralModel>({
         name: MODEL_NAME.GENERAL,
@@ -40,14 +39,11 @@ export class ModelChannel implements IpcChannelInterface {
     );
   }
 
-  private onGetData(event: IpcMainEvent) {
-    event.reply(IpcChannel.GET_APP_DATA_RES, {
-      isSuccessed: true,
-      data: this.store.getAllData(),
-    });
+  private onGetData(ipcService: IpcService) {
+    ipcService.replyOkWithData<Partial<APPData>>(this.store.getAllData());
   }
 
-  private syncData(event: IpcMainEvent, req: IPCRequest<{ name: string; data: any }>) {
+  private syncData(ipcService: IpcService, req: IpcRequest<{ name: string; data: any }>) {
     const { name, data } = req.data;
     const model = this.store.get(name);
     model.reset(data);

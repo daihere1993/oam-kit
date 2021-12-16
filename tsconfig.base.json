@@ -21,9 +21,7 @@
       "@ng-client/*": ["apps/ng-client/src/app/*"],
       "@oam-kit/utility": ["libs/utility/src/index.ts"],
       "@oam-kit/utility/*": ["libs/utility/src/lib/*"],
-      "@oam-kit/sync-code": ["libs/sync-code/src/index.ts"],
       "@oam-kit/logger": ["libs/logger/src/index.ts"],
-      "@oam-kit/model": ["libs/model/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

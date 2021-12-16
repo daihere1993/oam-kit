@@ -2,15 +2,14 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, In
 import { IpcService } from '@ng-client/core/services/ipc.service';
 import { LockInfoService } from '@ng-client/core/services/lock-info.service';
 import { RbService } from '@ng-client/core/services/rb.service';
-import { IpcChannel, IPCRequest } from '@oam-kit/utility/types';
+import { IpcChannel, OpenExternalUrlReqData } from '@oam-kit/utility/types';
 import { LOG_PHASE, LOG_TYPE } from '@oam-kit/logger';
 import { RbItem } from './auto-commit.component';
 
 @Component({
   selector: 'app-rbtable',
   template: `
-    <style>
-    </style>
+    <style></style>
     <nz-table #editRowTable nzBordered nzSize="small" nzFrontPagination="false" [nzData]="rbList">
       <thead>
         <tr>
@@ -39,10 +38,14 @@ import { RbItem } from './auto-commit.component';
             <ng-container *ngIf="data.isCommitting; then rbSpin; else rbActions"></ng-container>
             <ng-template #rbSpin>
               <a data-test="rbcell-button__loading" nz-button nzType="link" nzLoading></a>
-              <a data-test="rbcell-button__cancel" nz-button data-btn-type="cancel" nzType="link" (click)="cancel(data)">Cancel</a>
+              <a data-test="rbcell-button__cancel" nz-button data-btn-type="cancel" nzType="link" (click)="cancel(data)"
+                >Cancel</a
+              >
             </ng-template>
             <ng-template #rbActions>
-              <a data-test="rbcell-button__commit" nz-button data-btn-type="commit" nzType="link" (click)="commit(data)">Commit</a>
+              <a data-test="rbcell-button__commit" nz-button data-btn-type="commit" nzType="link" (click)="commit(data)"
+                >Commit</a
+              >
               <a
                 data-test="rbcell-button__delete"
                 nz-button
@@ -98,13 +101,17 @@ export class RbTableComponent {
   }
 
   openUrl(event: MouseEvent, url: string) {
-    const req: IPCRequest<string> = { data: url, responseChannel: IpcChannel.OPEN_EXTERNAL_URL_RES };
-    this.ipcService.send(IpcChannel.OPEN_EXTERNAL_URL_REQ, req);
+    this.ipcService.send<OpenExternalUrlReqData>(IpcChannel.OPEN_EXTERNAL_URL, { url });
     event.preventDefault();
     event.stopPropagation();
   }
 
   trackByFn(index: number, rb: RbItem) {
+    this.foo<string>('foosss');
     return rb.link;
+  }
+
+  foo<T = void, U extends T = T>(a: U): T {
+    return a;
   }
 }

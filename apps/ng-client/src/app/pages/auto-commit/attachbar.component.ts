@@ -104,8 +104,8 @@ export class AttachbarComponent {
     const rb = new RbItem({ link: _link }, this.onLogChange);
     rb.logger.insert(LOG_PHASE.RB_ATTACH, LOG_TYPE.RB_ATTACH__START, { link: _link });
 
-    const { isSuccessed } = await this.rbService.completeRbInfo(rb);
-    if (isSuccessed) {
+    const { isOk } = await this.rbService.completeRbInfo(rb);
+    if (isOk) {
       this.attached.next(rb);
     } else {
       this.notification.error('Attach failed', 'More details please click "Show logs" button to check.');

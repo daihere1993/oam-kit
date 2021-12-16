@@ -1,4 +1,4 @@
-import { IpcChannel } from '@oam-kit/utility/types';
+import { IpcChannel, NsbAccountVerificationResData, SvnAccountVerificationResData } from '@oam-kit/utility/types';
 import { profileFixture } from '../fixtures/appData';
 import { MainFixture } from '../fixtures/mainFixture';
 import { NotificationStatus } from '../types';
@@ -13,8 +13,8 @@ describe('Scenario1: update account info', () => {
     cy.getBySel('nsb-password-input').type(profileFixture.nsbAccount.password);
     cy.getBySel('save-button').click();
     cy.getBySel('save-button').should('contain.html', 'Auth validating...').wait(500).then(() => {
-      fixture.simulateBackendResToClient(IpcChannel.NSB_ACCOUNT_VERIFICATION_RES, true);
-      fixture.simulateBackendResToClient(IpcChannel.SVN_ACCOUNT_VERIFICATION_RES, true);
+      fixture.simulator.replyOkWithData<NsbAccountVerificationResData>(IpcChannel.NSB_ACCOUNT_VERIFICATION, { isRightAccount: true });
+      fixture.simulator.replyOkWithData<SvnAccountVerificationResData>(IpcChannel.SVN_ACCOUNT_VERIFICATION, { isRightAccount: true });
     });
     cy.expectNotification(NotificationStatus.success, 'Success');
   });
@@ -26,8 +26,8 @@ describe('Scenario1: update account info', () => {
     cy.getBySel('svn-password-input').type(profileFixture.svnAccount.password);
     cy.getBySel('save-button').click();
     cy.getBySel('save-button').should('contain.html', 'Auth validating...').wait(500).then(() => {
-      fixture.simulateBackendResToClient(IpcChannel.NSB_ACCOUNT_VERIFICATION_RES, true);
-      fixture.simulateBackendResToClient(IpcChannel.SVN_ACCOUNT_VERIFICATION_RES, true);
+      fixture.simulator.replyOkWithData<NsbAccountVerificationResData>(IpcChannel.NSB_ACCOUNT_VERIFICATION, { isRightAccount: true });
+      fixture.simulator.replyOkWithData<SvnAccountVerificationResData>(IpcChannel.SVN_ACCOUNT_VERIFICATION, { isRightAccount: true });
     });
     cy.expectNotification(NotificationStatus.success, 'Success');
   });
@@ -44,8 +44,8 @@ describe('Scenario2: failed', () => {
     cy.getBySel('svn-password-input').type(profileFixture.svnAccount.password);
     cy.getBySel('save-button').click();
     cy.getBySel('save-button').should('contain.html', 'Auth validating...').wait(500).then(() => {
-      fixture.simulateBackendResToClient(IpcChannel.NSB_ACCOUNT_VERIFICATION_RES, false);
-      fixture.simulateBackendResToClient(IpcChannel.SVN_ACCOUNT_VERIFICATION_RES, false);
+      fixture.simulator.replyOkWithData<NsbAccountVerificationResData>(IpcChannel.NSB_ACCOUNT_VERIFICATION, { isRightAccount: false });
+      fixture.simulator.replyOkWithData<SvnAccountVerificationResData>(IpcChannel.SVN_ACCOUNT_VERIFICATION, { isRightAccount: false });
     });
     cy.getBySel('save-button').should('contain.html', 'Save').should('be.enabled');
     cy.expectNotification(NotificationStatus.failed, 'Incorrect NSB accout and password.');
@@ -57,8 +57,8 @@ describe('Scenario2: failed', () => {
     cy.getBySel('svn-password-input').type(profileFixture.svnAccount.password);
     cy.getBySel('save-button').click();
     cy.getBySel('save-button').should('contain.html', 'Auth validating...').wait(500).then(() => {
-      fixture.simulateBackendResToClient(IpcChannel.NSB_ACCOUNT_VERIFICATION_RES, true);
-      fixture.simulateBackendResToClient(IpcChannel.SVN_ACCOUNT_VERIFICATION_RES, false);
+      fixture.simulator.replyOkWithData<NsbAccountVerificationResData>(IpcChannel.NSB_ACCOUNT_VERIFICATION, { isRightAccount: true });
+      fixture.simulator.replyOkWithData<SvnAccountVerificationResData>(IpcChannel.SVN_ACCOUNT_VERIFICATION, { isRightAccount: false });
     });
     cy.getBySel('save-button').should('contain.html', 'Save').should('be.enabled');
     cy.expectNotification(NotificationStatus.failed, 'Incorrect SVN accout and password.');

@@ -70,61 +70,105 @@ export interface LockInfo {
   repo: RepoLockInfo;
 }
 
+export enum IpcResErrorType {
+	Expected,
+	Exception,
+}
+
+export interface IpcRequest<T> {
+  data: T;
+}
+
+export interface IpcResError {
+  type: IpcResErrorType | null,
+  message: string;
+}
+
+export interface IpcResponse<T> {
+  data: T;
+  isOk: boolean;
+  error: IpcResError;
+}
+
 export enum IpcChannel {
-  SELECT_PATH_REQ = 'select_path_req',
-  SELECT_PATH_RES = 'select_path_res',
-  NOTIFICATION_REQ = 'notification_req',
-  NOTIFICATION_RES = 'notification_res',
-  OPEN_EXTERNAL_URL_REQ = 'open_external_url_req',
-  OPEN_EXTERNAL_URL_RES = 'open_external_url_res',
-  SERVER_CHECK_REQ = 'server_check_req',
-  SERVER_CHECK_RES = 'server_check_res',
-  SERVER_DIRECTORY_CHECK_REQ = 'server_directory_check_req',
-  SERVER_DIRECTORY_CHECK_RES = 'server_directory_check_res',
-  SYNC_DATA_REQ = 'sync_data_req',
-  SYNC_DATA_RES = 'sync_data_res',
-  GET_APP_DATA_REQ = 'get_app_data_req',
-  GET_APP_DATA_RES = 'get_app_data_res',
-  SYNC_CODE_REQ = 'sync_code_req',
-  SYNC_CODE_FROM_MAIN_REQ = 'sync_code_from_main_req',
-  SYNC_CODE_RES = 'sync_code_res',
-  AUTO_COMMIT_REQ = 'autoCommitReq',
-  PREPARE_DIFF_REQ = 'prepare_diff_req',
-  PREPARE_DIFF_RES = 'prepare_diff_res',
-  PREPARE_COMMIT_MSG_REQ = 'prepare_commit_msg_req',
-  PREPARE_COMMIT_MSG_RES = 'prepare_commit_msg_res',
-  STOP_AUTO_COMMIT = 'stopAutoCommit',
-  AUTO_COMMIT_HEARTBEAT = 'autoCommitHeartbeat',
-  REPLY_STOP_AUTO_COMMIT = 'stopAutoCommit',
-  REPLY_AUTO_COMMIT_REQ = 'autoCommitReq-reply',
-  RCAEDA_ANALYZE_REQ = 'rcaeda_analyze_req',
-  RCAEDA_ANALYZE_RES = 'rcaeda_analyze_res',
-  GET_LOCK_INFO_REQ = 'get_lock_info_req',
-  GET_LOCK_INFO_RES = 'get_lock_info_res',
-  IS_RB_READY_REQ = 'has_rb_ready_req',
-  IS_RB_READY_RES = 'has_rb_ready_res',
-  SVN_COMMIT_REQ = 'svn_commit_req',
-  SVN_COMMIT_RES = 'svn_commit_res',
-  GET_PARTIAL_RB_REQ = 'get_partial_rb_req',
-  GET_PARTIAL_RB_RES = 'get_partial_rb_res',
-  NSB_ACCOUNT_VERIFICATION_REQ = 'nsb_account_verification_req',
-  NSB_ACCOUNT_VERIFICATION_RES = 'nsb_account_verification_res',
-  SVN_ACCOUNT_VERIFICATION_REQ = 'svn_account_verification_req',
-  SVN_ACCOUNT_VERIFICATION_RES = 'svn_account_verification_res',
-  KNIFE_GENERATOR_REQ = 'knife_generator_req',
-  KNIFE_GENERATOR_RES = 'knife_generator_res',
+  SELECT_PATH = 'select_path',
+  SHOW_NOTIFICATION = 'show_notification',
+  OPEN_EXTERNAL_URL = 'open_external_url',
+  SERVER_CHECK = 'server_check',
+  SERVER_DIRECTORY_CHECK = 'server_directory_check',
+  SYNC_DATA = 'sync_data',
+  GET_APP_DATA = 'get_app_data',
+  SYNC_CODE = 'sync_code',
+  SYNC_CODE_FROM_MAIN = 'sync_code_from_main',
+  GET_LOCK_INFO = 'get_lock_info',
+  IS_RB_READY = 'has_rb_ready',
+  SVN_COMMIT = 'svn_commit',
+  GET_PARTIAL_RB = 'get_partial_rb',
+  NSB_ACCOUNT_VERIFICATION = 'nsb_account_verification',
+  SVN_ACCOUNT_VERIFICATION = 'svn_account_verification',
+  KNIFE_GENERATOR = 'knife_generator',
 }
 
-export interface IPCRequest<T> {
-  data?: T;
-  responseChannel?: IpcChannel;
+export enum SyncCodeStep {
+  CONNECT_TO_SERVER = 'connect_to_server',
+  CREATE_DIFF = 'create_diff',
+  UPLOAD_DIFF = 'upload_diff',
+  APPLY_DIFF = 'apply_diff',
 }
 
-export interface IPCResponse<T> {
-  isSuccessed?: boolean;
-  data?: T;
-  error?: {
-    name?: string;
-    message?: string;
-  };
+/** Request/response data type for each channel */
+export interface KnifeGeneratorReqData {
+  projectPath: string;
+  targetVersion: string;
 }
+export interface KnifeGeneratorResData {
+  knifePath: string;
+}
+
+/** sync-code channel */
+export interface SyncCodeReqData {
+  project: Project;
+}
+export interface SyncCodeResData {
+  step: SyncCodeStep;
+}
+
+/** kit channel */
+export interface SelectPathReqData {
+  isDirectory: boolean;
+}
+export interface SelectPathResData {
+  path: string;
+}
+export interface ShowNotificationReqData {
+  title: string;
+  body: string;
+}
+export interface OpenExternalUrlReqData {
+  url: string;
+}
+export interface ServerCheckReqData {
+  host: string;
+}
+export interface ServerDirCheckReqData {
+  host: string;
+  directory: string
+}
+export interface SvnAccountVerificationReqData {
+  username: string;
+  password: string;
+}
+export interface SvnAccountVerificationResData {
+  isRightAccount: boolean;
+}
+export interface NsbAccountVerificationReqData {
+  username: string;
+  password: string;
+}
+export interface NsbAccountVerificationResData {
+  isRightAccount: boolean;
+}
+
+/** end */
+
+export type Constructor<T> = new (...args: any[]) => T;

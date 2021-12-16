@@ -3,24 +3,35 @@ import * as shell from 'shelljs';
 import * as fs from 'fs';
 import { NodeSSH } from 'node-ssh';
 import { promisify } from 'util';
-import { IpcChannelInterface } from '@electron/app/interfaces';
-import { GeneralModel, Project, IpcChannel, IPCRequest, IPCResponse, Profile, RepositoryType } from '@oam-kit/utility/types';
-import { Store } from '@electron/app/store';
-import { SyncCodeStep } from '@oam-kit/sync-code';
-import { IpcMainEvent } from 'electron';
+import {
+  GeneralModel,
+  Project,
+  IpcChannel,
+  IpcRequest,
+  Profile,
+  RepositoryType,
+  SyncCodeReqData,
+  SyncCodeStep,
+  SyncCodeResData,
+  IpcResErrorType,
+} from '@oam-kit/utility/types';
 import { getUserDataPath } from '@electron/app/utils';
 import { MODEL_NAME, modules as modulesConf, sftp_algorithms } from '@oam-kit/utility/overall-config';
 import Logger from '@electron/app/utils/logger';
+import { IpcService } from '@electron/app/utils/ipcService';
+import { IpcChannelBase } from '../ipcChannelBase';
 
-const logger = Logger.for('SyncCode');
 const moduleConf = modulesConf.syncCode;
 const userDataPath = getUserDataPath();
 const DIFF_PATH = path.join(userDataPath, moduleConf.diffName);
 
-type IpcResponse_ = IPCResponse<SyncCodeStep>;
+interface CustomError extends Error {
+  failedStep: SyncCodeStep;
+}
 
-export class SyncCodeChannel implements IpcChannelInterface {
-  handlers = [{ name: IpcChannel.SYNC_CODE_REQ, fn: this.handle }];
+export default class SyncCodeChannel extends IpcChannelBase {
+  logger = Logger.for('SyncCode');
+  handlers = [{ name: IpcChannel.SYNC_CODE, fn: this.handle }];
 
   private project: Project;
   private addedFiles: string[];
@@ -28,7 +39,7 @@ export class SyncCodeChannel implements IpcChannelInterface {
   private nsbAccount: { username: string; password: string };
   private doesUserChange = false;
 
-  constructor(private store: Store) {
+  startup(): void {
     const gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
     gModel.subscribe<Profile>('profile', (profile) => {
       if (this.nsbAccount && this.nsbAccount.username !== profile.nsbAccount.username) {
@@ -38,25 +49,25 @@ export class SyncCodeChannel implements IpcChannelInterface {
     });
   }
 
-  private handle(event: IpcMainEvent, request: IPCRequest<Project>): void {
-    this.project = request.data;
-    this.connectServer(event)
-      .then(this.createDiff.bind(this, event))
-      .then(this.diffAnalysis.bind(this, event))
-      .then(this.uploadPatchToServer.bind(this, event))
-      .then(this.applyPatchToServer.bind(this, event))
-      .then(this.cleanup.bind(this, event))
-      .catch((err) => {
-        logger.error(`${err.name} failed: ${err.message}`);
-        event.reply(IpcChannel.SYNC_CODE_RES, {
-          isSuccessed: false,
-          error: { name: err.name, message: err.message },
-        });
+  private handle(ipcService: IpcService, request: IpcRequest<SyncCodeReqData>): void {
+    this.project = request.data.project;
+    this.connectServer(ipcService)
+      .then(this.createDiff.bind(this, ipcService))
+      .then(this.diffAnalysis.bind(this, ipcService))
+      .then(this.uploadPatchToServer.bind(this, ipcService))
+      .then(this.applyPatchToServer.bind(this, ipcService))
+      .then(this.cleanup.bind(this, ipcService))
+      .catch((err: CustomError) => {
+        if (err.failedStep) {
+          ipcService.replyNokWithData<SyncCodeResData>({ step: err.failedStep }, err.message);
+        } else {
+          ipcService.replyNokWithNoData(err.message, IpcResErrorType.Exception);
+        }
       });
   }
 
-  private async connectServer(event: IpcMainEvent): Promise<any> {
-    logger.info('connectServer: start.');
+  private async connectServer(ipcService: IpcService): Promise<any> {
+    this.logger.info('connectServer: start.');
 
     try {
       if (this.ssh.isConnected() && !this.doesUserChange) {
@@ -71,26 +82,25 @@ export class SyncCodeChannel implements IpcChannelInterface {
         });
       }
     } catch (error) {
-      logger.error(error);
-      error.name = SyncCodeStep.CONNECT_TO_SERVER;
+      this.logger.error(error);
+      error.failedStep = SyncCodeStep.CONNECT_TO_SERVER;
       throw error;
     } finally {
-      logger.info('connectServer: done.');
-      const res: IpcResponse_ = { isSuccessed: true, data: SyncCodeStep.CONNECT_TO_SERVER };
-      event.reply(IpcChannel.SYNC_CODE_RES, res);
+      this.logger.info('connectServer: done.');
+      ipcService.replyOkWithData<SyncCodeResData>({ step: SyncCodeStep.CONNECT_TO_SERVER });
     }
   }
 
-  private async createDiff(event: IpcMainEvent): Promise<any> {
-    logger.info('createDiff: start.');
+  private async createDiff(ipcService: IpcService): Promise<any> {
+    this.logger.info('createDiff: start.');
 
     const cmd = this.isSvnVersionControl ? `svn di > ${DIFF_PATH}` : `git diff > ${DIFF_PATH}`;
 
     return new Promise((resolve) => {
       shell.cd(this.project.localPath).exec(cmd, (code, stdout, stderr) => {
         if (code === 0) {
-          logger.info('createDiff: done.');
-          event.reply(IpcChannel.SYNC_CODE_RES, { isSuccessed: true, data: SyncCodeStep.CREATE_DIFF });
+          this.logger.info('createDiff: done.');
+          ipcService.replyOkWithData<SyncCodeResData>({ step: SyncCodeStep.CREATE_DIFF });
           resolve(null);
         } else {
           const err = new Error(`Create patch failed: ${stderr}, ${code}.`);
@@ -108,11 +118,11 @@ export class SyncCodeChannel implements IpcChannelInterface {
    * thus we need to know which files are new then execute 'rm ${file name}' to delete those files before apply the new diff.)
    */
   private async diffAnalysis(): Promise<any> {
-    logger.info('diffAnalysis: start.');
+    this.logger.info('diffAnalysis: start.');
     const diff = (await promisify(fs.readFile)(DIFF_PATH)).toString();
     const changedFiles = this.getChangedFiles(diff);
     this.addedFiles = this.getAddedFiles(changedFiles);
-    logger.info('diffAnalysis: done.');
+    this.logger.info('diffAnalysis: done.');
   }
 
   private getAddedFiles(origins: string[]): string[] {
@@ -135,16 +145,15 @@ export class SyncCodeChannel implements IpcChannelInterface {
     return origins;
   }
 
-  private async uploadPatchToServer(event: IpcMainEvent): Promise<any> {
-    logger.info('uploadPatchToServer: start.');
+  private async uploadPatchToServer(ipcService: IpcService): Promise<any> {
+    this.logger.info('uploadPatchToServer: start.');
     return (
       this.ssh
         // Upload diff file into target remote by ssh
         .putFile(path.join(DIFF_PATH), `${this.project.remotePath}/${moduleConf.diffName}`)
         .then(() => {
-          logger.info('uploadPatchToServer: done.');
-          const res: IpcResponse_ = { isSuccessed: true, data: SyncCodeStep.UPLOAD_DIFF };
-          event.reply(IpcChannel.SYNC_CODE_RES, res);
+          this.logger.info('uploadPatchToServer: done.');
+          ipcService.replyOkWithData<SyncCodeResData>({ step: SyncCodeStep.UPLOAD_DIFF });
         })
         .catch((err: Error) => {
           const error = new Error(`Upload patch to server failed: ${err.message}`);
@@ -158,7 +167,7 @@ export class SyncCodeChannel implements IpcChannelInterface {
    * Notice: the older svn don't have command `svn patch`
    */
   private async applyPatchToServer(): Promise<any> {
-    logger.info('applyPatchToServer: start.');
+    this.logger.info('applyPatchToServer: start.');
     const cmd = this.preparePatchCmd();
     return this.ssh.execCommand(cmd, { cwd: this.project.remotePath }).then(({ stdout }) => {
       if (stdout.includes('conflicts:') || stdout.includes('rejected hunk')) {
@@ -166,7 +175,7 @@ export class SyncCodeChannel implements IpcChannelInterface {
         error.name = SyncCodeStep.APPLY_DIFF;
         throw error;
       }
-      logger.info('applyPatchToServer: done.');
+      this.logger.info('applyPatchToServer: done.');
     });
   }
 
@@ -184,16 +193,16 @@ export class SyncCodeChannel implements IpcChannelInterface {
     return cmd;
   }
 
-  private async cleanup(event: IpcMainEvent) {
+  private async cleanup(ipcService: IpcService) {
     const cmd = this.isSvnVersionControl ? `` : `git clean -fd`;
     // const cmd = this.isSvnVersionControl ? `svn st | grep '^?' | awk '{print $2}' | xargs rm -rf` : `git clean -fd`;
     return this.ssh.execCommand(cmd, { cwd: this.project.remotePath }).then(({ stderr }) => {
       if (stderr) {
-        logger.error(`Cleanup failed, %s`, stderr);
+        this.logger.error(`Cleanup failed, %s`, stderr);
       }
-      logger.info('Cleanup: done.');
-      event.reply(IpcChannel.SYNC_CODE_RES, { isSuccessed: true, data: SyncCodeStep.APPLY_DIFF });
-    })
+      this.logger.info('Cleanup: done.');
+      ipcService.replyOkWithData<SyncCodeResData>({ step: SyncCodeStep.APPLY_DIFF });
+    });
   }
 
   private get isSvnVersionControl(): boolean {

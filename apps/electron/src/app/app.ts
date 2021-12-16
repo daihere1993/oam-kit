@@ -7,12 +7,22 @@ import { join } from 'path';
 import { format } from 'url';
 import * as utils from './utils';
 import { Store } from './store';
-import { KitChannel } from './modules/kit';
-import { ModelChannel } from './modules/model';
-import { SyncCodeChannel } from './modules/sync-code';
-import { LockInfoChannel } from './modules/lock-info';
-import { RbChannel } from './modules/rb';
-import { KnifeGeneratorChannel } from './modules/knife-generator';
+import ModelChannel from './channels/model/model.channel';
+import { IpcService } from './utils/ipcService';
+import { IpcChannelBase, IpcChannelHandler } from './channels/ipcChannelBase';
+import { Constructor } from '@oam-kit/utility/types';
+
+
+function initChannelhandlers(channel: IpcChannelBase) {
+  for (const handler of channel.handlers) {
+    (function(handler: IpcChannelHandler, channel: IpcChannelBase) {
+      ipcMain.on(handler.name, (event, req) => {
+        const ipcService = new IpcService(channel.logger, event, handler.name);
+        handler.fn.call(channel, ipcService, req);
+      });
+    })(handler, channel);
+  }
+}
 
 export default class App {
   // Keep a global reference of the window object, if you don't, the window will
@@ -90,19 +100,23 @@ export default class App {
     const targetPath = join(utils.getUserDataPath(), storeName);
     console.debug(`data file: ${targetPath}`);
     const store = new Store();
-    const modelChannel = new ModelChannel(store);
-    const channels: any[] = [
-      modelChannel,
-      new KitChannel({ store, mainWindow: App.mainWindow }),
-      new SyncCodeChannel(store),
-      new LockInfoChannel(store),
-      new RbChannel(store),
-      new KnifeGeneratorChannel(),
-    ];
-    for (const channel of channels) {
-      for (const handler of channel.handlers) {
-        ipcMain.on(handler.name, handler.fn.bind(channel));
+    // Model must be initialized first, cause which would be used in other channels
+    const modelChannel = new ModelChannel(store, App.mainWindow);
+    initChannelhandlers(modelChannel);
+    const channelModules: { default: Constructor<IpcChannelBase> }[] = [];
+    function importAll(r: __WebpackModuleApi.RequireContext) {
+      r.keys().forEach((key) => (channelModules.push(r(key))));
+    }
+    importAll(require.context('./channels/', true, /\.channel.ts$/));
+
+    for (const module of channelModules) {
+      const Module = module.default;
+      if (!Module) {
+        const moduleName = Object.keys(module)[0];
+        throw new Error(`Please use export default in ${moduleName}.ts`);
       }
+      const channel = new Module(store, App.mainWindow);
+      initChannelhandlers(channel);
     }
   }
 

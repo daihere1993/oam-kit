@@ -1,13 +1,13 @@
 // @ts-check
 ///<reference path="../global.d.ts" />
 
-import { SyncCodeStep } from '@oam-kit/sync-code';
+import { SyncCodeResData, SyncCodeStep } from '@oam-kit/utility/types';
 import { IpcChannel } from '@oam-kit/utility/types';
 import { profileFixture, projectFixture } from '../fixtures/appData';
 import { MainFixture } from '../fixtures/mainFixture';
 
 function finishSyncStep(fixture: MainFixture, n: number, opt: { isSuccess: boolean; errorMsg?: string } = { isSuccess: true }) {
-  let step: string;
+  let step: SyncCodeStep;
   switch (n) {
     case 1:
       step = SyncCodeStep.CONNECT_TO_SERVER;
@@ -25,12 +25,9 @@ function finishSyncStep(fixture: MainFixture, n: number, opt: { isSuccess: boole
       throw new Error('[fn][finishSyncStep] Only have four steps');
   }
   if (opt.isSuccess) {
-    fixture.simulateBackendResToClient<string>(IpcChannel.SYNC_CODE_RES, step);
+    fixture.simulator.replyOkWithData<SyncCodeResData>(IpcChannel.SYNC_CODE, { step });
   } else {
-    fixture.simulateBackendResToClient(IpcChannel.SYNC_CODE_RES, {
-      name: step,
-      message: opt.errorMsg,
-    });
+    fixture.simulator.replayNokWithData<SyncCodeResData>(IpcChannel.SYNC_CODE, { step }, opt.errorMsg);
   }
 }
 
@@ -55,7 +52,7 @@ describe('Scenario1: add new project', () => {
   it('Case1: remote address validation failed', () => {
     cy.getBySel('server-addr-select').click();
     cy.get('nz-option-item').first().click();
-    cy.wait(100).then(() => fixture.simulateBackendResToClient(IpcChannel.SERVER_CHECK_RES, false));
+    cy.wait(100).then(() => fixture.simulator.replayNokWithNoData(IpcChannel.SERVER_CHECK));
     cy.getBySel('server-addr-validation-alert').should(
       'include.text',
       `Can't connect to ${projectFixture.serverAddr}, please make sure it is working.`
@@ -68,11 +65,11 @@ describe('Scenario1: add new project', () => {
   it('Case3: remote project path validation failed - path not exists', () => {
     cy.getBySel('server-addr-select').click();
     cy.get('nz-option-item').first().click();
-    cy.wait(100).then(() => fixture.simulateBackendResToClient(IpcChannel.SERVER_CHECK_RES, true));
+    cy.wait(100).then(() => fixture.simulator.replyOkWithNoData(IpcChannel.SERVER_CHECK));
     cy.getBySel('remote-project-path-input')
       .type(projectFixture.remotePath)
       .then(() => {
-        fixture.simulateBackendResToClient(IpcChannel.SERVER_DIRECTORY_CHECK_RES, false);
+        fixture.simulator.replayNokWithNoData(IpcChannel.SERVER_DIRECTORY_CHECK);
       });
     cy.getBySel('remote-project-path-validation-alert').should(
       'include.text',

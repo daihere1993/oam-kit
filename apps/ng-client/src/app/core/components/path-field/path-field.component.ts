@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy, Output, EventEmitter } from '@angular/core';
-import { IpcChannel } from '@oam-kit/utility/types';
+import { IpcChannel, SelectPathReqData, SelectPathResData } from '@oam-kit/utility/types';
 import { IpcService } from '../../services/ipc.service';
 
 enum Type {
@@ -9,12 +9,8 @@ enum Type {
 
 @Component({
   selector: 'app-path-field',
-  template: `
-    <i nz-icon style="cursor: pointer;" nzType="folder" nzTheme="outline" (click)="toSelectPath($event)"></i>
-  `,
-  styles: [
-    ':host { display: block; }'
-  ]
+  template: ` <i nz-icon style="cursor: pointer;" nzType="folder" nzTheme="outline" (click)="toSelectPath($event)"></i> `,
+  styles: [':host { display: block; }'],
 })
 export class PathInputComponent implements OnDestroy {
   @Output() valueChange: EventEmitter<string> = new EventEmitter();
@@ -39,12 +35,10 @@ export class PathInputComponent implements OnDestroy {
 
   public async toSelectPath(e: Event) {
     const isDirectory = this.isDirectory;
-    const res = await this.ipcService.send<{ isDirectory: boolean }, string[]>(IpcChannel.SELECT_PATH_REQ, {
-      data: { isDirectory },
-      responseChannel: IpcChannel.SELECT_PATH_RES
-    });
-    if (res.isSuccessed) {
-      this.setValue(res.data[0]);
+    const res = await this.ipcService
+      .send<SelectPathReqData, SelectPathResData>(IpcChannel.SELECT_PATH, { isDirectory },);
+    if (res.isOk) {
+      this.setValue(res.data.path);
     }
     e.stopPropagation();
   }

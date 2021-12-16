@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { GeneralModel, Project } from '@oam-kit/utility/types';
-import { SyncCodeStep } from '@oam-kit/sync-code';
-import { IpcChannel } from '@oam-kit/utility/types';
+import { GeneralModel, Project, SyncCodeReqData, SyncCodeResData } from '@oam-kit/utility/types';
+import { IpcChannel, SyncCodeStep } from '@oam-kit/utility/types';
 import { IpcService } from '../../core/services/ipc.service';
 import { Stepper, StepStatus, StepperStatus, Step } from '@oam-kit/utility';
 import { StoreService } from '@ng-client/core/services/store.service';
@@ -84,7 +83,7 @@ export class SyncCodeComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // To cover the scenario of entering a keyboard to sync code.
-    this.ipcService.on<void>(IpcChannel.SYNC_CODE_FROM_MAIN_REQ, this.sync.bind(this));
+    this.ipcService.on<void>(IpcChannel.SYNC_CODE_FROM_MAIN, this.sync.bind(this));
     this.initStepper();
   }
 
@@ -97,19 +96,16 @@ export class SyncCodeComponent implements OnInit, OnDestroy {
       this.syncStepper.start();
 
       this.ipcService
-        .send$<Project, SyncCodeStep>(IpcChannel.SYNC_CODE_REQ, {
-          data: this.currentProject,
-          responseChannel: IpcChannel.SYNC_CODE_RES,
-        })
+        .send$<SyncCodeReqData, SyncCodeResData>(IpcChannel.SYNC_CODE, { project: this.currentProject })
         .subscribe((response) => {
           this.lastSyncDate = new Date();
 
-          if (response.isSuccessed) {
-            this.syncStepper.setStatusForSingleStep(response.data, StepStatus.FINISHED);
+          if (response.isOk) {
+            this.syncStepper.setStatusForSingleStep(response.data.step, StepStatus.FINISHED);
           } else {
             const { error } = response;
             this.syncStepper.errorInfo = error.message;
-            this.syncStepper.setStatusForSingleStep(error.name, StepStatus.FAILED);
+            this.syncStepper.setStatusForSingleStep(response.data.step, StepStatus.FAILED);
             this.alertMessage = error.message;
           }
           this.cd.markForCheck();

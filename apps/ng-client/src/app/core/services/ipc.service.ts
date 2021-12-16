@@ -1,5 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
-import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/utility/types';
+import { IpcChannel, IpcRequest, IpcResponse } from '@oam-kit/utility/types';
 import { ipcRenderer } from 'electron';
 import { ElectronService } from './electron.service';
 import { Observable } from 'rxjs';
@@ -19,44 +19,41 @@ export class IpcService {
     }
   }
 
-  public send<T>(channel: IpcChannel, req?: IPCRequest<T>): Promise<IPCResponse<any>>;
-  public send<T, R>(channel: IpcChannel, req?: IPCRequest<T>): Promise<IPCResponse<R>>;
-  public send<T, R>(channel: IpcChannel, req?: IPCRequest<T>): Promise<IPCResponse<R>> {
+  public send<T = void, R = void, U extends T = T, Q extends R = R>(channel: IpcChannel, data?: U): Promise<IpcResponse<Q>>;
+  public send<T = void, R = void, U extends T = T, Q extends R = R>(channel: IpcChannel, data?: U): Promise<IpcResponse<Q>> {
+    // Notice: must on/once operation first then do "send", otherwise the "on/once" listener would not work
     if (this.electronService.isElectron) {
       try {
         return new Promise((resolve) => {
-          if (req.responseChannel) {
-            this.ipcRenderer.once(req.responseChannel, (event, response) => resolve(response));
-          } else {
-            resolve(null);
-          }
+          this.ipcRenderer.once(channel, (event, response) => resolve(response));
         });
       } finally {
+        const req: IpcRequest<U> = { data };
         this.ipcRenderer.send(channel, req);
       }
     }
   }
 
   /** Use send$ if need to keep listening the response channel. */
-  public send$<T>(channel: IpcChannel, req?: IPCRequest<T>): Observable<IPCResponse<any>>;
-  public send$<T, R>(channel: IpcChannel, req?: IPCRequest<T>): Observable<IPCResponse<R>>;
-  public send$<T, R>(channel: IpcChannel, req?: IPCRequest<T>): Observable<IPCResponse<R>> {
+  public send$<T = void, R = void, U extends T = T, Q extends R = R>(channel: IpcChannel, data?: U): Observable<IpcResponse<Q>>;
+  public send$<T = void, R = void, U extends T = T, Q extends R = R>(channel: IpcChannel, data?: U): Observable<IpcResponse<Q>> {
     if (this.electronService.isElectron) {
-      if (!req.responseChannel) {
-        throw new Error('Must point out the response channel when use send$()');
-      }
-      this.ipcRenderer.send(channel, req);
-      return new Observable((subscriber) => {
-        this.ipcRenderer.on(req.responseChannel, (event, response) => {
-          this.zone.run(subscriber.next.bind(subscriber, response));
+      try {
+        return new Observable((subscriber) => {
+          this.ipcRenderer.on(channel, (event, response) => {
+            this.zone.run(subscriber.next.bind(subscriber, response));
+          });
         });
-      });
+      } finally {
+        const req: IpcRequest<U> = { data };
+        this.ipcRenderer.send(channel, req);
+      }
     }
   }
 
-  public on<T>(message: IpcChannel, cb: (event: any, res: IPCResponse<T>) => void): void {
+  public on<T>(message: IpcChannel, cb: (event: any, res: IpcResponse<T>) => void): void {
     if (this.electronService.isElectron) {
-      const listener = (event: any, res: IPCResponse<T>) => {
+      const listener = (event: any, res: IpcResponse<T>) => {
         this.zone.run(() => {
           cb(event, res);
         });

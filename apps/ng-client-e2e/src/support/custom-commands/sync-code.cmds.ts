@@ -13,14 +13,14 @@ Cypress.Commands.add('fillAllProjectInfo', (fixture: MainFixture, project: Proje
     .first()
     .click()
     .then(() => {
-      fixture.simulateBackendResToClient(IpcChannel.SERVER_CHECK_RES, true);
+      fixture.simulator.replyOkWithNoData(IpcChannel.SERVER_CHECK);
     });
 
   cy.getBySel('local-project-path-input').type(project.localPath);
   return cy.getBySel('remote-project-path-input')
     .type(project.remotePath)
     .then(() => {
-      fixture.simulateBackendResToClient(IpcChannel.SERVER_DIRECTORY_CHECK_RES, true);
+      fixture.simulator.replyOkWithNoData(IpcChannel.SERVER_DIRECTORY_CHECK);
     });
 });
 

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IpcService } from '@ng-client/core/services/ipc.service';
-import { IpcChannel } from '@oam-kit/utility/types';
+import { IpcChannel, KnifeGeneratorReqData } from '@oam-kit/utility/types';
 
 @Component({
   selector: 'app-knife-generator',
@@ -59,9 +59,9 @@ export class KnifeGeneratorComponent implements OnInit {
 
   async start() {
     this.ongoing = true;
-    const res = await this.ipcService.send<{ projectPath: string; targetVersion: string }>(IpcChannel.KNIFE_GENERATOR_REQ, {
-      responseChannel: IpcChannel.KNIFE_GENERATOR_RES,
-      data: { projectPath: this.form.get('targetProject').value, targetVersion: this.form.get('revision').value },
+    const res = await this.ipcService.send<KnifeGeneratorReqData>(IpcChannel.KNIFE_GENERATOR, {
+      projectPath: this.form.get('targetProject').value,
+      targetVersion: this.form.get('revision').value,
     });
     console.log(res.data);
     this.ongoing = false;

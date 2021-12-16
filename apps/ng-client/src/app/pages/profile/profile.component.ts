@@ -1,6 +1,14 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
-import { GeneralModel, IpcChannel, Profile } from '@oam-kit/utility/types';
+import {
+  GeneralModel,
+  IpcChannel,
+  Profile,
+  SvnAccountVerificationReqData,
+  SvnAccountVerificationResData,
+  NsbAccountVerificationReqData,
+  NsbAccountVerificationResData,
+} from '@oam-kit/utility/types';
 import { StoreService } from '@ng-client/core/services/store.service';
 import { MODEL_NAME } from '@oam-kit/utility/overall-config';
 import { Model } from '@oam-kit/utility/model';
@@ -133,19 +141,19 @@ export class ProfileComponent {
     const nsbPassword = this.nsbPassword.value;
     const svnPassword = this.svnPassword.value;
     Promise.all([
-      this.ipcService.send(IpcChannel.NSB_ACCOUNT_VERIFICATION_REQ, {
-        responseChannel: IpcChannel.NSB_ACCOUNT_VERIFICATION_RES,
-        data: { username: nsbUsername, password: nsbPassword },
+      this.ipcService.send<NsbAccountVerificationReqData, NsbAccountVerificationResData>(IpcChannel.NSB_ACCOUNT_VERIFICATION, {
+        username: nsbUsername,
+        password: nsbPassword,
       }),
-      this.ipcService.send(IpcChannel.SVN_ACCOUNT_VERIFICATION_REQ, {
-        responseChannel: IpcChannel.SVN_ACCOUNT_VERIFICATION_RES,
-        data: { username: nsbUsername, password: svnPassword },
+      this.ipcService.send<SvnAccountVerificationReqData, SvnAccountVerificationResData>(IpcChannel.SVN_ACCOUNT_VERIFICATION, {
+        username: nsbUsername,
+        password: svnPassword,
       }),
     ])
       .then(([nsbRes, svnRes]) => {
         this.isSaving = false;
-        const isRightNsbAccount = nsbRes.data && nsbRes.isSuccessed;
-        const isRightSvnAccount = svnRes.data && svnRes.isSuccessed;
+        const isRightNsbAccount = nsbRes.data.isRightAccount && nsbRes.isOk;
+        const isRightSvnAccount = svnRes.data.isRightAccount && svnRes.isOk;
         if (isRightNsbAccount && isRightSvnAccount) {
           this.gModel.set('profile', (draft) => {
             draft.nsbAccount.username = this.nsbUsername.value;

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { GeneralModel, IpcChannel } from '@oam-kit/utility/types';
-import { RbChannel } from './rb.channel';
+import RbChannel from './rb.channel';
 import {
   IS_COMMIT_ALLOWED,
   IS_COMMIT_NOT_ALLOWED,
@@ -12,6 +12,8 @@ import {
 import { Store } from '@electron/app/store';
 import { Model } from '@oam-kit/utility/model';
 import { MODEL_INIT_VALUE, MODEL_NAME } from '@oam-kit/utility/overall-config';
+import { IpcService } from '@electron/app/utils/ipcService';
+import Logger from '@electron/app/utils/logger';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -27,7 +29,7 @@ const SETUP_SVN_CREDENTIALS_URL = `http://biedronka.emea.nsn-net.net/r/${rbId}/r
 const SVN_COMMIT_URL = `http://biedronka.emea.nsn-net.net/r/${rbId}/rb_svncommit/ajax/commit/`;
 const IS_COMMIT_ALLOWED_URL = `http://biedronka.emea.nsn-net.net/r/${rbId}/rb_svncommit/ajax/is_commit_allowed/`;
 
-async function getPartialRbInfo(channel: RbChannel, mockEvent: any) {
+async function getPartialRbInfo(channel: RbChannel) {
   // mock review_request response
   mockedAxios.get.mockResolvedValueOnce({ data: REVIEW_REQUEST_RESPONSE });
   // mock latestDiffUrl response
@@ -35,19 +37,35 @@ async function getPartialRbInfo(channel: RbChannel, mockEvent: any) {
   // mock repository response
   mockedAxios.get.mockResolvedValueOnce({ data: REPOSITORY_RESPONSE });
 
-  await channel.getPartialRbInfo(mockEvent, { responseChannel: IpcChannel.GET_PARTIAL_RB_RES, data: link });
+  const ipcService = createIpcService(IpcChannel.GET_PARTIAL_RB);
+
+  await channel.getPartialRbInfo(ipcService, { data: link });
 }
 
-async function isRbReady(channel: RbChannel, mockEvent: any) {
+async function isRbReady(channel: RbChannel) {
   mockedAxios.get.mockResolvedValueOnce({ data: IS_COMMIT_ALLOWED });
-  await channel.isRbReady(mockEvent, { responseChannel: IpcChannel.IS_RB_READY_RES, data: link });
+  const ipcService = createIpcService(IpcChannel.IS_RB_READY);
+  await channel.isRbReady(ipcService, { data: link });
 }
 
 const fakeStore = new Store();
-fakeStore.add(new Model<GeneralModel>({
-  name: MODEL_NAME.GENERAL,
-  initValue: MODEL_INIT_VALUE.general
-}));
+fakeStore.add(
+  new Model<GeneralModel>({
+    name: MODEL_NAME.GENERAL,
+    initValue: MODEL_INIT_VALUE.general,
+  })
+);
+
+function createInstance() {
+  return new RbChannel(fakeStore, null);
+}
+
+const mockEvent: any = { reply: jest.fn() };
+
+function createIpcService(channel: IpcChannel): IpcService {
+  const logger = Logger.for('test');
+  return new IpcService(logger, mockEvent, channel);
+}
 
 describe('RbChannel', () => {
   describe('getPartialRbInfo', () => {
@@ -56,9 +74,8 @@ describe('RbChannel', () => {
       // jest issue W/A: https://github.com/visionmedia/supertest/issues
       await new Promise((resolve) => setTimeout(() => resolve(null), 100));
     });
-    const mockEvent: any = { reply: jest.fn() };
     it('should return correct partial RB info', async () => {
-      const channel = new RbChannel(fakeStore);
+      const channel = new RbChannel(fakeStore, null);
       const expectedPartialRbInfo = {
         link,
         branch: '5G21A',
@@ -73,15 +90,21 @@ describe('RbChannel', () => {
       // mock repository response
       mockedAxios.get.mockResolvedValueOnce({ data: REPOSITORY_RESPONSE });
 
-      await channel.getPartialRbInfo(mockEvent, { responseChannel: IpcChannel.GET_PARTIAL_RB_RES, data: link });
+      const ipcService = createIpcService(IpcChannel.GET_PARTIAL_RB);
+
+      await channel.getPartialRbInfo(ipcService, { data: link });
       expect(mockedAxios.get).toBeCalledWith(GET_REVIEW_REQUEST_URL);
       expect(mockedAxios.get).toBeCalledWith(LATEST_DIFF_URL);
       expect(mockedAxios.get).toBeCalledWith(REPOSITORY_INFO_URL);
-      expect(mockEvent.reply).toBeCalledWith(IpcChannel.GET_PARTIAL_RB_RES, { isSuccessed: true, data: expectedPartialRbInfo });
+      expect(mockEvent.reply).toBeCalledWith(IpcChannel.GET_PARTIAL_RB, {
+        isOk: true,
+        data: expectedPartialRbInfo,
+        error: { type: null, message: null },
+      });
     });
 
     it('should return whole summary as a name if RB summary is a plain string', async () => {
-      const channel = new RbChannel(fakeStore);
+      const channel = createInstance();
       const expectedPartialRbInfo = {
         link,
         name: 'test',
@@ -96,19 +119,21 @@ describe('RbChannel', () => {
       // mock repository response
       mockedAxios.get.mockResolvedValueOnce({ data: REPOSITORY_RESPONSE });
 
-      await channel.getPartialRbInfo(mockEvent, { responseChannel: IpcChannel.GET_PARTIAL_RB_RES, data: link });
+      const ipcService = createIpcService(IpcChannel.GET_PARTIAL_RB);
+
+      await channel.getPartialRbInfo(ipcService, { data: link });
       expect(mockedAxios.get).toBeCalledWith(GET_REVIEW_REQUEST_URL);
       expect(mockedAxios.get).toBeCalledWith(LATEST_DIFF_URL);
       expect(mockedAxios.get).toBeCalledWith(REPOSITORY_INFO_URL);
-      expect(mockEvent.reply).toBeCalledWith(IpcChannel.GET_PARTIAL_RB_RES, { isSuccessed: true, data: expectedPartialRbInfo });
+      expect(mockEvent.reply).toBeCalledWith(IpcChannel.GET_PARTIAL_RB, {
+        isOk: true,
+        data: expectedPartialRbInfo,
+        error: { type: null, message: null },
+      });
     });
   });
 
   describe('svnCommit', () => {
-    let mockEvent: any;
-    beforeAll(async () => {
-      mockEvent = { reply: jest.fn() };
-    });
     afterEach(async () => {
       jest.resetAllMocks();
       // jest issue W/A: https://github.com/visionmedia/supertest/issues
@@ -117,9 +142,9 @@ describe('RbChannel', () => {
     it(`should return { revision: '195696' } when commit successfuly`, async () => {
       const expectedCookies =
         'rbsessionid=rveen6bmfdddobeckqjomuj9jm9ccawl;svn_username=fake_svn_username;svn_password=fake_svn_password;';
-      const channel = new RbChannel(fakeStore);
-      await getPartialRbInfo(channel, mockEvent);
-      await isRbReady(channel, mockEvent);
+      const channel = createInstance();
+      await getPartialRbInfo(channel);
+      await isRbReady(channel);
       // mock get rbsessionid response
       mockedAxios.post.mockResolvedValueOnce({
         headers: {
@@ -135,9 +160,15 @@ describe('RbChannel', () => {
       // mock review_request response
       mockedAxios.get.mockResolvedValueOnce({ data: REVIEW_REQUEST_RESPONSE });
 
-      await channel.svnCommit(mockEvent, { responseChannel: IpcChannel.SVN_COMMIT_RES, data: link });
+      const ipcService = createIpcService(IpcChannel.SVN_COMMIT);
 
-      expect(mockEvent.reply).toBeCalledWith(IpcChannel.SVN_COMMIT_RES, { isSuccessed: true, data: { revision } });
+      await channel.svnCommit(ipcService, { data: link });
+
+      expect(mockEvent.reply).toBeCalledWith(IpcChannel.SVN_COMMIT, {
+        isOk: true,
+        data: { revision },
+        error: { type: null, message: null },
+      });
 
       expect(mockedAxios.post.mock.calls).toEqual([
         // expect get rbsessionid request
@@ -181,9 +212,9 @@ describe('RbChannel', () => {
     it(`should return { message: 'specific reason' } when commit message is invalid`, async () => {
       const expectedCookies =
         'rbsessionid=rveen6bmfdddobeckqjomuj9jm9ccawl;svn_username=fake_svn_username;svn_password=fake_svn_password;';
-      const channel = new RbChannel(fakeStore);
-      await getPartialRbInfo(channel, mockEvent);
-      await isRbReady(channel, mockEvent);
+      const channel = createInstance();
+      await getPartialRbInfo(channel);
+      await isRbReady(channel);
       // mock get rbsessionid response
       mockedAxios.post.mockResolvedValueOnce({
         headers: {
@@ -202,11 +233,14 @@ describe('RbChannel', () => {
       // mock review_request response
       mockedAxios.get.mockResolvedValueOnce({ data: REVIEW_REQUEST_RESPONSE });
 
-      await channel.svnCommit(mockEvent, { responseChannel: IpcChannel.SVN_COMMIT_RES, data: link });
+      const ipcService = createIpcService(IpcChannel.SVN_COMMIT);
 
-      expect(mockEvent.reply).toBeCalledWith(IpcChannel.SVN_COMMIT_RES, {
-        isSuccessed: true,
+      await channel.svnCommit(ipcService, { data: link });
+
+      expect(mockEvent.reply).toBeCalledWith(IpcChannel.SVN_COMMIT, {
+        isOk: true,
         data: { message: 'specific reason' },
+        error: { type: null, message: null },
       });
 
       expect(mockedAxios.post.mock.calls).toEqual([
@@ -251,33 +285,36 @@ describe('RbChannel', () => {
   });
 
   describe('isRbReady', () => {
-    let mockEvent: any;
-    beforeAll(async () => {
-      mockEvent = { reply: jest.fn() };
-    });
     afterEach(async () => {
       jest.resetAllMocks();
       // jest issue W/A: https://github.com/visionmedia/supertest/issues
       await new Promise((resolve) => setTimeout(() => resolve(null), 100));
     });
     it('should return { ready: true } when RB is ready.', async () => {
-      const channel = new RbChannel(fakeStore);
+      const channel = createInstance();
 
       mockedAxios.get.mockResolvedValueOnce({ data: IS_COMMIT_ALLOWED });
-      await channel.isRbReady(mockEvent, { responseChannel: IpcChannel.IS_RB_READY_RES, data: link });
-      expect(mockEvent.reply).toBeCalledWith(IpcChannel.IS_RB_READY_RES, { isSuccessed: true, data: { ready: true } });
+      const ipcService = createIpcService(IpcChannel.IS_RB_READY);
+      await channel.isRbReady(ipcService, { data: link });
+      expect(mockEvent.reply).toBeCalledWith(IpcChannel.IS_RB_READY, {
+        isOk: true,
+        data: { ready: true, message: '' },
+        error: { type: null, message: null },
+      });
       expect(mockedAxios.get).toBeCalledWith(IS_COMMIT_ALLOWED_URL, {
         headers: { Referer: link },
       });
     });
     it(`should return { ready: false, message: '...' } then RB is not ready`, async () => {
-      const channel = new RbChannel(fakeStore);
+      const channel = createInstance();
 
       mockedAxios.get.mockResolvedValueOnce({ data: IS_COMMIT_NOT_ALLOWED });
-      await channel.isRbReady(mockEvent, { responseChannel: IpcChannel.IS_RB_READY_RES, data: link });
-      expect(mockEvent.reply).toBeCalledWith(IpcChannel.IS_RB_READY_RES, {
-        isSuccessed: true,
+      const ipcService = createIpcService(IpcChannel.IS_RB_READY);
+      await channel.isRbReady(ipcService, { data: link });
+      expect(mockEvent.reply).toBeCalledWith(IpcChannel.IS_RB_READY, {
+        isOk: true,
         data: { ready: false, message: IS_COMMIT_NOT_ALLOWED.message },
+        error: { type: null, message: null },
       });
       expect(mockedAxios.get).toBeCalledWith(IS_COMMIT_ALLOWED_URL, {
         headers: { Referer: link },
