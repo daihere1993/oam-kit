@@ -1,12 +1,11 @@
 import { Model } from '@oam-kit/utility/model';
 import { MODEL_INIT_VALUE, MODEL_NAME } from '@oam-kit/utility/overall-config';
 import { SyncCodeModel, GeneralModel, RbToolsModel, IpcChannel, IpcRequest, APPData } from '@oam-kit/utility/types';
-import Logger from '@electron/app/utils/logger';
 import { IpcService } from '@electron/app/utils/ipcService';
 import { IpcChannelBase } from '../ipcChannelBase';
 
 export default class ModelChannel extends IpcChannelBase {
-  logger = Logger.for('ModelChannel');
+  logName = 'ModelChannel';
   handlers = [
     {
       name: IpcChannel.GET_APP_DATA,

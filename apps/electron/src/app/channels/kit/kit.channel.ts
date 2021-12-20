@@ -21,7 +21,6 @@ import { dialog, Notification, shell } from 'electron';
 import { NodeSSH } from 'node-ssh';
 import { MODEL_NAME, sftp_algorithms } from '@oam-kit/utility/overall-config';
 import axios from 'axios';
-import Logger from '@electron/app/utils/logger';
 import * as fetcher from '@electron/app/utils/fetcher';
 import { IpcService } from '@electron/app/utils/ipcService';
 import { IpcChannelBase } from '../ipcChannelBase';
@@ -31,7 +30,7 @@ const NSB_LOGIN_TARGET = 'HTTPS://pronto.int.net.nokia.com/pronto/home.html';
 const REVIEWBOARD_LOGIN_URL = 'https://svne1.access.nsn.com/isource/svnroot/BTS_SC_OAM_LTE/conf/BranchFor.json';
 
 export default class KitChannel extends IpcChannelBase {
-  logger = Logger.for('RbChannel');
+  logName = 'RbChannel';
   handlers = [
     { name: IpcChannel.SELECT_PATH, fn: this.onSelectPath },
     { name: IpcChannel.SHOW_NOTIFICATION, fn: this.showSysNotification },

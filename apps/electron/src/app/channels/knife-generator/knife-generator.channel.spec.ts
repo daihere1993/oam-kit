@@ -59,13 +59,15 @@ describe.skip('getChangedFiles()', () => {
   beforeAll(() => {
     channel = createInstance();
   });
-  it('should return right change files under the git repository', () => {
-    const changedFiles = channel.getChangedFiles('C:\\N-5CG8300N4C-Data\\zowu\\Development\\oam\\moam\\TRUNK', true);
+  it('should return right change files under the git repository', async (done) => {
+    const changedFiles = await channel.getChangedFiles('C:\\N-5CG8300N4C-Data\\zowu\\Development\\oam\\moam\\TRUNK', true);
     expect(changedFiles.length).toEqual(4);
+    done();
   });
-  it('should return right change files under the svn repository', () => {
-    const changedFiles = channel.getChangedFiles('C:\\N-5CG8300N4C-Data\\zowu\\Development\\oam\\moam\\meta_trunk', false);
+  it('should return right change files under the svn repository', async (done) => {
+    const changedFiles = await channel.getChangedFiles('C:\\N-5CG8300N4C-Data\\zowu\\Development\\oam\\moam\\meta_trunk', false);
     expect(changedFiles.length).toEqual(4);
+    done();
   });
 });
 
@@ -76,7 +78,7 @@ describe.skip('createZipFile()', () => {
   });
   it('should zip file successfully', async (done) => {
     const projectPath = 'C:\\N-5CG8300N4C-Data\\zowu\\Development\\oam\\moam\\TRUNK';
-    const changedFiles = channel.getChangedFiles(projectPath, true);
+    const changedFiles = await channel.getChangedFiles(projectPath, true);
     await channel.createZipFile(changedFiles, projectPath);
     done();
   });

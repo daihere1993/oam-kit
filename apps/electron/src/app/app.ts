@@ -105,7 +105,12 @@ export default class App {
     initChannelhandlers(modelChannel);
     const channelModules: { default: Constructor<IpcChannelBase> }[] = [];
     function importAll(r: __WebpackModuleApi.RequireContext) {
-      r.keys().forEach((key) => (channelModules.push(r(key))));
+      r.keys().forEach((key) => {
+        // To avoid duplicated import model channel
+        if (!key.includes('model.channel.ts')) {
+          channelModules.push(r(key));
+        }
+      });
     }
     importAll(require.context('./channels/', true, /\.channel.ts$/));
 

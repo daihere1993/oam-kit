@@ -17,7 +17,6 @@ import {
 } from '@oam-kit/utility/types';
 import { getUserDataPath } from '@electron/app/utils';
 import { MODEL_NAME, modules as modulesConf, sftp_algorithms } from '@oam-kit/utility/overall-config';
-import Logger from '@electron/app/utils/logger';
 import { IpcService } from '@electron/app/utils/ipcService';
 import { IpcChannelBase } from '../ipcChannelBase';
 
@@ -30,7 +29,7 @@ interface CustomError extends Error {
 }
 
 export default class SyncCodeChannel extends IpcChannelBase {
-  logger = Logger.for('SyncCode');
+  logName = 'SyncCode';
   handlers = [{ name: IpcChannel.SYNC_CODE, fn: this.handle }];
 
   private project: Project;

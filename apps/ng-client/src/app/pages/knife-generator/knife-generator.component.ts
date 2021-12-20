@@ -1,7 +1,24 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IpcService } from '@ng-client/core/services/ipc.service';
-import { IpcChannel, KnifeGeneratorReqData } from '@oam-kit/utility/types';
+import { IpcChannel, KnifeGeneratorReqData, KnifeGeneratorResData } from '@oam-kit/utility/types';
+
+enum AlertType {
+  SUCCESS = 'success',
+  ERROR = 'error',
+}
+
+class AlertInfo {
+  show: boolean;
+  type: AlertType;
+  message: string;
+
+  constructor(show: boolean, type: AlertType, message: string) {
+    this.show = show;
+    this.type = type;
+    this.message = message;
+  }
+}
 
 @Component({
   selector: 'app-knife-generator',
@@ -32,6 +49,11 @@ import { IpcChannel, KnifeGeneratorReqData } from '@oam-kit/utility/types';
           <input nz-input name="revision" data-test="knife-revision" formControlName="revision" />
         </nz-form-control>
       </nz-form-item>
+      <nz-form-item *ngIf="alertInfo.show">
+        <nz-form-control nzSpan="10" nzOffset="8">
+          <nz-alert nzCloseable nzShowIcon [nzType]="alertInfo.type" [nzMessage]="alertInfo.message" (nzOnClose)="afterClose()"></nz-alert>
+        </nz-form-control>
+      </nz-form-item>
       <nz-form-item nz-row>
         <nz-form-control nzSpan="10" nzOffset="8">
           <button nz-button [nzLoading]="ongoing" nzType="primary" (click)="start()">Start</button>
@@ -44,6 +66,7 @@ import { IpcChannel, KnifeGeneratorReqData } from '@oam-kit/utility/types';
 export class KnifeGeneratorComponent implements OnInit {
   form: FormGroup;
   ongoing = false;
+  alertInfo = new AlertInfo(null, null, null);
   constructor(private fb: FormBuilder, private ipcService: IpcService) {}
 
   ngOnInit() {
@@ -59,11 +82,23 @@ export class KnifeGeneratorComponent implements OnInit {
 
   async start() {
     this.ongoing = true;
-    const res = await this.ipcService.send<KnifeGeneratorReqData>(IpcChannel.KNIFE_GENERATOR, {
+    this.alertInfo.show = false;
+    const res = await this.ipcService.send<KnifeGeneratorReqData, KnifeGeneratorResData>(IpcChannel.KNIFE_GENERATOR, {
       projectPath: this.form.get('targetProject').value,
       targetVersion: this.form.get('revision').value,
     });
-    console.log(res.data);
+    if (res.isOk) {
+      this.alertInfo.type = AlertType.SUCCESS;
+      this.alertInfo.message = `You can find zip file from: ${res.data.knifePath}`;
+    } else {
+      this.alertInfo.type = AlertType.ERROR;
+      this.alertInfo.message = res.error.message;
+    }
+    this.alertInfo.show = true;
     this.ongoing = false;
+  }
+
+  afterClose() {
+    this.alertInfo.show = false;
   }
 }

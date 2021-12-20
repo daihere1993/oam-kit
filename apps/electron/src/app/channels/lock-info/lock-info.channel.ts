@@ -2,7 +2,6 @@ import * as config from '@oam-kit/utility/overall-config';
 import * as branchLockParser from '@electron/app/utils/branchLockParser';
 import * as fetcher from '@electron/app/utils/fetcher';
 import { GeneralModel, Repo, ReviewBoard, LockInfo, BranchLockInfo, RepoLockInfo, IpcResErrorType } from '@oam-kit/utility/types';
-import Logger from '@electron/app/utils/logger';
 import { IpcChannel, IpcRequest } from '@oam-kit/utility/types';
 import { IpcService } from '@electron/app/utils/ipcService';
 import { IpcChannelBase } from '../ipcChannelBase';
@@ -14,7 +13,7 @@ function isCustomError(error: Error) {
 }
 
 export default class LockInfoChannel extends IpcChannelBase {
-  logger = Logger.for('LockInfoChannel');
+  logName = 'LockInfoChannel';
   handlers = [{ name: IpcChannel.GET_LOCK_INFO, fn: this.getLockInfo }];
 
   /**

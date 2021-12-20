@@ -1,6 +1,5 @@
 import axios, { AxiosError } from 'axios';
 import { assert } from 'console';
-import Logger from '../../utils/logger';
 import { IpcChannel, IpcRequest } from '@oam-kit/utility/types';
 import { GeneralModel, ReviewBoard } from '@oam-kit/utility/types';
 import { MODEL_NAME } from '@oam-kit/utility/overall-config';
@@ -17,7 +16,7 @@ const SETUP_RBSESSION_URL = 'http://biedronka.emea.nsn-net.net/api/extensions/rb
 type PartialRb = Partial<ReviewBoard> & { diffset_revision?: string };
 
 export default class RbChannel extends IpcChannelBase {
-  logger = Logger.for('RbChannel');
+  logName = 'RbChannel';
   handlers = [
     { name: IpcChannel.GET_PARTIAL_RB, fn: this.getPartialRbInfo },
     { name: IpcChannel.IS_RB_READY, fn: this.isRbReady },

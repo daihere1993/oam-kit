@@ -4,16 +4,12 @@ import downloadsFolder from 'downloads-folder';
 import * as shell from 'shelljs';
 import * as fs from 'fs';
 import * as path from 'path';
-import Logger from '@electron/app/utils/logger';
 import { zip } from 'zip-a-folder';
 import { IpcService } from '@electron/app/utils/ipcService';
 import { IpcChannelBase } from '../ipcChannelBase';
 
-// W/A for shell.exec not working at electron app
-shell.config.execPath = shell.which('node').toString();
-
 export default class KnifeGeneratorChannel extends IpcChannelBase {
-  logger = Logger.for('KnifeGenerator');
+  logName = 'KnifeGeneratorChannel';
   handlers = [{ name: IpcChannel.KNIFE_GENERATOR, fn: this.generateKnife }];
 
   get _downloadsFolderPath(): string {
@@ -34,17 +30,11 @@ export default class KnifeGeneratorChannel extends IpcChannelBase {
       if (isValidEnv) {
         const repositoryType = this.getRepositoryType(req.data.projectPath);
         const isGit = repositoryType === RepositoryType.GIT;
-        if (this.isValidVersion(req.data.projectPath, req.data.targetVersion, isGit)) {
-          const changedFiles = this.getChangedFiles(req.data.projectPath, isGit);
+        if (await this.isValidVersion(req.data.projectPath, req.data.targetVersion, isGit)) {
+          const changedFiles = await this.getChangedFiles(req.data.projectPath, isGit);
           await this.createZipFile(changedFiles, req.data.projectPath);
           ipcService.replyOkWithData<KnifeGeneratorResData>({ knifePath: path.join(this._downloadsFolderPath, 'knife.zip') });
-        } else {
-          const message = `Failed due to the current revision doesn't equal the target revision of knife`;
-          ipcService.replyNokWithNoData(message);
         }
-      } else {
-        const message = `Failed due to there there is no 'svn' or 'git' command`;
-        ipcService.replyNokWithNoData(message);
       }
     } catch (error) {
       const message = `Failed due to ${error.message}`;
@@ -57,12 +47,18 @@ export default class KnifeGeneratorChannel extends IpcChannelBase {
    */
   public async checkEnvironment() {
     let isValid: boolean;
+    this.logger.info('checkEnvironment: start.');
     try {
       isValid = !!(await commandExists('svn')) && !!(await commandExists('git'));
     } catch (error) {
       isValid = false;
     }
-    return isValid;
+    if (!isValid) {
+      const message = `there there is no 'svn' or 'git' command, please make sure 'svn' and 'git' command have been installed`;
+      throw new Error(message);
+    }
+    this.logger.info('checkEnvironment: done.');
+    return true;
   }
 
   public getRepositoryType(projectPath: string): RepositoryType {
@@ -80,45 +76,47 @@ export default class KnifeGeneratorChannel extends IpcChannelBase {
   public isSvnRepository(projectPath: string): boolean {
     let isSvnRepository: boolean;
     try {
-      isSvnRepository = !!shell.cd(projectPath).exec('svn info');
+      isSvnRepository = !!this.execCmd(projectPath, 'svn info');
     } catch (error) {
       isSvnRepository = false;
     }
     return isSvnRepository;
   }
 
-  public isValidVersion(projectPath: string, targetVersion: string, isGit: boolean): boolean {
+  public async isValidVersion(projectPath: string, targetRevision: string, isGit: boolean): Promise<boolean> {
+    this.logger.info('isValidVersion: start.');
     const getVersionCmd = isGit ? 'git rev-parse HEAD' : 'svn info --show-item revision';
-    const currentVersion = shell.cd(projectPath).exec(getVersionCmd).stdout.replace(/\s*/g, '');
-    return currentVersion === targetVersion;
+    const currentRevision = (await this.execCmd(projectPath, getVersionCmd)).replace(/\s*/g, '');
+    if (currentRevision !== targetRevision) {
+      const message = `the current revision(${currentRevision}) doesn't equal the target revision(${targetRevision}) of knife`;
+      throw new Error(message);
+    }
+
+    this.logger.info('isValidVersion: done.');
+    return true;
   }
 
-  public getChangedFiles(projectPath: string, isGit: boolean): string[] {
+  public async getChangedFiles(projectPath: string, isGit: boolean): Promise<string[]> {
     const changedFiles: string[] = [];
     const getModifiedFilesCmd = isGit ? 'git ls-files --modified' : 'svn status | grep M';
     const getUntrackedFilesCmd = isGit ? 'git ls-files --others --exclude-standard' : 'svn status | grep ?';
-    const shellUnderTheProject = shell.cd(projectPath);
     if (isGit) {
-      const modifiedFiles = shellUnderTheProject
-        .exec(getModifiedFilesCmd)
+      const modifiedFiles = (await this.execCmd(projectPath, getModifiedFilesCmd))
         .split('\n')
         .filter((item) => !!item);
-      const untrackedFiles = shellUnderTheProject
-        .exec(getUntrackedFilesCmd)
+      const untrackedFiles = (await this.execCmd(projectPath, getUntrackedFilesCmd))
         .split('\n')
         .filter((item) => !!item);
       changedFiles.push(...modifiedFiles);
       changedFiles.push(...untrackedFiles);
     } else {
-      const modifiedFiles = shellUnderTheProject
-        .exec(getModifiedFilesCmd)
+      const modifiedFiles = (await this.execCmd(projectPath, getModifiedFilesCmd))
         .split('\n')
         .filter((item) => !!item)
         .map((item) => {
           return item.match(/M(.*)/)[1].trim();
         });
-      const untrackedFiles = shellUnderTheProject
-        .exec(getUntrackedFilesCmd)
+      const untrackedFiles = (await this.execCmd(projectPath, getUntrackedFilesCmd))
         .split('\n')
         .filter((item) => !!item)
         .map((item) => item.match(/\?(.*)/)[1].trim());
@@ -162,5 +160,17 @@ export default class KnifeGeneratorChannel extends IpcChannelBase {
       this.logger.error(errorMsg);
       throw Error(errorMsg);
     }
+  }
+
+  private async execCmd(targetPath: string, cmd: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      shell.cd(targetPath).exec(cmd, (code, stdout, stderr) => {
+        if (code == 0) {
+          resolve(stdout);
+        } else {
+          reject(new Error(stderr));
+        }
+      });
+    });
   }
 }
