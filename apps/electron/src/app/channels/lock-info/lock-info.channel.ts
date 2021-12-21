@@ -1,33 +1,28 @@
-import { GeneralModel, Repo, ReviewBoard, LockInfo, BranchLockInfo, RepoLockInfo } from '@oam-kit/utility/types';
-import { IpcChannelInterface } from '@electron/app/interfaces';
-import { Store } from '@electron/app/store';
 import * as config from '@oam-kit/utility/overall-config';
 import * as branchLockParser from '@electron/app/utils/branchLockParser';
 import * as fetcher from '@electron/app/utils/fetcher';
-import Logger from '@electron/app/utils/logger';
-import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/utility/types';
-import { IpcMainEvent } from 'electron/main';
-import { RbBase_ } from '../rb';
+import { GeneralModel, Repo, ReviewBoard, LockInfo, BranchLockInfo, RepoLockInfo, IpcResErrorType } from '@oam-kit/utility/types';
+import { IpcChannel, IpcRequest } from '@oam-kit/utility/types';
+import { IpcService } from '@electron/app/utils/ipcService';
+import { IpcChannelBase } from '../ipcChannelBase';
 
-const logger = Logger.for('LockInfoChannel');
 const moduleConf = config.modules.lockInfo;
 
-export class LockInfoChannel extends RbBase_ implements IpcChannelInterface {
-  handlers = [{ name: IpcChannel.GET_LOCK_INFO_REQ, fn: this.getLockInfo }];
+function isCustomError(error: Error) {
+  return error.message.includes('[oam-kit]');
+}
 
-  constructor(private store: Store) {
-    super();
-    this.store = store;
-  }
+export default class LockInfoChannel extends IpcChannelBase {
+  logName = 'LockInfoChannel';
+  handlers = [{ name: IpcChannel.GET_LOCK_INFO, fn: this.getLockInfo }];
 
   /**
    * Get lock info by rb link.
    * @param event
    * @param req
    */
-  public async getLockInfo(event: IpcMainEvent, req: IPCRequest<Partial<ReviewBoard>>) {
-    logger.info('[getLockInfo] start');
-    const res: IPCResponse<LockInfo> = {};
+  public async getLockInfo(ipcService: IpcService, req: IpcRequest<Partial<ReviewBoard>>) {
+    this.logger.info('[getLockInfo] start');
     try {
       const partialRb = req.data;
       const branchLockInfo = await this.getBranchLockInfo(partialRb.branch);
@@ -36,15 +31,10 @@ export class LockInfoChannel extends RbBase_ implements IpcChannelInterface {
         repo: repoLockInfo,
         branch: branchLockInfo,
       };
-      res.data = lockInfo;
-      res.isSuccessed = true;
-      logger.info('[getLockInfo] success');
+      this.logger.info('[getLockInfo] success');
+      ipcService.replyOkWithData<LockInfo>(lockInfo);
     } catch (error) {
-      res.isSuccessed = false;
-      res.error = { name: 'getLockInfo', message: error.message };
-      logger.error('[getLockInfo] failed: %s', error);
-    } finally {
-      event.reply(req.responseChannel, res);
+      ipcService.replyNokWithNoData(error.message, IpcResErrorType.Expected);
     }
   }
 
@@ -86,8 +76,8 @@ export class LockInfoChannel extends RbBase_ implements IpcChannelInterface {
     const svnAccount = gModel.get('profile').svnAccount;
     try {
       return fetcher.svnCat(jsonPath, { username: nsbAccount.username, password: svnAccount.password });
-    } catch(error) {
-      if (!this.isCustomError(error)) {
+    } catch (error) {
+      if (!isCustomError(error)) {
         throw new Error(`[oam-kit][getJsonBranchLockJson] ${error.message}`);
       } else {
         throw error;

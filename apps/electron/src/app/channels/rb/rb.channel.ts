@@ -1,15 +1,11 @@
 import axios, { AxiosError } from 'axios';
 import { assert } from 'console';
-import Logger from '../../utils/logger';
-import { IpcMainEvent } from 'electron/main';
-import { IpcChannelInterface } from '@electron/app/interfaces';
-import { IpcChannel, IPCRequest, IPCResponse } from '@oam-kit/utility/types';
+import { IpcChannel, IpcRequest } from '@oam-kit/utility/types';
 import { GeneralModel, ReviewBoard } from '@oam-kit/utility/types';
-import { Store } from '@electron/app/store';
 import { MODEL_NAME } from '@oam-kit/utility/overall-config';
 import { Model } from '@oam-kit/utility/model';
-
-const logger = Logger.for('RbChannel');
+import { IpcService } from '@electron/app/utils/ipcService';
+import { IpcChannelBase } from '../ipcChannelBase';
 
 const SVN_COMMIT_TMP = 'http://biedronka.emea.nsn-net.net/r/{RB_ID}/rb_svncommit/ajax/commit/';
 const GET_REVIEW_REQUEST_TMP = 'http://biedronka.emea.nsn-net.net/api/review-requests/{RB_ID}/';
@@ -19,37 +15,12 @@ const SETUP_RBSESSION_URL = 'http://biedronka.emea.nsn-net.net/api/extensions/rb
 
 type PartialRb = Partial<ReviewBoard> & { diffset_revision?: string };
 
-export class RbBase_ {
-  protected getRbId(link: string): number {
-    const rbId = parseInt(link.match(/\/?(\d+)/)[1]);
-    if (Number.isNaN(rbId)) {
-      throw new Error(`[oam-kit][getRbId] Can't get RB id from ${link}`);
-    }
-    return rbId;
-  }
-
-  protected isCustomError(error: Error) {
-    return error.message.includes('[oam-kit]');
-  }
-
-  protected reverseStr(s: string): string {
-    return [...s].reverse().join('');
-  }
-
-  protected getUrlFromTmp(tmp: string, source: any): string {
-    if (typeof source === 'object') {
-      tmp.replace(/{(\w+)}/g, (...args) => source[args[1]]);
-    } else {
-      return tmp.replace(/{(\w+)}/, () => source.toString());
-    }
-  }
-}
-
-export class RbChannel extends RbBase_ implements IpcChannelInterface {
+export default class RbChannel extends IpcChannelBase {
+  logName = 'RbChannel';
   handlers = [
-    { name: IpcChannel.GET_PARTIAL_RB_REQ, fn: this.getPartialRbInfo },
-    { name: IpcChannel.IS_RB_READY_REQ, fn: this.isRbReady },
-    { name: IpcChannel.SVN_COMMIT_REQ, fn: this.svnCommit },
+    { name: IpcChannel.GET_PARTIAL_RB, fn: this.getPartialRbInfo },
+    { name: IpcChannel.IS_RB_READY, fn: this.isRbReady },
+    { name: IpcChannel.SVN_COMMIT, fn: this.svnCommit },
   ];
 
   private cookies = '';
@@ -58,8 +29,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
   // Cache partialrb for corresponding rb id
   private cachedPartialRb: { [key: string]: PartialRb } = {};
 
-  constructor(private store: Store) {
-    super();
+  startup(): void {
     this.gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
     // if user account got changed, need to resetup anthentication
     this.gModel.subscribe('profile', () => {
@@ -67,45 +37,39 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
     });
   }
 
-  public async getPartialRbInfo(event: IpcMainEvent, req: IPCRequest<string>) {
-    logger.info('[getPartialRbInfo] start.');
-    const res: IPCResponse<PartialRb> = {};
+  public async getPartialRbInfo(ipcService: IpcService, req: IpcRequest<string>) {
+    this.logger.info('[getPartialRbInfo] start.');
+    let data: PartialRb;
     const rbId = this.getRbId(req.data);
     try {
-      res.isSuccessed = true;
       if (this.isCachedRb(rbId)) {
-        res.data = this.cachedPartialRb[rbId];
+        data = this.cachedPartialRb[rbId];
       } else {
-        res.data = await this.getPartialRbByAjax(req.data);
-        logger.info('[getPartialRbInfo] success.');
+        data = await this.getPartialRbByAjax(req.data);
+        this.logger.info('[getPartialRbInfo] success.');
       }
+      ipcService.replyOkWithData<PartialRb>(data);
     } catch (error) {
-      res.isSuccessed = false;
-      res.error = { message: error.message };
-      logger.error('[getPartialRbInfo] failed: %s', error);
-    } finally {
-      event.reply(req.responseChannel, res);
+      ipcService.replyNokWithNoData(error.message);
     }
   }
 
   /**
    * Check if those mandatory requirements before code commitment like: ship number, CI passed, test case have done.
    */
-  public async isRbReady(event: IpcMainEvent, req: IPCRequest<string>) {
-    logger.info('[isRbReady] start.');
-    const res: IPCResponse<{ ready: boolean; message?: string }> = {};
+  public async isRbReady(ipcService: IpcService, req: IpcRequest<string>) {
+    this.logger.info('[isRbReady] start.');
     const link = req.data;
     const rbId = this.getRbId(link);
     const url = this.getUrlFromTmp(IS_COMMIT_ALLOWED_TMP, rbId);
     try {
       const { data } = await axios.get(url, { headers: { Referer: link } });
-      res.isSuccessed = true;
-      res.data = { ready: true };
+      const resData = { ready: true, message: '' };
 
       // if there is a "message" field in data which means RB is not ready.
       if (Object.prototype.hasOwnProperty.call(data, 'message')) {
-        res.data.ready = false;
-        res.data.message = data.message;
+        resData.ready = false;
+        resData.message = data.message;
       } else if (Object.prototype.hasOwnProperty.call(data, 'error')) {
         throw new Error(data.error);
       } else {
@@ -113,18 +77,15 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
         // store diffset_revision which would be used in svn commit request
         this.cachedPartialRb[rbId].diffset_revision = data.diffset_revision;
       }
-      logger.info('[isRbReady] success.');
+      this.logger.info('[isRbReady] success.');
+      ipcService.replyOkWithData<{ ready: boolean, message: string }>(resData);
     } catch (error) {
       let message = error.message;
       if (error.isAxiosError && error.response) {
         const { status, data } = error.response;
         message = `${status}, ${JSON.stringify(data)}`;
       }
-      res.isSuccessed = false;
-      res.error = { message };
-      logger.error('[isRbReady] failed: %s', error);
-    } finally {
-      event.reply(req.responseChannel, res);
+      ipcService.replyNokWithNoData(message);
     }
   }
 
@@ -136,9 +97,8 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
    * 4. Get the committment revision if it is successful.
    * 5. Response the revision to the front-end.
    */
-  public async svnCommit(event: IpcMainEvent, req: IPCRequest<string>) {
-    logger.info('[svnCommit] start.');
-    const res: IPCResponse<{ revision?: string; message?: string }> = {};
+  public async svnCommit(ipcService: IpcService, req: IpcRequest<string>) {
+    this.logger.info('[svnCommit] start.');
     try {
       const link = req.data;
       const rbId = this.getRbId(link);
@@ -148,30 +108,24 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
       const { message } = await this.sendSvnCommitReq(link);
       this.checkCommitResult(message);
       const revision = await this.getRevision(rbId);
-      res.isSuccessed = true;
-      res.data = { revision };
-      logger.info('[svnCommit] success.');
+      this.logger.info('[svnCommit] success.');
+      ipcService.replyOkWithData<{ revision: string }>({ revision });
     } catch (error) {
       // if the error is AxiosError and the status is 400
       // which means commit message in invalid
       if (error.isAxiosError && error.response?.status === 400) {
         error as AxiosError;
-        res.isSuccessed = true;
-        res.data = { message: (error as AxiosError).response.data?.message };
-        logger.error('[svnCommit] there are some commit message issue: %s', error);
+        this.logger.error('[svnCommit] there are some commit message issue: %s', error);
+        ipcService.replyOkWithData<{ message: string }>({ message: (error as AxiosError).response.data?.message });
       } else {
-        res.isSuccessed = false;
-        res.error = { message: error.message };
-        logger.error('[svnCommit] failed: %s', error);
+        ipcService.replyNokWithNoData(error.message);
       }
-    } finally {
-      event.reply(req.responseChannel, res);
     }
   }
 
   private async sendSvnCommitReq(link: string) {
     try {
-      logger.info('[sendSvnCommitReq] start.');
+      this.logger.info('[sendSvnCommitReq] start.');
       const url = this.getUrlFromTmp(SVN_COMMIT_TMP, this.getRbId(link));
       const rb = this.cachedPartialRb[this.getRbId(link)];
       const { data } = await axios.post(url, `commit_scope=only_this&diffset_revision=${rb.diffset_revision}`, {
@@ -183,10 +137,10 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
         },
       });
       this.cookies = '';
-      logger.info('[sendSvnCommitReq] success.');
+      this.logger.info('[sendSvnCommitReq] success.');
       return data;
     } catch (error) {
-      logger.error('[sendSvnCommitReq] failed: %s', error);
+      this.logger.error('[sendSvnCommitReq] failed: %s', error);
       throw error;
     }
   }
@@ -239,7 +193,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
 
   private async getPartialInfo(rbId: number, fields: string[]) {
     try {
-      logger.info('[getInfoFromReviewRequest] start, rbid: %d, fields: %s', rbId, fields);
+      this.logger.info('[getInfoFromReviewRequest] start, rbid: %d, fields: %s', rbId, fields);
       const ret: any = {};
       const url = this.getUrlFromTmp(GET_REVIEW_REQUEST_TMP, rbId);
       const { data } = await axios.get(url);
@@ -249,17 +203,17 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
           if (Object.prototype.hasOwnProperty.call(reviewRequest, field)) {
             ret[field] = reviewRequest[field];
           } else {
-            logger.warn("[getInfoFromReviewRequest] couldn't find %s in review_request", field);
+            this.logger.warn("[getInfoFromReviewRequest] couldn't find %s in review_request", field);
           }
         }
-        logger.info('[getInfoFromReviewRequest] success');
+        this.logger.info('[getInfoFromReviewRequest] success');
         return ret;
       } else {
         throw new Error(`[oam-kit][getInfoFromReviewRequest] data.state is not ok, row response: ${data}`);
       }
     } catch (error) {
       const message = error.message;
-      logger.info('[getInfoFromReviewRequest] failed: %s', error);
+      this.logger.info('[getInfoFromReviewRequest] failed: %s', error);
       throw new Error(message);
     }
   }
@@ -318,7 +272,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
       if (tmp) {
         return this.reverseStr(tmp[1]);
       }
-      logger.warn(`couldn't parse branch name for ${basedir}`);
+      this.logger.warn(`couldn't parse branch name for ${basedir}`);
       return basedir;
     }
   }
@@ -330,7 +284,7 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
   }
 
   private async setupSvnCredentials(rbId: number) {
-    logger.info('[setupSvnCredentials] start');
+    this.logger.info('[setupSvnCredentials] start');
     const nsbAccount = this.gModel.get('profile').nsbAccount;
     const svnAccount = this.gModel.get('profile').svnAccount;
     const url = this.getUrlFromTmp(SETUP_SVN_CREDENTIALS, rbId);
@@ -347,10 +301,10 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
       }
       assert(this.cookies.includes('svn_username'));
       assert(this.cookies.includes('svn_password'));
-      logger.info('[setupSvnCredentials] success.');
+      this.logger.info('[setupSvnCredentials] success.');
     } catch (error) {
       const message = error.message;
-      logger.info('[setupSvnCredentials] failed: %s', error);
+      this.logger.info('[setupSvnCredentials] failed: %s', error);
       throw new Error(message);
     }
   }
@@ -373,6 +327,26 @@ export class RbChannel extends RbBase_ implements IpcChannelInterface {
     } catch (error) {
       const message = error.message;
       throw new Error(message);
+    }
+  }
+
+  private getRbId(link: string): number {
+    const rbId = parseInt(link.match(/\/?(\d+)/)[1]);
+    if (Number.isNaN(rbId)) {
+      throw new Error(`[oam-kit][getRbId] Can't get RB id from ${link}`);
+    }
+    return rbId;
+  }
+
+  private reverseStr(s: string): string {
+    return [...s].reverse().join('');
+  }
+
+  private getUrlFromTmp(tmp: string, source: any): string {
+    if (typeof source === 'object') {
+      tmp.replace(/{(\w+)}/g, (...args) => source[args[1]]);
+    } else {
+      return tmp.replace(/{(\w+)}/, () => source.toString());
     }
   }
 }

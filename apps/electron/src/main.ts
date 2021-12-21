@@ -3,6 +3,8 @@ import ElectronEvents from './app/events/electron.events';
 import { app, BrowserWindow } from 'electron';
 import App from './app/app';
 
+// To remove "Electron Security Warning" console
+process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
 export default class Main {
 

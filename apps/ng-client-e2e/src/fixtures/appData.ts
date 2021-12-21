@@ -1,11 +1,11 @@
-import { APPData, Profile, Project, VersionControl } from '@oam-kit/utility/types';
+import { APPData, Profile, Project, RepositoryType } from '@oam-kit/utility/types';
 
 export const projectFixture: Project = {
   name: 'TRUNK',
   serverAddr: 'hzlinb35.china.nsn-net.net',
   localPath: '/moam/trunk',
   remotePath: '/var/fpwork/zowu/moam/trunk',
-  versionControl: VersionControl.SVN
+  versionControl: RepositoryType.SVN
 };
 export const profileFixture: Profile = {
   nsbAccount: { username: 'nsbusername', password: 'nsbpassword' },

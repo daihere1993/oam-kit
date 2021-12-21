@@ -18,8 +18,8 @@ export class StoreService implements OnDestroy {
 
   async load() {
     if (this.electronService.isElectron) {
-      const res = await this.ipcService.send(IpcChannel.GET_APP_DATA_REQ, { responseChannel: IpcChannel.GET_APP_DATA_RES });
-      if (res.isSuccessed) {
+      const res = await this.ipcService.send<null, APPData>(IpcChannel.GET_APP_DATA);
+      if (res.isOk) {
         this.data = res.data;
       } else {
         throw new Error(res.error.message);
@@ -62,6 +62,6 @@ export class StoreService implements OnDestroy {
   }
 
   private sync(model: Model<any>) {
-    from(this.ipcService.send(IpcChannel.SYNC_DATA_REQ, { data: { name: model.name, data: model.data } }));
+    from(this.ipcService.send<{ name: string, data: APPData }>(IpcChannel.SYNC_DATA, { name: model.name, data: model.data }));
   }
 }

@@ -219,27 +219,6 @@
         }
       }
     },
-    "sync-code": {
-      "root": "libs/sync-code",
-      "sourceRoot": "libs/sync-code/src",
-      "projectType": "library",
-      "architect": {
-        "lint": {
-          "builder": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": ["libs/sync-code/**/*.ts"]
-          }
-        },
-        "test": {
-          "builder": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/sync-code"],
-          "options": {
-            "jestConfig": "libs/sync-code/jest.config.js",
-            "passWithNoTests": true
-          }
-        }
-      }
-    },
     "logger": {
       "root": "libs/logger",
       "sourceRoot": "libs/logger/src",
