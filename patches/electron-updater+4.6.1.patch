@@ -1,0 +1,13 @@
+diff --git a/node_modules/electron-updater/out/AppUpdater.js b/node_modules/electron-updater/out/AppUpdater.js
+index b349170..8d3737b 100644
+--- a/node_modules/electron-updater/out/AppUpdater.js
++++ b/node_modules/electron-updater/out/AppUpdater.js
+@@ -5,7 +5,7 @@ const builder_util_runtime_1 = require("builder-util-runtime");
+ const crypto_1 = require("crypto");
+ const events_1 = require("events");
+ const fs_extra_1 = require("fs-extra");
+-const promises_1 = require("fs/promises");
++const promises_1 = require("fs").promises;
+ const js_yaml_1 = require("js-yaml");
+ const lazy_val_1 = require("lazy-val");
+ const path = require("path");

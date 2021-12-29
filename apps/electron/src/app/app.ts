@@ -16,6 +16,34 @@ import Logger from './utils/logger';
 
 const logger = Logger.for('app.ts');
 
+autoUpdater.logger = logger;
+
+function updateStatus(text: string) {
+  logger.info(text);
+}
+
+autoUpdater.on('checking-for-update', () => {
+  updateStatus('Checking for update...');
+})
+autoUpdater.on('update-available', (info) => {
+  updateStatus('Update available.');
+})
+autoUpdater.on('update-not-available', (info) => {
+  updateStatus('Update not available.');
+})
+autoUpdater.on('error', (err) => {
+  updateStatus('Error in auto-updater. ' + err);
+})
+autoUpdater.on('download-progress', (progressObj) => {
+  let log_message = "Download speed: " + progressObj.bytesPerSecond;
+  log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
+  log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+  updateStatus(log_message);
+})
+autoUpdater.on('update-downloaded', (info) => {
+  updateStatus('Update downloaded');
+});
+
 function initChannelhandlers(channel: IpcChannelBase) {
   for (const handler of channel.handlers) {
     (function(handler: IpcChannelHandler, channel: IpcChannelBase) {
@@ -83,31 +111,6 @@ export default class App {
   }
 
   private static initAutoUpdater() {
-    function updateStatus(text: string) {
-      logger.info(text);
-    }
-
-    autoUpdater.on('checking-for-update', () => {
-      updateStatus('Checking for update...');
-    })
-    autoUpdater.on('update-available', (info) => {
-      updateStatus('Update available.');
-    })
-    autoUpdater.on('update-not-available', (info) => {
-      updateStatus('Update not available.');
-    })
-    autoUpdater.on('error', (err) => {
-      updateStatus('Error in auto-updater. ' + err);
-    })
-    autoUpdater.on('download-progress', (progressObj) => {
-      let log_message = "Download speed: " + progressObj.bytesPerSecond;
-      log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
-      log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
-      updateStatus(log_message);
-    })
-    autoUpdater.on('update-downloaded', (info) => {
-      updateStatus('Update downloaded');
-    });
     autoUpdater.netSession.setProxy({
       proxyRules: 'http://10.158.100.3:8080'
     });

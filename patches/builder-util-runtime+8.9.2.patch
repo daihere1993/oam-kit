@@ -1,0 +1,13 @@
+diff --git a/node_modules/builder-util-runtime/out/httpExecutor.js b/node_modules/builder-util-runtime/out/httpExecutor.js
+index e45162c..51b0e97 100644
+--- a/node_modules/builder-util-runtime/out/httpExecutor.js
++++ b/node_modules/builder-util-runtime/out/httpExecutor.js
+@@ -427,7 +427,7 @@ function configureRequestOptions(options, token, method) {
+         headers["Cache-Control"] = "no-cache";
+     }
+     // do not specify for node (in any case we use https module)
+-    if (options.protocol == null && process.versions.electron != null) {
++    if (options.protocol == null) {
+         options.protocol = "https:";
+     }
+     return options;
