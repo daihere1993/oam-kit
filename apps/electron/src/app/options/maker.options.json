@@ -1,12 +1,15 @@
 {
   "$schema": "../../../../../node_modules/nx-electron/src/validation/maker.schema.json",
   "appId": "com.electron.oamkit",
-  "productName": "oam-kit",
-  "copyright": "Copyright © 2020 Luke Wu",
-  "electronCompile": false,
-  "npmRebuild": false,
-  "asar": true,
+  "afterSign": "./build/notarize.js",
+  "publish": [
+    {
+      "provider": "github",
+      "owner": "daihere1993",
+      "repo": "oam-kit"
+    }
+  ],
   "win": {
-    "publisherName": "Luke Wu"
+    "target": "nsis"
   }
 }

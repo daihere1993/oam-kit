@@ -1,6 +1,6 @@
 {
   "name": "oam-kit",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "license": "MIT",
   "author": {
     "name": "Luke Wu",
@@ -9,19 +9,17 @@
   "description": "A tool platform for Nokia oam.",
   "scripts": {
     "ng": "nx",
-    "postinstall": "patch-package && exitzero electron-builder install-app-deps",
     "nx": "nx",
-    "dev": "nx e2e ng-client-e2e --watch",
-    "start": "ng serve",
+    "e2e": "ng e2e",
     "build": "ng build && nx build electron",
     "build:main": "nx build electron",
-    "e2e": "ng e2e",
-    "publish": "yarn run build && nx run electron:make --platform windows --arch x64 --publishPolicy always",
-    "publish-only": "nx run electron:make --platform windows --arch x64 --publishPolicy always",
-    "package": "nx run electron:package --platform windows --arch x64 --publishPolicy never",
+    "dev": "nx e2e ng-client-e2e --watch",
     "ut": "nx run-many --all --target=test",
     "lint": "nx workspace-lint && ng lint",
-    "precommit": "npm run lint && npm run ut && npm run e2e"
+    "precommit": "npm run lint && npm run ut && npm run e2e",
+    "postinstall": "patch-package && exitzero electron-builder install-app-deps",
+    "publish": "yarn run build && nx run electron:make --platform windows --arch x64 --publishPolicy always",
+    "publish-only": "nx run electron:make --platform windows --arch x64 --publishPolicy always"
   },
   "private": true,
   "lint-staged": {

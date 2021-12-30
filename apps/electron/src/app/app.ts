@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 
-import { BrowserWindow, shell, ipcMain } from 'electron';
+import { BrowserWindow, shell, ipcMain, dialog } from 'electron';
 import { rendererAppName, rendererAppPort, storeName } from '@oam-kit/utility/overall-config';
 import { environment } from '../environments/environment';
 import { join } from 'path';
@@ -17,6 +17,7 @@ import Logger from './utils/logger';
 const logger = Logger.for('app.ts');
 
 autoUpdater.logger = logger;
+autoUpdater.autoInstallOnAppQuit = false;
 
 function updateStatus(text: string) {
   logger.info(text);
@@ -24,24 +25,35 @@ function updateStatus(text: string) {
 
 autoUpdater.on('checking-for-update', () => {
   updateStatus('Checking for update...');
-})
+});
 autoUpdater.on('update-available', (info) => {
   updateStatus('Update available.');
-})
+});
 autoUpdater.on('update-not-available', (info) => {
   updateStatus('Update not available.');
-})
+});
 autoUpdater.on('error', (err) => {
   updateStatus('Error in auto-updater. ' + err);
-})
+});
 autoUpdater.on('download-progress', (progressObj) => {
   let log_message = "Download speed: " + progressObj.bytesPerSecond;
   log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
   log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
   updateStatus(log_message);
-})
+});
 autoUpdater.on('update-downloaded', (info) => {
-  updateStatus('Update downloaded');
+  updateStatus(`Update downloaded: ${info}`);
+  const dialogOpts = {
+    type: 'info',
+    buttons: ['Restart', 'Later'],
+    title: 'Application Update',
+    message: 'New version available',
+    detail: 'A new version has been downloaded. Restart the application to apply the updates.'
+  };
+
+  dialog.showMessageBox(dialogOpts).then((returnValue) => {
+    if (returnValue.response === 0) autoUpdater.quitAndInstall();
+  });
 });
 
 function initChannelhandlers(channel: IpcChannelBase) {
