@@ -1,20 +1,10 @@
 {
   "name": "oam-kit",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "license": "MIT",
   "author": {
     "name": "Luke Wu",
     "email": "luke.wu@nokia-sbell.com"
-  },
-  "build": {
-    "appId": "com.electron.oamkit",
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "daihere1993",
-        "repo": "oam-kit"
-      }
-    ]
   },
   "description": "A tool platform for Nokia oam.",
   "scripts": {
@@ -93,6 +83,7 @@
     "cypress": "^6.3.0",
     "dotenv": "6.2.0",
     "electron": "11.2.0",
+    "electron-notarize": "^1.1.1",
     "eslint": "7.10.0",
     "eslint-config-prettier": "6.0.0",
     "eslint-plugin-cypress": "^2.10.3",
@@ -108,5 +99,8 @@
     "ts-node": "~9.1.1",
     "tslint": "~6.1.0",
     "typescript": "~4.0.3"
+  },
+  "resolutions": {
+    "electron-builder": "22.14.11"
   }
 }
