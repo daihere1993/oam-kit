@@ -12,6 +12,7 @@ import { IpcService } from './utils/ipcService';
 import { IpcChannelBase, IpcChannelHandler } from './channels/ipcChannelBase';
 import { Constructor } from '@oam-kit/utility/types';
 import { autoUpdater } from 'electron-updater';
+import { UpdateDownloadedEvent } from 'electron-updater/out/main';
 import Logger from './utils/logger';
 
 const logger = Logger.for('app.ts');
@@ -26,10 +27,10 @@ function updateStatus(text: string) {
 autoUpdater.on('checking-for-update', () => {
   updateStatus('Checking for update...');
 });
-autoUpdater.on('update-available', (info) => {
-  updateStatus('Update available.');
+autoUpdater.on('update-available', (info: UpdateDownloadedEvent) => {
+  updateStatus(`New version available(${info.version}).`);
 });
-autoUpdater.on('update-not-available', (info) => {
+autoUpdater.on('update-not-available', () => {
   updateStatus('Update not available.');
 });
 autoUpdater.on('error', (err) => {
@@ -41,14 +42,14 @@ autoUpdater.on('download-progress', (progressObj) => {
   log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
   updateStatus(log_message);
 });
-autoUpdater.on('update-downloaded', (info) => {
-  updateStatus(`Update downloaded: ${info}`);
+autoUpdater.on('update-downloaded', (info: UpdateDownloadedEvent) => {
+  updateStatus(`Update downloaded.`);
   const dialogOpts = {
     type: 'info',
     buttons: ['Restart', 'Later'],
     title: 'Application Update',
-    message: 'New version available',
-    detail: 'A new version has been downloaded. Restart the application to apply the updates.'
+    message: `New version available${info.version}`,
+    detail: `A new version(${info.version}) has been downloaded. Restart the application to apply the updates.`
   };
 
   dialog.showMessageBox(dialogOpts).then((returnValue) => {
