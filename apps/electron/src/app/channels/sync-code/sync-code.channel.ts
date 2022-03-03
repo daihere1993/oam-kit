@@ -53,9 +53,9 @@ export default class SyncCodeChannel extends IpcChannelBase {
     this.connectServer(ipcService)
       .then(this.createDiff.bind(this, ipcService))
       .then(this.diffAnalysis.bind(this, ipcService))
+      .then(this.cleanup.bind(this, ipcService))
       .then(this.uploadPatchToServer.bind(this, ipcService))
       .then(this.applyPatchToServer.bind(this, ipcService))
-      .then(this.cleanup.bind(this, ipcService))
       .catch((err: CustomError) => {
         if (err.failedStep) {
           ipcService.replyNokWithData<SyncCodeResData>({ step: err.failedStep }, err.message);
@@ -95,6 +95,10 @@ export default class SyncCodeChannel extends IpcChannelBase {
 
     const cmd = this.isSvnVersionControl ? `svn di > ${DIFF_PATH}` : `git diff > ${DIFF_PATH}`;
 
+    if (!this.isSvnVersionControl) {
+      await this.addUntrackedFiles();
+    }
+
     return new Promise((resolve) => {
       shell.cd(this.project.localPath).exec(cmd, (code, stdout, stderr) => {
         if (code === 0) {
@@ -105,6 +109,19 @@ export default class SyncCodeChannel extends IpcChannelBase {
           const err = new Error(`Create patch failed: ${stderr}, ${code}.`);
           err.name = SyncCodeStep.CREATE_DIFF;
           throw err;
+        }
+      });
+    });
+  }
+
+  private async addUntrackedFiles() {
+    return new Promise((resolve) => {
+      shell.cd(this.project.localPath).exec('git ls-files --others --exclude-standard', (code, stdout) => {
+        if (code === 0) {
+          const untrackedFiles = stdout.replace(/\n/g, ' ');
+          shell.cd(this.project.localPath).exec(`git add -N ${untrackedFiles}`, () => {
+            resolve(null);
+          });
         }
       });
     });
@@ -165,7 +182,7 @@ export default class SyncCodeChannel extends IpcChannelBase {
   /**
    * Notice: the older svn don't have command `svn patch`
    */
-  private async applyPatchToServer(): Promise<any> {
+  private async applyPatchToServer(ipcService: IpcService): Promise<any> {
     this.logger.info('applyPatchToServer: start.');
     const cmd = this.preparePatchCmd();
     return this.ssh.execCommand(cmd, { cwd: this.project.remotePath }).then(({ stdout }) => {
@@ -175,6 +192,7 @@ export default class SyncCodeChannel extends IpcChannelBase {
         throw error;
       }
       this.logger.info('applyPatchToServer: done.');
+      ipcService.replyOkWithData<SyncCodeResData>({ step: SyncCodeStep.APPLY_DIFF });
     });
   }
 
@@ -192,15 +210,13 @@ export default class SyncCodeChannel extends IpcChannelBase {
     return cmd;
   }
 
-  private async cleanup(ipcService: IpcService) {
+  private async cleanup() {
     const cmd = this.isSvnVersionControl ? `` : `git clean -fd`;
-    // const cmd = this.isSvnVersionControl ? `svn st | grep '^?' | awk '{print $2}' | xargs rm -rf` : `git clean -fd`;
     return this.ssh.execCommand(cmd, { cwd: this.project.remotePath }).then(({ stderr }) => {
       if (stderr) {
         this.logger.error(`Cleanup failed, %s`, stderr);
       }
       this.logger.info('Cleanup: done.');
-      ipcService.replyOkWithData<SyncCodeResData>({ step: SyncCodeStep.APPLY_DIFF });
     });
   }
 
