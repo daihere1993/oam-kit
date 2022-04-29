@@ -8,8 +8,23 @@ export interface AppRoute extends Route {
 const routes: AppRoute[] = [
   {
     path: '',
-    redirectTo: 'sync-code',
+    redirectTo: 'home',
     pathMatch: 'full',
+  },
+  {
+    path: 'home',
+    loadChildren: () => import('./pages/home/home.module')
+      .then(m => m.HomeModule),
+  },
+  {
+    path: 'login',
+    loadChildren: () => import('./pages/login/login.module')
+      .then(m => m.LoginModule),
+  },
+  {
+    path: 'env-check',
+    loadChildren: () => import('./pages/env-check/env-check.module')
+      .then(m => m.EnvCheckModule),
   },
 ];
 

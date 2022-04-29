@@ -3,7 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { KnifeGeneratorComponent } from './knife-generator.component';
 
 const routes: Routes = [
-  { path: 'knife-generator', component: KnifeGeneratorComponent },
+  { path: '', component: KnifeGeneratorComponent },
 ];
 
 @NgModule({

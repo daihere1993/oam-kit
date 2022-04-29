@@ -7,7 +7,7 @@ import { SyncCodeComponent } from './sync-code.component';
 export const routes: AppRoute[] = [
   {
     shouldCache: true,
-    path: 'sync-code',
+    path: '',
     component: SyncCodeComponent,
   },
 ];

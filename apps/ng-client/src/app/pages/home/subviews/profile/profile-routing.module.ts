@@ -6,7 +6,7 @@ import { ProfileComponent } from './profile.component';
 
 export const routes: AppRoute[] = [
   {
-    path: 'profile',
+    path: '',
     component: ProfileComponent,
   },
 ];

@@ -11,7 +11,7 @@
     "ng": "nx",
     "nx": "nx",
     "e2e": "ng e2e",
-    "build": "ng build && nx build electron",
+    "build": "ng build --base-href ./ && nx build electron",
     "build:main": "nx build electron",
     "dev": "nx e2e ng-client-e2e --watch",
     "ut": "nx run-many --all --target=test",
