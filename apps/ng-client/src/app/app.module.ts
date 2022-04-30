@@ -6,7 +6,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { AppRoutingModule } from './app-routing.module';
-import { Router, RouteReuseStrategy } from '@angular/router';
+import { RouteReuseStrategy } from '@angular/router';
 import { CacheRouteStrategy } from './core/services/cache-page-strategy.service';
 
 /** config angular i18n */
@@ -21,7 +21,7 @@ import { AuthService } from './core/services/auth.service';
 import { HomeModule } from './pages/home/home.module';
 import { LoginModule } from './pages/login/login.module';
 import { EnvService } from './core/services/env.service';
-import { EnvCheckModule } from './pages/env-check/env-check.module';
+import { EnvCheckingModule } from './pages/env-checking/env-checking.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -32,7 +32,7 @@ import { EnvCheckModule } from './pages/env-check/env-check.module';
     AppRoutingModule,
     HomeModule,
     LoginModule,
-    EnvCheckModule,
+    EnvCheckingModule,
   ],
   providers: [
     {
@@ -41,19 +41,15 @@ import { EnvCheckModule } from './pages/env-check/env-check.module';
     },
     {
       multi: true,
-      deps: [StoreService, AuthService, EnvService, Router],
+      deps: [StoreService, AuthService, EnvService],
       provide: APP_INITIALIZER,
-      useFactory: (store: StoreService, auth: AuthService, evnService: EnvService, router: Router) => {
+      useFactory: (store: StoreService, auth: AuthService, envService: EnvService) => {
         return async () => {
-          await store.load();
-          router.navigateByUrl('env-check');
-          // if (await evnService.isAllNecessaryCommandsReady()) {
-          //   if (auth.isEmptyAccount() || !await auth.isValidAuthentication()) {
-          //     router.navigateByUrl('login');
-          //   }
-          // } else {
-          //   router.navigateByUrl('env-check');
-          // }
+          await store.initialize();
+          await envService.envChecking();
+          if (await envService.isCommandsReady()) {
+              await auth.authChecking();
+          }
         };
       },
     },

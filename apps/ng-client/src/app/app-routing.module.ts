@@ -22,9 +22,9 @@ const routes: AppRoute[] = [
       .then(m => m.LoginModule),
   },
   {
-    path: 'env-check',
-    loadChildren: () => import('./pages/env-check/env-check.module')
-      .then(m => m.EnvCheckModule),
+    path: 'env-checking',
+    loadChildren: () => import('./pages/env-checking/env-checking.module')
+      .then(m => m.EnvCheckingModule),
   },
 ];
 

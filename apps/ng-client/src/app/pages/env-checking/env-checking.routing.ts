@@ -1,13 +1,13 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { EnvCheckComponent } from './env-check.component';
+import { EnvCheckingComponent } from './env-checking.component';
 
 const routes: Routes = [
-  { path: '', component: EnvCheckComponent }
+  { path: '', component: EnvCheckingComponent }
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class EnvCheckRoutingModule { }
+export class EnvCheckingRoutingModule { }

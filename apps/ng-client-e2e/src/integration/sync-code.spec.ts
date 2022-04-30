@@ -44,7 +44,8 @@ describe('Scenario1: add new project', () => {
   };
   const fixture = new MainFixture({ initData });
   beforeEach(() => {
-    fixture.visit('sync-code');
+    fixture.visit('');
+    fixture.startupPrareation();
     cy.getBySel('project-select').click();
     cy.getBySel('add-project-button').click().wait(500);
   });
@@ -106,7 +107,8 @@ describe('Scenario2: project modification', () => {
   };
   const fixture = new MainFixture({ initData });
   beforeEach(() => {
-    fixture.visit('sync-code');
+    fixture.visit('');
+    fixture.startupPrareation();
     cy.getBySel('sync-code-button').should('be.enabled');
     cy.getBySel('project-select').click();
   });
@@ -143,7 +145,8 @@ describe('Scenario3: sync code', () => {
   const initData: any = { general: { profile: profileFixture }, syncCode: { projects: [projectFixture] } };
   const fixture = new MainFixture({ initData });
   beforeEach(() => {
-    fixture.visit('sync-code');
+    fixture.visit('');
+    fixture.startupPrareation();
     cy.getBySel('sync-code-button').click();
   });
   it('Case1: should be successfully when everything is fine.', () => {

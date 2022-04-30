@@ -94,7 +94,7 @@ import { GeneralModel, Profile } from '@oam-kit/utility/types';
 
           <button
             nz-button
-            data-test="save-button"
+            data-test="login-button"
             class="button__save"
             nzType="primary"
             [nzLoading]="isSaving"

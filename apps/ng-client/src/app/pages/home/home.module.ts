@@ -8,7 +8,6 @@ import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { HomeRoutingModule } from './home-routing.module';
 import { SyncCodeModule } from './subviews/sync-code/sync-code.module';
-import { ProfileModule } from './subviews/profile/profile.module';
 import { KnifeGeneratorModule } from './subviews/knife-generator/knife-generator.module';
 
 // import { AutoCommitModule } from '../auto-commit/auto-commit.module';
@@ -28,7 +27,6 @@ import { CommonModule } from '@angular/common';
     NzMenuModule,
     NzIconModule,
     SyncCodeModule,
-    ProfileModule,
     KnifeGeneratorModule,
   ],
 })

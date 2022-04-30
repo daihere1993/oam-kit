@@ -16,6 +16,12 @@ import { StoreService } from './store.service';
 export class AuthService {
   constructor(private store: StoreService, private ipcService: IpcService, private router: Router) {}
 
+  public async authChecking() {
+    if (this.isEmptyAccount() || !await this.isValidAuthentication()) {
+      this.router.navigateByUrl('login');
+    }
+  }
+
   public async isValidNsbAuth(username: string, password: string) {
     const res = await this.ipcService.send<NsbAccountVerificationReqData, NsbAccountVerificationResData>(
       IpcChannel.NSB_ACCOUNT_VERIFICATION,

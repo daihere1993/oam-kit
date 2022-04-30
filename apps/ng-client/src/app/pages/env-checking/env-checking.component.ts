@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '@ng-client/core/services/auth.service';
 import { EnvService } from '@ng-client/core/services/env.service';
+import { NotificationService } from '@ng-client/core/services/notification.service';
 
 @Component({
   selector: 'app-env-check',
@@ -44,14 +45,19 @@ import { EnvService } from '@ng-client/core/services/env.service';
     </div>
   `,
 })
-export class EnvCheckComponent {
+export class EnvCheckingComponent {
   rechecking = false;
 
-  constructor(private envService: EnvService, private authService: AuthService, private router: Router) {}
+  constructor(
+    private envService: EnvService,
+    private authService: AuthService,
+    private router: Router,
+    private notifier: NotificationService
+  ) {}
 
   async recheck() {
     this.rechecking = true;
-    if (await this.envService.isAllNecessaryCommandsReady()) {
+    if (await this.envService.isCommandsReady(true)) {
       this.rechecking = false;
       if (this.authService.isEmptyAccount() || !(await this.authService.isValidAuthentication())) {
         this.router.navigateByUrl('login');
@@ -60,7 +66,7 @@ export class EnvCheckComponent {
       }
     } else {
       this.rechecking = false;
-      alert('still failed');
+      this.notifier.error('Rechecking result', 'Still failed, please double check!!');
     }
   }
 }

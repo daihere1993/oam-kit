@@ -2,16 +2,16 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
-import { EnvCheckComponent } from './env-check.component';
-import { EnvCheckRoutingModule } from './env-check.routing';
+import { EnvCheckingComponent } from './env-checking.component';
+import { EnvCheckingRoutingModule } from './env-checking.routing';
 
 @NgModule({
-  declarations: [EnvCheckComponent],
+  declarations: [EnvCheckingComponent],
   imports: [
     CommonModule,
-    EnvCheckRoutingModule,
+    EnvCheckingRoutingModule,
     NzIconModule,
     NzButtonModule,
   ],
 })
-export class EnvCheckModule {}
+export class EnvCheckingModule {}
