@@ -210,7 +210,7 @@ export class ProjectSettingComponent implements OnInit {
       if (!this.form?.value.serverAddr) {
         observer.next({ error: true, serverAddrIsEmpty: true });
         observer.complete();
-      } else if (remotePath) {
+      } else if (remotePath && this.data.remotePath !== remotePath) {
         this.ipcService
           .send<ServerDirCheckReqData, null>(IpcChannel.SERVER_DIRECTORY_CHECK, {
             host: this.form.value.serverAddr,

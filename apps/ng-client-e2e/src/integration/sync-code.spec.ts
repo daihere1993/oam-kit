@@ -112,7 +112,7 @@ describe('Scenario2: project modification', () => {
     cy.getBySel('sync-code-button').should('be.enabled');
     cy.getBySel('project-select').click();
   });
-  it('Case1: edit project', () => {
+  it.only('Case1: edit project', () => {
     // if no change happened, button should be disabled
     cy.getBySel('edit-project-button').first().click().wait(500);
     cy.getBySel('save-project-button').should('be.disabled');
