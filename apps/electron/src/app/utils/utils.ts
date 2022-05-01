@@ -4,6 +4,7 @@ import axios from 'axios';
 import { app, remote } from 'electron';
 import { Observable } from 'rxjs';
 import { storeName } from '@oam-kit/utility/overall-config';
+import { NodeSSH } from 'node-ssh';
 
 export function getTestDir(): string {
   return path.join(__dirname, '../../__test__');
@@ -88,4 +89,14 @@ export function downLoadDiff(url: string, target: string): Observable<string> {
         // throw err;
       });
   });
+}
+
+export async function isRemotePathExist(ssh: NodeSSH, path: string) {
+  const { stdout, stderr } = await ssh.execCommand('pwd', { cwd: path });
+
+  if (stderr) {
+    throw new Error(`isRemotePathExist: No such directory(${path})`);
+  }
+
+  return stdout === path;
 }

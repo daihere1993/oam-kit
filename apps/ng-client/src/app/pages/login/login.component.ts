@@ -97,10 +97,10 @@ import { GeneralModel, Profile } from '@oam-kit/utility/types';
             data-test="login-button"
             class="button__save"
             nzType="primary"
-            [nzLoading]="isSaving"
+            [nzLoading]="isLogin"
             style="width: 100%"
           >
-            {{ isSaving ? 'Auth validating...' : 'Login' }}
+            {{ isLogin ? 'Auth validating...' : 'Login' }}
           </button>
         </form>
       </div>
@@ -110,7 +110,7 @@ import { GeneralModel, Profile } from '@oam-kit/utility/types';
 export class LoginComponent {
   public form: FormGroup;
   public profile: Profile;
-  public isSaving = false;
+  public isLogin = false;
 
   private gModel: Model<GeneralModel>;
   private get nsbUsername(): FormControl {
@@ -161,20 +161,29 @@ export class LoginComponent {
   }
 
   public async login() {
-    this.isSaving = true;
+    this.isLogin = true;
     const nsbUsername = this.nsbUsername.value;
     const nsbPassword = this.nsbPassword.value;
     const svnPassword = this.svnPassword.value;
 
     if (!(await this.authService.isValidNsbAuth(nsbUsername, nsbPassword))) {
+      this.isLogin = false;
       this.notification.error('Failed', 'Incorrect NSB account and password.');
+      return;
     }
 
     if (!(await this.authService.isValidSvnAuth(nsbUsername, svnPassword))) {
+      this.isLogin = false;
       this.notification.error('Failed', 'Incorrect SVN account and password.');
+      return;
     }
 
-    this.isSaving = false;
+    this.gModel.set('profile', (draft) => {
+      draft.nsbAccount.username = this.nsbUsername.value;
+      draft.nsbAccount.password = this.nsbPassword.value;
+      draft.svnAccount.password = this.svnPassword.value;
+    });
+    this.isLogin = false;
     this.router.navigateByUrl('home');
     this.cdf.markForCheck();
   }

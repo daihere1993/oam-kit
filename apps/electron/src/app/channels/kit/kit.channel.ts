@@ -26,6 +26,7 @@ import * as fetcher from '@electron/app/utils/fetcher';
 import { IpcService } from '@electron/app/utils/ipcService';
 import { IpcChannelBase } from '../ipcChannelBase';
 import commandExists from 'command-exists';
+import { isRemotePathExist } from '@electron/app/utils';
 
 const NSB_LOGIN_URL = 'https://wam.inside.nsn.com/siteminderagent/forms/login.fcc';
 const NSB_LOGIN_TARGET = 'HTTPS://pronto.int.net.nokia.com/pronto/home.html';
@@ -123,16 +124,17 @@ export default class KitChannel extends IpcChannelBase {
         password: nsbAccount.password,
         algorithms: sftp_algorithms,
       });
-      const { stdout, stderr } = await this.ssh.execCommand('pwd', { cwd: directory });
-      if (stdout === directory) {
+      
+      if (await isRemotePathExist(this.ssh, directory)) {
         ipcService.replyOkWithNoData();
       } else {
-        const message = `serverDirectoryCheck failed: ${stderr}`;
+        const message = `serverDirectoryCheck failed without reason`;
+        this.logger.error(message);
         ipcService.replyNokWithNoData(message);
-        this.logger.error(`serverDirectoryCheck failed: ${stderr}`);
       }
       this.ssh.dispose();
     } catch (error) {
+      this.logger.error(`serverDirectoryCheck failed: ${error.message}`);
       ipcService.replyNokWithNoData(error.message);
     }
   }

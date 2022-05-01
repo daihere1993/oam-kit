@@ -25,8 +25,8 @@ class AlertInfo {
   template: `
     <form nz-form [formGroup]="form">
       <nz-form-item>
-        <nz-form-label nzFor="targetProject" [nzSm]="8" nzRequired>Target Project</nz-form-label>
-        <nz-form-control [nzSm]="10">
+        <nz-form-label nzFor="targetProject" [nzSm]="6" nzRequired>Target Project</nz-form-label>
+        <nz-form-control [nzSm]="12">
           <nz-input-group [nzSuffix]="folderSelector">
             <input
               nz-input
@@ -44,18 +44,18 @@ class AlertInfo {
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label nzFor="revision" nzSpan="8" nzRequired>Revision</nz-form-label>
-        <nz-form-control nzSpan="10">
+        <nz-form-label nzFor="revision" nzSpan="6" nzRequired>Revision</nz-form-label>
+        <nz-form-control nzSpan="12">
           <input nz-input name="revision" data-test="knife-revision" formControlName="revision" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item *ngIf="alertInfo.show">
-        <nz-form-control nzSpan="10" nzOffset="8">
+        <nz-form-control nzSpan="12" nzOffset="6">
           <nz-alert nzCloseable nzShowIcon [nzType]="alertInfo.type" [nzMessage]="alertInfo.message" (nzOnClose)="afterClose()"></nz-alert>
         </nz-form-control>
       </nz-form-item>
       <nz-form-item nz-row>
-        <nz-form-control nzSpan="10" nzOffset="8">
+        <nz-form-control nzSpan="12" nzOffset="6">
           <button nz-button [nzLoading]="ongoing" nzType="primary" (click)="start()">Start</button>
         </nz-form-control>
       </nz-form-item>
