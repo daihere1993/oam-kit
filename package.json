@@ -1,6 +1,6 @@
 {
   "name": "oam-kit",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "license": "MIT",
   "author": {
     "name": "Luke Wu",
@@ -11,14 +11,15 @@
     "ng": "nx",
     "nx": "nx",
     "e2e": "ng e2e",
-    "build": "ng build && nx build electron",
+    "build": "ng build --base-href ./ && nx build electron",
     "build:main": "nx build electron",
     "dev": "nx e2e ng-client-e2e --watch",
     "ut": "nx run-many --all --target=test",
     "lint": "nx workspace-lint && ng lint",
     "precommit": "npm run lint && npm run ut && npm run e2e",
     "postinstall": "patch-package && exitzero electron-builder install-app-deps",
-    "publish": "yarn run build --prod && nx run electron:make --platform windows --arch x64 --publishPolicy always ",
+    "package": "yarn run build --prod && nx run electron:package --platform windows --arch x64 --publishPolicy never",
+    "publish": "yarn run build --prod && nx run electron:make --platform windows --arch x64 --publishPolicy always",
     "publish-only": "nx run electron:make --platform windows --arch x64 --publishPolicy always"
   },
   "private": true,

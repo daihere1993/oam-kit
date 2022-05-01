@@ -16,6 +16,7 @@ import {
   OpenExternalUrlReqData,
   ServerCheckReqData,
   ServerDirCheckReqData,
+  CheckNecessaryCommandsResData,
 } from '@oam-kit/utility/types';
 import { dialog, Notification, shell } from 'electron';
 import { NodeSSH } from 'node-ssh';
@@ -24,6 +25,8 @@ import axios from 'axios';
 import * as fetcher from '@electron/app/utils/fetcher';
 import { IpcService } from '@electron/app/utils/ipcService';
 import { IpcChannelBase } from '../ipcChannelBase';
+import commandExists from 'command-exists';
+import { isRemotePathExist } from '@electron/app/utils';
 
 const NSB_LOGIN_URL = 'https://wam.inside.nsn.com/siteminderagent/forms/login.fcc';
 const NSB_LOGIN_TARGET = 'HTTPS://pronto.int.net.nokia.com/pronto/home.html';
@@ -39,6 +42,7 @@ export default class KitChannel extends IpcChannelBase {
     { name: IpcChannel.SERVER_DIRECTORY_CHECK, fn: this.serverDirectoryCheck },
     { name: IpcChannel.NSB_ACCOUNT_VERIFICATION, fn: this.nsbAccountVerification },
     { name: IpcChannel.SVN_ACCOUNT_VERIFICATION, fn: this.svnAccountVerification },
+    { name: IpcChannel.CHECK_NECESSARY_COMMANDS, fn: this.isAllCommandsReady },
   ];
 
   private ssh: NodeSSH = new NodeSSH();
@@ -61,6 +65,7 @@ export default class KitChannel extends IpcChannelBase {
       ipcService.replyNokWithNoData(`Couldn't find target path`);
     }
   }
+
   private async svnAccountVerification(ipcService: IpcService, req: IpcRequest<SvnAccountVerificationReqData>) {
     try {
       const { username, password } = req.data;
@@ -79,12 +84,6 @@ export default class KitChannel extends IpcChannelBase {
     } catch (error) {
       ipcService.replyNokWithNoData(error.message);
     }
-  }
-
-  private isEmptyAccount() {
-    const nsbAccount = this.profile.nsbAccount;
-    const svnAccount = this.profile.svnAccount;
-    return !nsbAccount.password || !nsbAccount.username || !svnAccount.password;
   }
 
   private async isRightNsbAccount(username: string, password: string) {
@@ -125,16 +124,17 @@ export default class KitChannel extends IpcChannelBase {
         password: nsbAccount.password,
         algorithms: sftp_algorithms,
       });
-      const { stdout, stderr } = await this.ssh.execCommand('pwd', { cwd: directory });
-      if (stdout === directory) {
+      
+      if (await isRemotePathExist(this.ssh, directory)) {
         ipcService.replyOkWithNoData();
       } else {
-        const message = `serverDirectoryCheck failed: ${stderr}`;
+        const message = `serverDirectoryCheck failed without reason`;
+        this.logger.error(message);
         ipcService.replyNokWithNoData(message);
-        this.logger.error(`serverDirectoryCheck failed: ${stderr}`);
       }
       this.ssh.dispose();
     } catch (error) {
+      this.logger.error(`serverDirectoryCheck failed: ${error.message}`);
       ipcService.replyNokWithNoData(error.message);
     }
   }
@@ -178,5 +178,10 @@ export default class KitChannel extends IpcChannelBase {
       icon: icon,
     });
     notify.show();
+  }
+
+  private isAllCommandsReady(ipcService: IpcService) {
+    const commandExistsSync = commandExists.sync;
+    ipcService.replyOkWithData<CheckNecessaryCommandsResData>({ svnReady: commandExistsSync('svn'), gitReady: commandExistsSync('git') });
   }
 }

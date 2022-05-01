@@ -5,14 +5,7 @@ import { AppComponent } from './app.component';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { NzLayoutModule } from 'ng-zorro-antd/layout';
-import { NzMenuModule } from 'ng-zorro-antd/menu';
-import { NzIconModule } from 'ng-zorro-antd/icon';
 import { AppRoutingModule } from './app-routing.module';
-import { SyncCodeModule } from './pages/sync-code/sync-code.module';
-import { ProfileModule } from './pages/profile/profile.module';
-import { KnifeGeneratorModule } from './pages/knife-generator/knife-generator.module';
-// import { DashboardModule } from './pages/dashboard/dashboard.module';
 import { RouteReuseStrategy } from '@angular/router';
 import { CacheRouteStrategy } from './core/services/cache-page-strategy.service';
 
@@ -21,14 +14,14 @@ import { registerLocaleData } from '@angular/common';
 import en from '@angular/common/locales/en';
 registerLocaleData(en);
 
-/** config ng-zorro-antd i18n **/
 import { NZ_I18N, en_US } from 'ng-zorro-antd/i18n';
-import { AutoCommitModule } from './pages/auto-commit/auto-commit.module';
 import { StoreService } from './core/services/store.service';
 import { AuthService } from './core/services/auth.service';
 
-/** Global zorro module */
-import { NzNotificationModule } from 'ng-zorro-antd/notification';
+import { HomeModule } from './pages/home/home.module';
+import { LoginModule } from './pages/login/login.module';
+import { EnvService } from './core/services/env.service';
+import { EnvCheckingModule } from './pages/env-checking/env-checking.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -36,16 +29,10 @@ import { NzNotificationModule } from 'ng-zorro-antd/notification';
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
-    NzNotificationModule,
     AppRoutingModule,
-    NzLayoutModule,
-    NzMenuModule,
-    NzIconModule,
-    // DashboardModule,
-    AutoCommitModule,
-    SyncCodeModule,
-    ProfileModule,
-    KnifeGeneratorModule,
+    HomeModule,
+    LoginModule,
+    EnvCheckingModule,
   ],
   providers: [
     {
@@ -54,11 +41,15 @@ import { NzNotificationModule } from 'ng-zorro-antd/notification';
     },
     {
       multi: true,
-      deps: [StoreService, AuthService],
+      deps: [StoreService, AuthService, EnvService],
       provide: APP_INITIALIZER,
-      useFactory: (store: StoreService, auth: AuthService) => {
-        return () => {
-          return store.load().then(auth.load.bind(auth));
+      useFactory: (store: StoreService, auth: AuthService, envService: EnvService) => {
+        return async () => {
+          await store.initialize();
+          await envService.envChecking();
+          if (await envService.isCommandsReady()) {
+              await auth.authChecking();
+          }
         };
       },
     },

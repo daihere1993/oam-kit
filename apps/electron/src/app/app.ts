@@ -178,8 +178,8 @@ export default class App {
   }
 
   private static initMainWindow() {
-    const width = 1150;
-    const height = 600;
+    const width = 770;
+    const height = 580;
 
     // Create the browser window.
     App.mainWindow = new BrowserWindow({

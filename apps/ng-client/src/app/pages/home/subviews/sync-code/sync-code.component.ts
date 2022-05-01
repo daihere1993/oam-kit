@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { GeneralModel, Project, SyncCodeReqData, SyncCodeResData } from '@oam-kit/utility/types';
 import { IpcChannel, SyncCodeStep } from '@oam-kit/utility/types';
-import { IpcService } from '../../core/services/ipc.service';
+import { IpcService } from '../../../../core/services/ipc.service';
 import { Stepper, StepStatus, StepperStatus, Step } from '@oam-kit/utility';
 import { StoreService } from '@ng-client/core/services/store.service';
 import { MODEL_NAME } from '@oam-kit/utility/overall-config';

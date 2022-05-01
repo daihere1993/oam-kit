@@ -16,7 +16,7 @@ export class StoreService implements OnDestroy {
 
   constructor(private ipcService: IpcService, private electronService: ElectronService) {}
 
-  async load() {
+  async initialize() {
     if (this.electronService.isElectron) {
       const res = await this.ipcService.send<null, APPData>(IpcChannel.GET_APP_DATA);
       if (res.isOk) {

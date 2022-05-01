@@ -1,5 +1,5 @@
 import { getTempDir } from '@electron/app/utils';
-import { Profile, Repo } from '@oam-kit/utility/types';
+import { Profile } from '@oam-kit/utility/types';
 import { join } from 'path';
 import * as shell from 'shelljs';
 import ConfigParser from 'configparser';
@@ -57,9 +57,9 @@ async function getLockStatus(profile: Profile, branch: string, repoName: string)
 }
 
 export default {
-  async getLockInfo(profile: Profile, branch: string, repo: Repo) {
-    const branchLockStatus = await getLockStatus(profile, branch, 'template');
-    const repoLockStatus = await getLockStatus(profile, branch, repo.name);
-  },
+//   async getLockInfo(profile: Profile, branch: string, repo: Repo) {
+//     const branchLockStatus = await getLockStatus(profile, branch, 'template');
+//     const repoLockStatus = await getLockStatus(profile, branch, repo.name);
+//   },
   getLockStatus,
 };

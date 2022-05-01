@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { RbItem } from '@ng-client/pages/auto-commit/auto-commit.component';
+import { RbItem } from '@ng-client/pages/home/subviews/auto-commit/auto-commit.component';
 import { IpcChannel } from '@oam-kit/utility/types';
 import { LOG_PHASE, LOG_TYPE } from '@oam-kit/logger';
 import { ReviewBoard } from '@oam-kit/utility/types';

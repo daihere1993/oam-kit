@@ -15,7 +15,7 @@ import {
   SyncCodeResData,
   IpcResErrorType,
 } from '@oam-kit/utility/types';
-import { getUserDataPath } from '@electron/app/utils';
+import { getUserDataPath, isRemotePathExist } from '@electron/app/utils';
 import { MODEL_NAME, modules as modulesConf, sftp_algorithms } from '@oam-kit/utility/overall-config';
 import { IpcService } from '@electron/app/utils/ipcService';
 import { IpcChannelBase } from '../ipcChannelBase';
@@ -36,13 +36,13 @@ export default class SyncCodeChannel extends IpcChannelBase {
   private addedFiles: string[];
   private ssh: NodeSSH = new NodeSSH();
   private nsbAccount: { username: string; password: string };
-  private doesUserChange = false;
+  private isUserChanged = false;
 
   startup(): void {
     const gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
     gModel.subscribe<Profile>('profile', (profile) => {
       if (this.nsbAccount && this.nsbAccount.username !== profile.nsbAccount.username) {
-        this.doesUserChange = true;
+        this.isUserChanged = true;
       }
       this.nsbAccount = profile.nsbAccount;
     });
@@ -69,24 +69,24 @@ export default class SyncCodeChannel extends IpcChannelBase {
     this.logger.info('connectServer: start.');
 
     try {
-      if (this.ssh.isConnected() && !this.doesUserChange) {
-        this.doesUserChange = false;
-        return Promise.resolve();
-      } else {
+      if (!this.ssh.isConnected() || this.isUserChanged) {
         await this.ssh.connect({
           host: this.project.serverAddr,
           username: this.nsbAccount.username,
           password: this.nsbAccount.password,
           algorithms: sftp_algorithms,
         });
+      } else {
+        this.isUserChanged = false;
       }
+      // Check if remote prject exists
+      await isRemotePathExist(this.ssh, this.project.remotePath);
+      this.logger.info('connectServer: done.');
+      ipcService.replyOkWithData<SyncCodeResData>({ step: SyncCodeStep.CONNECT_TO_SERVER });
     } catch (error) {
       this.logger.error(error);
       error.failedStep = SyncCodeStep.CONNECT_TO_SERVER;
       throw error;
-    } finally {
-      this.logger.info('connectServer: done.');
-      ipcService.replyOkWithData<SyncCodeResData>({ step: SyncCodeStep.CONNECT_TO_SERVER });
     }
   }
 

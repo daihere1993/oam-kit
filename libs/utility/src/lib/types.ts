@@ -106,6 +106,7 @@ export enum IpcChannel {
   GET_PARTIAL_RB = 'get_partial_rb',
   NSB_ACCOUNT_VERIFICATION = 'nsb_account_verification',
   SVN_ACCOUNT_VERIFICATION = 'svn_account_verification',
+  CHECK_NECESSARY_COMMANDS = 'check_necessary_commands',
   KNIFE_GENERATOR = 'knife_generator',
 }
 
@@ -167,6 +168,10 @@ export interface NsbAccountVerificationReqData {
 }
 export interface NsbAccountVerificationResData {
   isRightAccount: boolean;
+}
+export interface CheckNecessaryCommandsResData {
+  svnReady: boolean;
+  gitReady: boolean;
 }
 
 /** end */

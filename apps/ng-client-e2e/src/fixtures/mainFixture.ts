@@ -1,13 +1,18 @@
-import { IpcChannel, IpcResponse, APPData, IpcResErrorType } from '@oam-kit/utility/types';
+import { IpcChannel, IpcResponse, APPData, IpcResErrorType, CheckNecessaryCommandsResData, NsbAccountVerificationResData, SvnAccountVerificationResData } from '@oam-kit/utility/types';
 import { merge } from 'lodash-es';
 import { Subject } from 'rxjs';
 import { MODEL_INIT_VALUE } from '@oam-kit/utility/overall-config';
 
 export interface ElectronSimulator {
-  replyOkWithData<T = void, U extends T = T>(channel: IpcChannel, data: U): void;
-  replyOkWithNoData(channel: IpcChannel): void;
-  replayNokWithData<T = void, U extends T = T>(channel: IpcChannel, data: U, message?: string, type?: IpcResErrorType): void;
-  replayNokWithNoData(channel: IpcChannel, message?: string, type?: IpcResErrorType): void;
+  replyOkWithData<T = void, U extends T = T>(channel: IpcChannel, data: U): Cypress.Chainable<undefined>;
+  replyOkWithNoData(channel: IpcChannel): Cypress.Chainable<undefined>;
+  replayNokWithData<T = void, U extends T = T>(
+    channel: IpcChannel,
+    data: U,
+    message?: string,
+    type?: IpcResErrorType
+  ): Cypress.Chainable<undefined>;
+  replayNokWithNoData(channel: IpcChannel, message?: string, type?: IpcResErrorType): Cypress.Chainable<undefined>;
 }
 
 /** Notice: each MainFixture instance maintain a data of whole app thus we don't need to mock specific data in e2e */
@@ -42,25 +47,34 @@ export class MainFixture {
       this.updateData(options.initData);
     });
     this.simulator = {
-      replyOkWithData: <T>(channel: IpcChannel, data: T): void => {
+      replyOkWithData: <T>(channel: IpcChannel, data: T): Cypress.Chainable<undefined> => {
         const res: IpcResponse<T> = { isOk: true, data, error: { type: null, message: null } };
         this.ipcResponseCallbackMap[channel](null, res);
-        cy.wait(100);
+        return cy.wait(100);
       },
-      replyOkWithNoData: (channel: IpcChannel): void => {
+      replyOkWithNoData: (channel: IpcChannel): Cypress.Chainable<undefined> => {
         const res: IpcResponse<null> = { isOk: true, data: null, error: { type: null, message: null } };
         this.ipcResponseCallbackMap[channel](null, res);
-        cy.wait(100);
+        return cy.wait(100);
       },
-      replayNokWithData: <T>(channel: IpcChannel, data: T, message?: string, type = IpcResErrorType.Expected): void => {
+      replayNokWithData: <T>(
+        channel: IpcChannel,
+        data: T,
+        message?: string,
+        type = IpcResErrorType.Expected
+      ): Cypress.Chainable<undefined> => {
         const res: IpcResponse<T> = { isOk: false, data, error: { type, message } };
         this.ipcResponseCallbackMap[channel](null, res);
-        cy.wait(100);
+        return cy.wait(100);
       },
-      replayNokWithNoData: (channel: IpcChannel, message?: string, type = IpcResErrorType.Expected): void => {
+      replayNokWithNoData: (
+        channel: IpcChannel,
+        message?: string,
+        type = IpcResErrorType.Expected
+      ): Cypress.Chainable<undefined> => {
         const res: IpcResponse<null> = { isOk: false, data: null, error: { type, message } };
         this.ipcResponseCallbackMap[channel](null, res);
-        cy.wait(100);
+        return cy.wait(100);
       },
     };
   }
@@ -102,7 +116,23 @@ export class MainFixture {
     this.onPullData.unsubscribe();
   }
 
-  private isObject(v: any): boolean {
-    return typeof v === 'object' && v !== null;
+  public startupPrareation() {
+    cy.wait(100)
+      .then(() => {
+        return this.simulator.replyOkWithData<CheckNecessaryCommandsResData>(IpcChannel.CHECK_NECESSARY_COMMANDS, {
+          svnReady: true,
+          gitReady: true,
+        });
+      })
+      .then(() => {
+        return this.simulator.replyOkWithData<NsbAccountVerificationResData>(IpcChannel.NSB_ACCOUNT_VERIFICATION, {
+          isRightAccount: true,
+        });
+      })
+      .then(() => {
+        return this.simulator.replyOkWithData<SvnAccountVerificationResData>(IpcChannel.SVN_ACCOUNT_VERIFICATION, {
+          isRightAccount: true,
+        });
+      });
   }
 }
