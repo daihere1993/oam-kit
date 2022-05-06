@@ -19,7 +19,7 @@
     "precommit": "npm run lint && npm run ut && npm run e2e",
     "postinstall": "patch-package && exitzero electron-builder install-app-deps",
     "package": "yarn run build --prod && nx run electron:package --platform windows --arch x64 --publishPolicy never",
-    "publish": "yarn run build --prod && nx run electron:make --platform windows --arch x64 --publishPolicy always",
+    "publish": "./scripts/publish.sh",
     "publish-only": "nx run electron:make --platform windows --arch x64 --publishPolicy always"
   },
   "private": true,
