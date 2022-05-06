@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
 import { CheckNecessaryCommandsResData, IpcChannel } from '@oam-kit/utility/types';
 import { IpcService } from './ipc.service';
 
@@ -7,14 +6,7 @@ import { IpcService } from './ipc.service';
 export class EnvService {
   private _isCommandsReady = null;
 
-  constructor(private ipcService: IpcService, private router: Router) {}
-
-  public async envChecking() {
-    if (!await this.isCommandsReady()) {
-      this.router.navigateByUrl('env-checking');
-    }
-  }
-
+  constructor(private ipcService: IpcService) {}
   public async isCommandsReady(recheck = false) {
     if (recheck) {
       this._isCommandsReady = null;

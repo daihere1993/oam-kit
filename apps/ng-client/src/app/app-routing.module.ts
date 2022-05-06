@@ -8,8 +8,13 @@ export interface AppRoute extends Route {
 const routes: AppRoute[] = [
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'loading',
     pathMatch: 'full',
+  },
+  {
+    path: 'loading',
+    loadChildren: () => import('./pages/loading/loading.module')
+      .then(m => m.LoadingModule),
   },
   {
     path: 'home',

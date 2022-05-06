@@ -16,12 +16,9 @@ registerLocaleData(en);
 
 import { NZ_I18N, en_US } from 'ng-zorro-antd/i18n';
 import { StoreService } from './core/services/store.service';
-import { AuthService } from './core/services/auth.service';
 
-import { HomeModule } from './pages/home/home.module';
-import { LoginModule } from './pages/login/login.module';
-import { EnvService } from './core/services/env.service';
-import { EnvCheckingModule } from './pages/env-checking/env-checking.module';
+/** Global zorro module */
+import { NzNotificationModule } from 'ng-zorro-antd/notification';
 
 @NgModule({
   declarations: [AppComponent],
@@ -29,10 +26,8 @@ import { EnvCheckingModule } from './pages/env-checking/env-checking.module';
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
+    NzNotificationModule,
     AppRoutingModule,
-    HomeModule,
-    LoginModule,
-    EnvCheckingModule,
   ],
   providers: [
     {
@@ -41,17 +36,11 @@ import { EnvCheckingModule } from './pages/env-checking/env-checking.module';
     },
     {
       multi: true,
-      deps: [StoreService, AuthService, EnvService],
+      deps: [StoreService],
       provide: APP_INITIALIZER,
-      useFactory: (store: StoreService, auth: AuthService, envService: EnvService) => {
-        return async () => {
-          await store.initialize();
-          await envService.envChecking();
-          if (await envService.isCommandsReady()) {
-              await auth.authChecking();
-          }
-        };
-      },
+      useFactory: (store: StoreService) => {
+        return () => store.initialize();
+      }
     },
     { provide: NZ_I18N, useValue: en_US },
   ],

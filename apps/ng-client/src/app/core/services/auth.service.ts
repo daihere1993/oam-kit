@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
 import { MODEL_NAME } from '@oam-kit/utility/overall-config';
 import {
   GeneralModel,
@@ -14,13 +13,7 @@ import { StoreService } from './store.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  constructor(private store: StoreService, private ipcService: IpcService, private router: Router) {}
-
-  public async authChecking() {
-    if (this.isEmptyAccount() || !await this.isValidAuthentication()) {
-      this.router.navigateByUrl('login');
-    }
-  }
+  constructor(private store: StoreService, private ipcService: IpcService) {}
 
   public async isValidNsbAuth(username: string, password: string) {
     const res = await this.ipcService.send<NsbAccountVerificationReqData, NsbAccountVerificationResData>(

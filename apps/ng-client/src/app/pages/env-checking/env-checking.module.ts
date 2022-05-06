@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { EnvCheckingComponent } from './env-checking.component';
-import { EnvCheckingRoutingModule } from './env-checking.routing';
+import { EnvCheckingRoutingModule } from './env-checking-routing.module';
 
 @NgModule({
   declarations: [EnvCheckingComponent],
