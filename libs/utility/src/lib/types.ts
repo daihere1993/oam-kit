@@ -177,3 +177,14 @@ export interface CheckNecessaryCommandsResData {
 /** end */
 
 export type Constructor<T> = new (...args: any[]) => T;
+
+export enum ChangedFileType {
+  NORMAL,
+  NEW,
+  RENAME,
+  DELETE,
+}
+
+export interface ChangedFiles {
+  [prop: string]: ChangedFileType
+}

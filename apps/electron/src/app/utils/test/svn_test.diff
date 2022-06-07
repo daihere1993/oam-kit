@@ -1,0 +1,558 @@
+Index: django.txt
+===================================================================
+--- django.txt	(nonexistent)
++++ django.txt	(working copy)
+@@ -0,0 +1 @@
++just for test
+Index: mfo
+===================================================================
+--- mfo	(revision 22443)
++++ mfo	(working copy)
+@@ -3,7 +3,7 @@
+ # https://gist.github.com/JBlond/2fea43a3049b38287e5e9cefc87b2124
+ declare -rA color_text=(
+                   [black]='\e[0;30m'
+-             [bold-black]='\e[1;30m'
++             [bold-black]='\e[1;30m's
+         [underline-black]='\e[4;30m'
+           [intense-black]='\e[0;90m'
+      [intense-bold-black]='\e[1;90m'
+Index: mfo.conf
+===================================================================
+--- mfo.conf	(revision 22443)
++++ mfo.conf	(nonexistent)
+@@ -1,12 +0,0 @@
+-#PKGCONFIG_FILE="conf/Pkgfile" # relative path (from top of the source tree) to the package configuration file
+-#SRC_DIR=$PWD
+-#DB_FILE_NAME=".db"
+-#WGET_OPTS=
+-#MAKEFLAGS=
+-#NO_AUTO_MFLAGS=
+-#PKG_DIR=
+-#ECL_SRC_SUF="/isource/svnroot/BTS_SCM_OAM_LTE_ECL/"
+-#KNIFE_TARGET_PATH="C_Application/SC_OAM/Target/"
+-
+-# vim: filetype=sh
+-#USE_DISTCC=
+Index: mfo2.conf
+===================================================================
+--- mfo2.conf	(nonexistent)
++++ mfo2.conf	(working copy)
+@@ -0,0 +1,12 @@
++#PKGCONFIG_FILE="conf/Pkgfile" # relative path (from top of the source tree) to the package configuration file
++#SRC_DIR=$PWD
++#DB_FILE_NAME=".db"
++#WGET_OPTS=
++#MAKEFLAGS=
++#NO_AUTO_MFLAGS=
++#PKG_DIR=
++#ECL_SRC_SUF="/isource/svnroot/BTS_SCM_OAM_LTE_ECL/"
++#KNIFE_TARGET_PATH="C_Application/SC_OAM/Target/"
++
++# vim: filetype=sh
++#USE_DISTCC=
+Index: mfosetenv.env
+===================================================================
+--- mfosetenv.env	(revision 22443)
++++ mfosetenv.env	(nonexistent)
+@@ -1,459 +0,0 @@
+-export MFO_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+-
+-COL_RED='\e[0;31m'
+-COL_REDL='\e[1;31m'
+-COL_GRE='\e[0;32m'
+-COL_GREL='\e[1;32m'
+-COL_YEL='\e[0;33m'
+-COL_YELL='\e[1;33m'
+-COL_BLU='\e[0;34m'
+-COL_BLUL='\e[1;34m'
+-COL_CYAN='\e[0;36m'
+-COL_SKYL='\e[1;36m'
+-COL_END='\e[00m'
+-
+-
+-if [ ${MFO_OLD_PATH} ]; then
+-	PATH="${MFO_OLD_PATH}"
+-fi
+-
+-MFO_OLD_PATH="${PATH}"
+-PATH="${MFO_DIR}:${PATH}"
+-
+-#
+-# running all builds/tests for given component
+-#
+-
+-
+-mfo_test_all() {
+-        ERROR_COUNTER=`mktemp` || exit 1
+-        MY_COUNTER=`mktemp` || exit 1
+-        echo 0 > $ERROR_COUNTER
+-        echo 0 > $MY_COUNTER
+-        for i in "$@"; do
+-	(       
+-		rm -rf ECL
+-                logdir=logs
+-		if [ ! -d "$logdir" ]; then
+-                    mkdir $logdir
+-                fi
+-                set -e
+-
+-
+-		mfo build $i -a mips 2>&1 | tee logs/${i}mipsbuilderrors.txt
+-		mfo build $i -a ppc 2>&1 | tee logs/${i}ppcbuilderrors.txt
+-
+-                case $i in 
+-                bstat)
+-                    mfo build $i -a x86 2>&1 | tee logs/${i}x86builderrors.txt
+-                    mfo ut $i -a x86 -D 2>&1 | tee logs/${i}utx86errors.txt
+-                    mfo ut $i -a x86_64 -D 2>&1 | tee logs/${i}utx86_64errors.txt
+-                    mfo mt $i -a x86 -D 2>&1 | tee logs/${i}mtx86errors.txt
+-                    mfo mt $i -a x86_64 -D 2>&1 | tee logs/${i}mtx86_64errors.txt
+-                    mfo sct $i -a x86_64 -D 2>&1 | tee logs/${i}sctx86_64errors.txt		    
+-                    ;; 
+-                cellp)
+-                    mfo build $i -a x86 2>&1 | tee logs/${i}x86builderrors.txt
+-                    mfo ut $i -a x86 -D 2>&1 | tee logs/${i}utx86errors.txt
+-                    mfo mt $i -a x86 -D 2>&1 | tee logs/${i}mtx86errors.txt
+-                    mfo sct $i -a x86_64 -D 2>&1 | tee logs/${i}sctx86_64errors.txt
+-                    ;;
+-                fareco)
+-                    mfo build $i -a x86 2>&1 | tee logs/${i}x86builderrors.txt
+-		    mfo build $i -a x86_64 2>&1 | tee logs/${i}x86_64builderrors.txt
+-                    mfo mt $i -a x86 -D 2>&1 | tee logs/${i}mtx86errors.txt
+-                    mfo mt $i -a x86_64 -D 2>&1 | tee logs/${i}mtx86_64errors.txt
+-                    ;;
+-                sysadapt) 
+-                    mfo build $i -a x86 2>&1 | tee logs/${i}x86builderrors.txt
+-                    mfo ut $i -a x86 -D 2>&1 | tee logs/${i}utx86errors.txt
+-                    mfo mt $i -a x86 -D 2>&1 | tee logs/${i}mtx86errors.txt
+-                    mfo sct $i -a x86_64 -D 2>&1 | tee logs/${i}sctx86_64errors.txt
+-                    ;;
+-                moam)
+-                    mfo ut $i -a x86 -D 2>&1 | tee logs/${i}utx86errors.txt
+-                    mfo mt $i -a x86 -D 2>&1 | tee logs/${i}mtx86errors.txt
+-                    mfo mt $i -a x86_64 -D 2>&1 | tee logs/${i}mtx86_64errors.txt
+-                    mfo sct $i -a x86_64 -D 2>&1 | tee logs/${i}sctx86_64errors.txt
+-                    mfo sct $i -a x86 -D 2>&1 | tee logs/${i}sctx86errors.txt
+-                    ;;
+-                import)
+-                    mfo ut $i -a x86_64 -D 2>&1 | tee logs/${i}utx86_64errors.txt
+-                    ;;
+-                esac
+-                
+-	)
+-	done
+-        for i in "$@"; do
+-        (
+-                counter=$[$(cat $MY_COUNTER) + 1]
+-                echo $counter > $MY_COUNTER
+-                error_count=$[$(cat $ERROR_COUNTER)]
+-                
+-                echo -e $COL_YEL"=============================================="$COL_END
+-                mips_errors=$(_mfo_check_logs logs/${i}mipsbuilderrors.txt)
+-                if [ $mips_errors == 0 ] ; then
+-                    echo -e $COL_GRE"There are no errors in $i mips builds."$COL_END
+-                else
+-                    echo -e $COL_RED"There are $mips_errors errors in $i mips builds."$COL_END
+-                    error_count=$((error_count+$mips_errors))
+-                fi
+-                ppc_errors=$(_mfo_check_logs logs/${i}ppcbuilderrors.txt)
+-                if [ $ppc_errors == 0 ] ; then
+-                    echo -e $COL_GRE"There are no errors in $i ppc builds."$COL_END
+-                else
+-                    echo -e $COL_RED"There are $ppc_errors errors in $i ppc builds."$COL_END
+-                    error_count=$((error_count+$ppc_errors))
+-                fi
+-                case $i in 
+-                bstat)
+-                    x86errors=$(_mfo_check_logs logs/${i}x86builderrors.txt)
+-                    if [ $x86errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i x86 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $x86errors errors in $i x86 builds."$COL_END
+-                        error_count=$((error_count+$x86errors))
+-                    fi
+-                    utx86errors=$(_mfo_check_logs logs/${i}utx86errors.txt)
+-                    if [ $utx86errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i UTx86 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $utx86errors errors in $i UTx86 builds."$COL_END
+-                        error_count=$((error_count+$utx86errors))
+-                    fi
+-                    utx86_64errors=$(_mfo_check_logs logs/${i}utx86_64errors.txt)
+-                    if [ $utx86_64errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i UTx86_64 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $utx86_64errors errors in $i UTx86 builds."$COL_END
+-                        error_count=$((error_count+$utx86_64errors))
+-                    fi
+-                    mtx86errors=$(_mfo_check_logs logs/${i}mtx86errors.txt)
+-                    if [ $mtx86errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i MTx86 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $mtx86errors errors in $i MTx86 builds."$COL_END
+-                        error_count=$((error_count+$mtx86errors))
+-                    fi
+-                    mtx86_64errors=$(_mfo_check_logs logs/${i}mtx86_64errors.txt)
+-                    if [ $mtx86_64errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i MTx86_64 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $mtx86_64errors errors in $i MTx86_64 builds."$COL_END
+-                        error_count=$((error_count+$mtx86_64errors))
+-                    fi
+-                    sctx86_64errors=$(_mfo_check_logs logs/${i}sctx86_64errors.txt)
+-                    if [ $sctx86_64errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i SCTx86_64 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $sctx86_64errors errors in $i SCTx86_64 builds."$COL_END
+-                        error_count=$((error_count+$sctx86_64errors))
+-                    fi
+-                    ;; 
+-                cellp)
+-                    x86errors=$(_mfo_check_logs logs/${i}x86builderrors.txt)
+-                    if [ $x86errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i x86 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $x86errors errors in $i x86 builds."$COL_END
+-                        error_count=$((error_count+$x86errors))
+-                    fi
+-                    utx86errors=$(_mfo_check_logs logs/${i}utx86errors.txt)
+-                    if [ $utx86errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i UTx86 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $utx86errors errors in $i UTx86 builds."$COL_END
+-                        error_count=$((error_count+$utx86errors))
+-                    fi
+-                    mtx86errors=$(_mfo_check_logs logs/${i}mtx86errors.txt)
+-                    if [ $mtx86errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i MTx86 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $mtx86errors errors in $i MTx86 builds."$COL_END
+-                        error_count=$((error_count+$mtx86errors))
+-                    fi
+-                    sctx86_64errors=$(_mfo_check_logs logs/${i}sctx86_64errors.txt)
+-                    if [ $sctx86_64errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i SCTx86_64 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $sctx86_64errors errors in $i SCTx86_64 builds."$COL_END
+-                        error_count=$((error_count+$sctx86_64errors))
+-                    fi
+-                    ;; 
+-                fareco)
+-                    x86errors=$(_mfo_check_logs logs/${i}x86builderrors.txt)
+-                    if [ $x86errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i x86 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $x86errors errors in $i x86 builds."$COL_END
+-                        error_count=$((error_count+$x86errors))
+-                    fi
+-                    x86_64errors=$(_mfo_check_logs logs/${i}x86_64builderrors.txt)
+-                    if [ $x86_64errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i x86_64 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $x86_64errors errors in $i x86_64 builds."$COL_END
+-                        error_count=$((error_count+$x86_64errors))
+-                    fi
+-                    mtx86errors=$(_mfo_check_logs logs/${i}mtx86errors.txt)
+-                    if [ $mtx86errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i MTx86 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $mtx86errors errors in $i MTx86 builds."$COL_END
+-                        error_count=$((error_count+$mtx86errors))
+-                    fi
+-                    mtx86_64errors=$(_mfo_check_logs logs/${i}mtx86_64errors.txt)
+-                    if [ $mtx86_64errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i MTx86_64 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $mtx86_64errors errors in $i MTx86_64 builds."$COL_END
+-                        error_count=$((error_count+$mtx86_64errors))
+-                    fi
+-                    ;; 
+-                sysadapt) 
+-                    x86errors=$(_mfo_check_logs logs/${i}x86builderrors.txt)
+-                    if [ $x86errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i x86 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $x86errors errors in $i x86 builds."$COL_END
+-                        error_count=$((error_count+$x86errors))
+-                    fi
+-                    utx86errors=$(_mfo_check_logs logs/${i}utx86errors.txt)
+-                    if [ $utx86errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i UTx86 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $utx86errors errors in $i UTx86 builds."$COL_END
+-                        error_count=$((error_count+$utx86errors))
+-                    fi
+-                    mtx86errors=$(_mfo_check_logs logs/${i}mtx86errors.txt)
+-                    if [ $mtx86errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i MTx86 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $mtx86errors errors in $i MTx86 builds."$COL_END
+-                        error_count=$((error_count+$mtx86errors))
+-                    fi
+-                    sctx86_64errors=$(_mfo_check_logs logs/${i}sctx86_64errors.txt)
+-                    if [ $sctx86_64errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i SCTx86_64 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $sctx86_64errors errors in $i SCTx86_64 builds."$COL_END
+-                        error_count=$((error_count+$sctx86_64errors))
+-                    fi
+-                    ;; 
+-                moam)
+-                    utx86errors=$(_mfo_check_logs logs/${i}utx86errors.txt)
+-                    if [ $utx86errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i UTx86 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $utx86errors errors in $i UTx86 builds."$COL_END
+-                        error_count=$((error_count+$utx86errors))
+-                    fi
+-                    mtx86errors=$(_mfo_check_logs logs/${i}mtx86errors.txt)
+-                    if [ $mtx86errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i MTx86 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $mtx86errors errors in $i MTx86 builds."$COL_END
+-                        error_count=$((error_count+$mtx86errors))
+-                    fi
+-                    mtx86_64errors=$(_mfo_check_logs logs/${i}mtx86_64errors.txt)
+-                    if [ $mtx86_64errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i MTx86_64 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $mtx86_64errors errors in $i MTx86_64 builds."$COL_END
+-                        error_count=$((error_count+$mtx86_64errors))
+-                    fi
+-                    sctx86_64errors=$(_mfo_check_logs logs/${i}sctx86_64errors.txt)
+-                    if [ $sctx86_64errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i SCTx86_64 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $sctx86_64errors errors in $i SCTx86_64 builds."$COL_END
+-                        error_count=$((error_count+$sctx86_64errors))
+-                    fi
+-                    sctx86errors=$(_mfo_check_logs logs/${i}sctx86errors.txt)
+-                    if [ $sctx86errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i SCTx86 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $sctx86errors errors in $i SCTx86 builds."$COL_END
+-                        error_count=$((error_count+$sctx86errors))
+-                    fi
+-                    ;; 
+-                import)
+-                    utx86_64errors=$(_mfo_check_logs logs/${i}utx86_64errors.txt)
+-                    if [ $utx86_64errors == 0 ] ; then
+-                        echo -e $COL_GRE"There are no errors in $i UTx86_64 builds."$COL_END
+-                    else
+-                        echo -e $COL_RED"There are $utx86_64errors errors in $i UTx86 builds."$COL_END
+-                        error_count=$((error_count+$utx86_64errors))
+-                    fi
+-                    ;; 
+-                esac
+-                if [ $counter == "$#" ] ; then
+-                    if [ $error_count == 0 ] ; then
+-                        echo -e $COL_YEL"=============================================="$COL_END
+-                        echo -e $COL_GRE"Spectacular success! No errors!!"$COL_END
+-                    else
+-                        echo -e $COL_YEL"=============================================="$COL_END
+-                        echo -e $COL_RED"There are at least $error_count errors. "$COL_END
+-                    fi
+-                fi
+-                echo $error_count > $ERROR_COUNTER
+-        )
+-        done
+-        unlink $ERROR_COUNTER
+-        unlink $MY_COUNTER
+-
+-}
+-
+-#
+-#  Completion for mfo
+-#
+-
+-_mfo_check_logs() {
+-        ERRORS_FOUND=`cat $1 | egrep -c " ERROR"`
+-        echo $ERRORS_FOUND
+-}
+-
+-
+-_mfo_get_test_cases() {
+-	set -e
+-	[ ! -f .db ] && return 0
+-	. ./.db
+-	local var=${1}_source
+-	[ ! -d "${!var}" ] && return 0
+-	case "$2" in
+-		"sct")
+-			ls -1 "${!var}/test/sct/testcases"
+-			return 0
+-			;;
+-		"ut")
+-			ls -1 "${!var}/test/ut/tests"
+-			return 0
+-			;;
+-		*)
+-			return 0
+-			;;
+-	esac
+-}
+-
+-_mfo_get_tests() {
+-	set -e
+-	[ ! -f .db ] && return 0
+-	. ./.db
+-	local var=${1}_source
+-	[ ! -d "${!var}" ] && return 0
+-	case "$2" in
+-		"sct")
+-			find "${!var}/test/sct/testcases/${3}" -type f -name *.ttcn3 -not -iwholename '*.svn*' -printf "%P\n"
+-			return 0
+-			;;
+-		"ut")
+-			find "${!var}/test/ut/tests/${3}" -type f -not -iwholename '*.svn*' -printf "%P\n"
+-			return 0
+-			;;
+-		*)
+-			return 0
+-			;;
+-	esac
+-}
+-
+-_mfo() {
+-	local cur prev opts mfo_dir commands switches pkgfiles testcases tests component command testcase
+-	COMPREPLY=()
+-	cur="${COMP_WORDS[COMP_CWORD]}"
+-	prev="${COMP_WORDS[COMP_CWORD-1]}"
+-	mfo_dir="$(dirname $(readlink -e $(which ${COMP_WORDS[0]})))"
+-	commands="env prepare build ut mt sct marshal initdb clean coverity distclean update help knife-iav doc knife-cb"
+-	switches=(
+-		--db-config --ecl --no-auto-mflags --no-deps -a --arch --man --no-force-fetch --valgrind --coverage --html
+-		TEST_CASE= TEST= CONTAINER= SCT_TYPES= MOAM_BOARD= MOAM_GENERATE= EXECUTION_MULTIPLIER= PASS_RATIO= COVERITY_STREAM_NAME= COVERITY_TEMP_INSTALL=
+-	)
+-	pkgfiles="$(for x in "${mfo_dir}/pkgfile.d/"*.pkgfile; do basename ${x%.pkgfile}; done)"
+-
+-	for x in ${COMP_WORDS[@]}; do
+-		local re=\\b${x}\\b
+-		[[ ${commands} =~ $re ]] && command=${x} && continue
+-		[[ ${pkgfiles} =~ $re ]] && component=${x} && break
+-	done
+-
+-	if [ ${command} ]; then
+-		opts="${pkgfiles} ${switches[*]}"
+-	else
+-		opts="${commands} ${switches[*]}"
+-	fi
+-
+-	if [ ${command} ] && [ ${component} ]; then
+-		testcases=$(_mfo_get_test_cases ${component} ${command})
+-	fi
+-
+-	for x in ${COMP_WORDS[@]}; do
+-		local re=\\b${x}\\b
+-		[[ ${testcases} =~ $re ]] && testcase=${x} && break
+-	done
+-
+-	if [ ${command} ] && [ ${component} ] && [ ${testcase} ]; then
+-		tests=$(_mfo_get_tests ${component} ${command} ${testcase})
+-	fi
+-
+-	if [ "${prev}" == "=" ]; then
+-		case "${COMP_WORDS[COMP_CWORD-2]}" in
+-			*_source)
+-				COMPREPLY=( $(compgen -S / -d ${cur}) )
+-				compopt -o nospace
+-				return 0
+-				;;
+-			"TEST_CASE")
+-				COMPREPLY=( $(compgen -W "${testcases}" ${cur}) )
+-				return 0
+-				;;
+-			"TEST")
+-				COMPREPLY=( $(compgen -W "${tests}" ${cur}) )
+-				return 0
+-				;;
+-			*)
+-				;;
+-		esac
+-	fi
+-
+-	if [ "${cur}" == "=" ]; then
+-		case "${prev}" in
+-			*_source)
+-				COMPREPLY=( $(compgen -S / -d) )
+-				compopt -o nospace
+-				return 0
+-				;;
+-			"TEST_CASE")
+-				COMPREPLY=( $(compgen -W "${testcases}") )
+-				return 0
+-				;;
+-			"TEST")
+-				COMPREPLY=( $(compgen -W "${tests}") )
+-				return 0
+-				;;
+-			*)
+-				;;
+-		esac
+-	fi
+-
+-	case "${prev}" in
+-		"-a"|"--arch")
+-			local words="x86 x86_64 native host64 x86_64_static win64 mips ppc arm rcp rcprt asik asib abic asil rcp_oam rcp_oam_vcu rcp_oam_fh rcp_cp_rt rcp_l1_hi rcp_l2_ps rcp_trsw"
+-			COMPREPLY=( $(compgen -W "$words" ${cur}) )
+-			return 0
+-			;;
+-		"initdb"|"--ecl")
+-			COMPREPLY=( $(compgen -f ${cur}) )
+-			return 0
+-			;;
+-		"--db-config")
+-			local ret=$(for x in ${pkgfiles}; do echo ${x}_source=; done)
+-			COMPREPLY=( $(compgen -W "${ret}" ${cur}) )
+-			compopt -o nospace
+-			return 0
+-			;;
+-		*)
+-			;;
+-	esac
+-
+-	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+-}
+-complete -F _mfo mfo
+Index: test.diff
+===================================================================
+--- test.diff	(nonexistent)
++++ test.diff	(working copy)
+@@ -0,0 +1,36 @@
++Index: django.txt
++===================================================================
++--- django.txt	(nonexistent)
+++++ django.txt	(working copy)
++@@ -0,0 +1 @@
+++just for test
++Index: mfo
++===================================================================
++--- mfo	(revision 22443)
+++++ mfo	(working copy)
++@@ -3,7 +3,7 @@
++ # https://gist.github.com/JBlond/2fea43a3049b38287e5e9cefc87b2124
++ declare -rA color_text=(
++                   [black]='\e[0;30m'
++-             [bold-black]='\e[1;30m'
+++             [bold-black]='\e[1;30m's
++         [underline-black]='\e[4;30m'
++           [intense-black]='\e[0;90m'
++      [intense-bold-black]='\e[1;90m'
++Index: mfo2.conf
++===================================================================
++--- mfo2.conf	(nonexistent)
+++++ mfo2.conf	(working copy)
++@@ -0,0 +1,12 @@
+++#PKGCONFIG_FILE="conf/Pkgfile" # relative path (from top of the source tree) to the package configuration file
+++#SRC_DIR=$PWD
+++#DB_FILE_NAME=".db"
+++#WGET_OPTS=
+++#MAKEFLAGS=
+++#NO_AUTO_MFLAGS=
+++#PKG_DIR=
+++#ECL_SRC_SUF="/isource/svnroot/BTS_SCM_OAM_LTE_ECL/"
+++#KNIFE_TARGET_PATH="C_Application/SC_OAM/Target/"
+++
+++# vim: filetype=sh
+++#USE_DISTCC=
