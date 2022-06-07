@@ -1,8 +1,6 @@
 import * as path from 'path';
 import * as shell from 'shelljs';
-import * as fs from 'fs';
 import { NodeSSH } from 'node-ssh';
-import { promisify } from 'util';
 import {
   GeneralModel,
   Project,
@@ -14,8 +12,10 @@ import {
   SyncCodeStep,
   SyncCodeResData,
   IpcResErrorType,
+  ChangedFileType,
+  ChangedFiles,
 } from '@oam-kit/utility/types';
-import { getUserDataPath, isRemotePathExist } from '@electron/app/utils';
+import { getChangedFiles, getUserDataPath, isRemotePathExist } from '@electron/app/utils';
 import { MODEL_NAME, modules as modulesConf, sftp_algorithms } from '@oam-kit/utility/overall-config';
 import { IpcService } from '@electron/app/utils/ipcService';
 import { IpcChannelBase } from '../ipcChannelBase';
@@ -23,6 +23,11 @@ import { IpcChannelBase } from '../ipcChannelBase';
 const moduleConf = modulesConf.syncCode;
 const userDataPath = getUserDataPath();
 const DIFF_PATH = path.join(userDataPath, moduleConf.diffName);
+
+enum SvnFileType {
+  NEW,
+  MISSING,
+}
 
 interface CustomError extends Error {
   failedStep: SyncCodeStep;
@@ -33,7 +38,7 @@ export default class SyncCodeChannel extends IpcChannelBase {
   handlers = [{ name: IpcChannel.SYNC_CODE, fn: this.handle }];
 
   private project: Project;
-  private addedFiles: string[];
+  private changedFiles: ChangedFiles;
   private ssh: NodeSSH = new NodeSSH();
   private nsbAccount: { username: string; password: string };
   private isUserChanged = false;
@@ -90,14 +95,50 @@ export default class SyncCodeChannel extends IpcChannelBase {
     }
   }
 
+  private async getCertainTypeSvnFiles(type: SvnFileType): Promise<string[]> {
+    const files: string[] = [];
+
+    return new Promise((resolve) => {
+      shell.cd(this.project.localPath).exec('svn st', (code, stdout, stderr) => {
+        if (code === 0) {
+          let flag: string;
+          if (type === SvnFileType.MISSING) {
+            flag = '!';
+          } else if (type === SvnFileType.NEW) {
+            flag = '?';
+          }
+
+          const rows = stdout.split('\n');
+          for (const row of rows) {
+            if (row.startsWith(flag)) {
+              const re = new RegExp(`\\${flag}(.*)`);
+              files.push(row.match(re)[1].trim());
+            }
+          }
+          resolve(files);
+        } else {
+          const err = new Error(`getCertainSvnFiles() ${stderr}, ${code}.`);
+          err.name = SyncCodeStep.CREATE_DIFF;
+          throw err;
+        }
+      });
+    });
+  }
+
+  private beforeDiffCreated() {
+    if (this.isSvn) {
+      return this.addOrRemoveSvnFiles();
+    } else {
+      return this.addUntrackedGitFiles();
+    }
+  }
+
   private async createDiff(ipcService: IpcService): Promise<any> {
     this.logger.info('createDiff: start.');
 
-    const cmd = this.isSvnVersionControl ? `svn di > ${DIFF_PATH}` : `git diff > ${DIFF_PATH}`;
+    await this.beforeDiffCreated();
 
-    if (!this.isSvnVersionControl) {
-      await this.addUntrackedFiles();
-    }
+    const cmd = this.isSvn ? `svn di > ${DIFF_PATH}` : `git diff > ${DIFF_PATH}`;
 
     return new Promise((resolve) => {
       shell.cd(this.project.localPath).exec(cmd, (code, stdout, stderr) => {
@@ -114,7 +155,45 @@ export default class SyncCodeChannel extends IpcChannelBase {
     });
   }
 
-  private async addUntrackedFiles() {
+  private async addOrRemoveSvnFiles() {
+    let cmd: string;
+    const newFiles = await this.getCertainTypeSvnFiles(SvnFileType.NEW);
+    const missingFiles = await this.getCertainTypeSvnFiles(SvnFileType.MISSING);
+
+    if (newFiles.length === 0 && missingFiles.length === 0) {
+      return Promise.resolve(null);
+    }
+
+    if(newFiles.length) {
+      cmd = 'svn add ';
+      for (const newFile of newFiles) {
+        cmd += newFile + ' ';
+      }
+      cmd.trim();
+    }
+
+    if (missingFiles.length) {
+      cmd += cmd ? ' && svn rm ' : 'svn rm ';
+      for (const missingFile of missingFiles) {
+        cmd += missingFile + ' ';
+      }
+      cmd.trim();
+    }
+
+    return new Promise((resolve) => {
+      shell.cd(this.project.localPath).exec(cmd, (code, stdout, stderr) => {
+        if (code === 0) {
+          resolve(null);
+        } else {
+          const err = new Error(`beforeDiffCreated() failed: ${stderr}, ${code}.`);
+          err.name = SyncCodeStep.CREATE_DIFF;
+          throw err;
+        }
+      });
+    });
+  }
+
+  private async addUntrackedGitFiles() {
     return new Promise((resolve) => {
       shell.cd(this.project.localPath).exec('git ls-files --others --exclude-standard', (code, stdout) => {
         if (code === 0) {
@@ -128,37 +207,13 @@ export default class SyncCodeChannel extends IpcChannelBase {
   }
 
   /**
-   * Analyze diff to do below things:
-   * 1. To get files which are created from scratch.
-   * (Notice: due to command 'svn revert -R .' can't delete new created file
-   * thus we need to know which files are new then execute 'rm ${file name}' to delete those files before apply the new diff.)
+   * diffAnalysis() would collect each type(normal, new, deleted, renamed) of files,
+   * which would be useful for revertting server's changes
    */
   private async diffAnalysis(): Promise<any> {
     this.logger.info('diffAnalysis: start.');
-    const diff = (await promisify(fs.readFile)(DIFF_PATH)).toString();
-    const changedFiles = this.getChangedFiles(diff);
-    this.addedFiles = this.getAddedFiles(changedFiles);
+    this.changedFiles = await getChangedFiles(DIFF_PATH, this.isSvn);
     this.logger.info('diffAnalysis: done.');
-  }
-
-  private getAddedFiles(origins: string[]): string[] {
-    const addedFiles = [];
-    for (const origin of origins) {
-      if (origin.includes('(nonexistent)')) {
-        addedFiles.push(origin.split('\t')[0]);
-      }
-    }
-    return addedFiles;
-  }
-
-  private getChangedFiles(diff: string): string[] {
-    const origins = [];
-    const sections = diff.split('--- ');
-    for (let i = 1; i < sections.length; i++) {
-      const sec = sections[i];
-      origins.push(sec.split('\r')[0]);
-    }
-    return origins;
   }
 
   private async uploadPatchToServer(ipcService: IpcService): Promise<any> {
@@ -184,7 +239,23 @@ export default class SyncCodeChannel extends IpcChannelBase {
    */
   private async applyPatchToServer(ipcService: IpcService): Promise<any> {
     this.logger.info('applyPatchToServer: start.');
-    const cmd = this.preparePatchCmd();
+
+    let cmd: string;
+
+    if (this.isSvn) {
+      cmd = `svn patch ${moduleConf.diffName}`;
+    } else {
+      cmd = `git apply ${moduleConf.diffName} && `;
+      // git add "new file" and "renamed file"
+      cmd += 'git add -N ';
+      for (const [filePath, changedType] of Object.entries(this.changedFiles)) {
+        if (changedType === ChangedFileType.NEW || changedType === ChangedFileType.RENAME) {
+          cmd += filePath + ' ';
+        }
+      }
+      cmd.trim();
+    }
+
     return this.ssh.execCommand(cmd, { cwd: this.project.remotePath }).then(({ stdout }) => {
       if (stdout.includes('conflicts:') || stdout.includes('rejected hunk')) {
         const error = new Error(`Apply patch to server failed: ${stdout}`);
@@ -196,22 +267,21 @@ export default class SyncCodeChannel extends IpcChannelBase {
     });
   }
 
-  private preparePatchCmd() {
-    let cmd = this.isSvnVersionControl ? `svn revert -R .` : `git checkout .`;
-
-    if (this.addedFiles.length > 0) {
-      cmd += ' && rm -rf ';
-      for (const file of this.addedFiles) {
-        cmd += `${file} `;
-      }
-    }
-    cmd += this.isSvnVersionControl ? ` && svn patch ` : ` && git apply `;
-    cmd += moduleConf.diffName;
-    return cmd;
-  }
-
   private async cleanup() {
-    const cmd = this.isSvnVersionControl ? `` : `git clean -fd`;
+    let cmd: string;
+
+    if (this.isSvn) {
+      cmd = 'svn revert -R . && rm -rf ';
+      for (const [filePath, changedType] of Object.entries(this.changedFiles)) {
+        if (changedType === ChangedFileType.NEW) {
+          cmd += filePath + ' ';
+        }
+      }
+      cmd.trim();
+    } else {
+      cmd = 'git reset --hard';
+    }
+
     return this.ssh.execCommand(cmd, { cwd: this.project.remotePath }).then(({ stderr }) => {
       if (stderr) {
         this.logger.error(`Cleanup failed, %s`, stderr);
@@ -220,7 +290,7 @@ export default class SyncCodeChannel extends IpcChannelBase {
     });
   }
 
-  private get isSvnVersionControl(): boolean {
+  private get isSvn(): boolean {
     return this.project.versionControl === RepositoryType.SVN;
   }
 }
