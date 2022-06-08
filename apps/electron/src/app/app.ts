@@ -14,6 +14,7 @@ import { Constructor } from '@oam-kit/utility/types';
 import { autoUpdater } from 'electron-updater';
 import { UpdateDownloadedEvent } from 'electron-updater/out/main';
 import Logger from './utils/logger';
+import { ElectonConf } from './config';
 
 const logger = Logger.for('app.ts');
 
@@ -47,9 +48,9 @@ autoUpdater.on('update-downloaded', (info: UpdateDownloadedEvent) => {
   const dialogOpts = {
     type: 'info',
     buttons: ['Restart', 'Later'],
-    title: 'Application Update',
-    message: `New version available${info.version}`,
-    detail: `A new version(${info.version}) has been downloaded. Restart the application to apply the updates.`
+    title: 'OAM-Kit: Application Update',
+    message: `New version available`,
+    detail: `New version(v${info.version}) available. Restart the application to apply the updates.`
   };
 
   dialog.showMessageBox(dialogOpts).then((returnValue) => {
@@ -124,8 +125,9 @@ export default class App {
   }
 
   private static initAutoUpdater() {
+    const proxy = ElectonConf.proxy;
     autoUpdater.netSession.setProxy({
-      proxyRules: 'http://10.158.100.3:8080'
+      proxyRules: `http: ${proxy.address}:${proxy.port}`
     });
     autoUpdater.checkForUpdatesAndNotify();
   }
