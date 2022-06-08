@@ -44,6 +44,8 @@ export const MODEL_INIT_VALUE: APPData = {
   },
 };
 
+export const proxy = { address: '10.158.100.3', port: 8080 };
+
 // W/A: to fix crypto.createDiffieHellman() crash issue when using SSH2
 // Link: https://github.com/liximomo/vscode-sftp/issues/883#issuecomment-778684682
 export const sftp_algorithms = {

@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 
 import { BrowserWindow, shell, ipcMain, dialog } from 'electron';
-import { rendererAppName, rendererAppPort, storeName } from '@oam-kit/utility/overall-config';
+import { proxy, rendererAppName, rendererAppPort, storeName } from '@oam-kit/utility/overall-config';
 import { environment } from '../environments/environment';
 import { join } from 'path';
 import { format } from 'url';
@@ -14,7 +14,6 @@ import { Constructor } from '@oam-kit/utility/types';
 import { autoUpdater } from 'electron-updater';
 import { UpdateDownloadedEvent } from 'electron-updater/out/main';
 import Logger from './utils/logger';
-import { ElectonConf } from './config';
 
 const logger = Logger.for('app.ts');
 
@@ -125,7 +124,6 @@ export default class App {
   }
 
   private static initAutoUpdater() {
-    const proxy = ElectonConf.proxy;
     autoUpdater.netSession.setProxy({
       proxyRules: `http: ${proxy.address}:${proxy.port}`
     });
