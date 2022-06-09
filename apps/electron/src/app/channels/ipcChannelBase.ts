@@ -7,7 +7,7 @@ import Logger from '../utils/logger';
 
 export interface IpcChannelHandler {
   name: IpcChannel;
-  fn(ipcService: IpcService, req?: IpcRequest<any>): void;
+  fn(ipcService: IpcService, req?: IpcRequest<any>): any;
 }
 
 export abstract class IpcChannelBase {
