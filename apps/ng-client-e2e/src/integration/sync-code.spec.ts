@@ -16,9 +16,15 @@ function finishSyncStep(fixture: MainFixture, n: number, opt: { isSuccess: boole
       step = SyncCodeStep.CREATE_DIFF;
       break;
     case 3:
-      step = SyncCodeStep.UPLOAD_DIFF;
+      step = SyncCodeStep.DIFF_ANALYZE;
       break;
     case 4:
+      step = SyncCodeStep.CLEAN_UP;
+      break;
+    case 5:
+      step = SyncCodeStep.UPLOAD_DIFF;
+      break;
+    case 6:
       step = SyncCodeStep.APPLY_DIFF;
       break;
     default:
@@ -150,11 +156,13 @@ describe('Scenario3: sync code', () => {
     cy.getBySel('sync-code-button').click();
   });
   it('Case1: should be successfully when everything is fine.', () => {
-    cy.get('nz-step').should('have.length', 4);
+    cy.get('nz-step').should('have.length', 6);
     cy.get('nz-step').eq(0).as('first');
     cy.get('nz-step').eq(1).as('second');
     cy.get('nz-step').eq(2).as('third');
     cy.get('nz-step').eq(3).as('fourth');
+    cy.get('nz-step').eq(4).as('fifth');
+    cy.get('nz-step').eq(5).as('sixth');
     cy.assertStepStatus('@first', 'process');
     cy.wait(500)
       .then(finishSyncStep.bind(this, fixture, 1))
@@ -178,6 +186,18 @@ describe('Scenario3: sync code', () => {
       .then(finishSyncStep.bind(this, fixture, 4))
       .then(() => {
         cy.assertStepStatus('@fourth', 'finish');
+        cy.assertStepStatus('@fifth', 'process');
+      });
+    cy.wait(500)
+      .then(finishSyncStep.bind(this, fixture, 5))
+      .then(() => {
+        cy.assertStepStatus('@fifth', 'finish');
+        cy.assertStepStatus('@sixth', 'process');
+      });
+    cy.wait(500)
+      .then(finishSyncStep.bind(this, fixture, 6))
+      .then(() => {
+        cy.assertStepStatus('@sixth', 'finish');
       });
   });
 
