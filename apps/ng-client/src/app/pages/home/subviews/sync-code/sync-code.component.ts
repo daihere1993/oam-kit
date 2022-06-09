@@ -125,9 +125,11 @@ export class SyncCodeComponent implements OnInit, OnDestroy {
         description: 'Create diff based on local project.',
         type: SyncCodeStep.CREATE_DIFF,
       },
-      { title: 'Step 3', description: 'Upload diff into remote.', type: SyncCodeStep.UPLOAD_DIFF },
+      { title: 'Step 3', description: 'Analyze diff.', type: SyncCodeStep.DIFF_ANALYZE },
+      { title: 'Step 4', description: 'Clean up remote workspace.', type: SyncCodeStep.CLEAN_UP },
+      { title: 'Step 5', description: 'Upload diff into remote.', type: SyncCodeStep.UPLOAD_DIFF },
       {
-        title: 'Step 4',
+        title: 'Step 6',
         description: 'Apply diff to remote project.',
         type: SyncCodeStep.APPLY_DIFF,
       },
