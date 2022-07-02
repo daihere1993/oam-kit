@@ -1,0 +1,13 @@
+diff --git a/SC_MONOLITH/DM_RUMAG/test/UT/tests/ECpri/PerformanceMonitoringManagement/ECpriReceptionMonitorHandlerVduTests.cpp b/SC_MONOLITH/DM_RUMAG/test/UT/tests/ECpri/PerformanceMonitoringManagement/ECpriReceptionMonitorHandlerVduTests.cpp
+index 067bdff8cc..b9ebf5c227 100755
+--- a/SC_MONOLITH/DM_RUMAG/test/UT/tests/ECpri/PerformanceMonitoringManagement/ECpriReceptionMonitorHandlerVduTests.cpp
++++ b/SC_MONOLITH/DM_RUMAG/test/UT/tests/ECpri/PerformanceMonitoringManagement/ECpriReceptionMonitorHandlerVduTests.cpp
+@@ -13,7 +13,7 @@
+ #include <lim/storage_data/pddb_types/SUPPORT_CHANNEL.hpp>
+ #include <lim/storage_data/pddb_types/CELL_M.hpp>
+ 
+-#include <pm/agent/def.hpp>
++#include <pm/agent/def.hspp>
+ #include <pm/uri/uri.h>
+ 
+ #include <Multiradio_def.h>

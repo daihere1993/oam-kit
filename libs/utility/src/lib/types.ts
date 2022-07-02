@@ -71,8 +71,8 @@ export interface LockInfo {
 }
 
 export enum IpcResErrorType {
-	Expected,
-	Exception,
+  Expected,
+  Exception,
 }
 
 export interface IpcRequest<T> {
@@ -80,7 +80,7 @@ export interface IpcRequest<T> {
 }
 
 export interface IpcResError {
-  type: IpcResErrorType | null,
+  type: IpcResErrorType | null;
   message: string;
 }
 
@@ -155,7 +155,7 @@ export interface ServerCheckReqData {
 }
 export interface ServerDirCheckReqData {
   host: string;
-  directory: string
+  directory: string;
 }
 export interface SvnAccountVerificationReqData {
   username: string;
@@ -179,14 +179,3 @@ export interface CheckNecessaryCommandsResData {
 /** end */
 
 export type Constructor<T> = new (...args: any[]) => T;
-
-export enum ChangedFileType {
-  NORMAL,
-  NEW,
-  RENAME,
-  DELETE,
-}
-
-export interface ChangedFiles {
-  [prop: string]: ChangedFileType
-}

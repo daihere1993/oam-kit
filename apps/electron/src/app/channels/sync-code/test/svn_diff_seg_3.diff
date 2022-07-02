@@ -1,0 +1,17 @@
+Index: mfo.conf
+===================================================================
+--- mfo.conf	(revision 22443)
++++ mfo.conf	(nonexistent)
+@@ -1,12 +0,0 @@
+-#PKGCONFIG_FILE="conf/Pkgfile" # relative path (from top of the source tree) to the package configuration file
+-#SRC_DIR=$PWD
+-#DB_FILE_NAME=".db"
+-#WGET_OPTS=
+-#MAKEFLAGS=
+-#NO_AUTO_MFLAGS=
+-#PKG_DIR=
+-#ECL_SRC_SUF="/isource/svnroot/BTS_SCM_OAM_LTE_ECL/"
+-#KNIFE_TARGET_PATH="C_Application/SC_OAM/Target/"
+-
+-# vim: filetype=sh
+-#USE_DISTCC=
