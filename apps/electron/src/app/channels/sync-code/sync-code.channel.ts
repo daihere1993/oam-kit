@@ -1,5 +1,6 @@
+import * as fs from 'fs';
 import * as path from 'path';
-import * as shell from 'shelljs';
+import { promisify } from 'util';
 import { NodeSSH } from 'node-ssh';
 import {
   GeneralModel,
@@ -12,22 +13,23 @@ import {
   SyncCodeStep,
   SyncCodeResData,
   IpcResErrorType,
-  ChangedFileType,
-  ChangedFiles,
 } from '@oam-kit/utility/types';
-import { getChangedFiles, getUserDataPath, isRemotePathExist } from '@electron/app/utils';
+import { getUserDataPath, isRemotePathExist } from '@electron/app/utils';
 import { SyncCodeError } from '@oam-kit/utility/errors';
-import { MODEL_NAME, modules as modulesConf, sftp_algorithms } from '@oam-kit/utility/overall-config';
+import { MODEL_NAME, sftp_algorithms } from '@oam-kit/utility/overall-config';
 import { IpcService } from '@electron/app/utils/ipcService';
 import { IpcChannelBase } from '../ipcChannelBase';
+import { GitRepo, Repository, SvnRepo } from './repository';
+import { ChangedFile } from './changedFile';
 
-const moduleConf = modulesConf.syncCode;
-const userDataPath = getUserDataPath();
-const DIFF_PATH = path.join(userDataPath, moduleConf.diffName);
+const LOCAL_DATA_PATH = getUserDataPath();
+const PATCH_PREFIX = 'oamkit';
 
-enum SvnFileType {
-  NEW,
-  MISSING,
+enum SyncType {
+  whole,
+  partial,
+  revert,
+  none,
 }
 
 export default class SyncCodeChannel extends IpcChannelBase {
@@ -35,10 +37,35 @@ export default class SyncCodeChannel extends IpcChannelBase {
   handlers = [{ name: IpcChannel.SYNC_CODE, fn: this.handle }];
 
   private project: Project;
-  private ipcService: IpcService;
-  private changedFiles: ChangedFiles;
+  private repo: Repository;
+  private syncType: SyncType;
+  private changedFiles: ChangedFile[];
+  private revertFiles: ChangedFile[];
   private ssh: NodeSSH = new NodeSSH();
   private nsbAccount: { username: string; password: string };
+
+  private get localFinalPatchPath() {
+    if (this.syncType === SyncType.partial) {
+      return this.assembledPatchPath;
+    }
+    return this.localOriginalPatchPath;
+  }
+
+  private get assembledPatchPath() {
+    return path.join(LOCAL_DATA_PATH, `${PATCH_PREFIX}_${this.project.name}_assenmbled.diff`);
+  }
+
+  private get patchName() {
+    return `${PATCH_PREFIX}_${this.project.name}.diff`;
+  }
+
+  private get localOriginalPatchPath() {
+    return path.join(LOCAL_DATA_PATH, this.patchName);
+  }
+
+  private get remotePatchPath() {
+    return `${this.project.remotePath}/${this.patchName}`;
+  }
 
   startup(): void {
     const gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
@@ -57,35 +84,49 @@ export default class SyncCodeChannel extends IpcChannelBase {
     });
   }
 
+  private async nextStep(step: SyncCodeStep, ipcService: IpcService, handler: () => Promise<void>) {
+    try {
+      this.logger.info(`${step}: start.`);
+
+      if (this.syncType === SyncType.none) {
+        this.logger.info(`${step}: skip this step due to nothing change`);
+        ipcService.replyOkWithData<SyncCodeResData>({ step });
+        return Promise.resolve();
+      }
+
+      await handler.call(this);
+      ipcService.replyOkWithData<SyncCodeResData>({ step });
+    } catch (error) {
+      const message = error.message || error;
+      throw new SyncCodeError(this.logger, step, message);
+    } finally {
+      this.logger.info(`${step}: done.`);
+    }
+  }
+
   private async handle(ipcService: IpcService, request: IpcRequest<SyncCodeReqData>) {
-    this.ipcService = ipcService;
+    this.changedFiles = [];
+    this.revertFiles = [];
+    this.syncType = SyncType.whole;
     this.project = request.data.project;
+    this.repo =
+      this.project.versionControl === RepositoryType.SVN
+        ? new SvnRepo(this.ssh, this.project.localPath, this.project.remotePath)
+        : new GitRepo(this.ssh, this.project.localPath, this.project.remotePath);
 
     try {
-      await this.nextStep(SyncCodeStep.CONNECT_TO_SERVER, this.connectServer);
-      await this.nextStep(SyncCodeStep.CREATE_DIFF, this.createDiff);
-      await this.nextStep(SyncCodeStep.DIFF_ANALYZE, this.diffAnalyze);
-      await this.nextStep(SyncCodeStep.CLEAN_UP, this.cleanup);
-      await this.nextStep(SyncCodeStep.UPLOAD_DIFF, this.uploadPatchToServer);
-      await this.nextStep(SyncCodeStep.APPLY_DIFF, this.applyPatchToServer);
+      await this.nextStep(SyncCodeStep.CONNECT_TO_SERVER, ipcService, this.connectServer);
+      await this.nextStep(SyncCodeStep.CREATE_DIFF, ipcService, this.createLocalPatch);
+      await this.nextStep(SyncCodeStep.DIFF_ANALYZE, ipcService, this.analyzePatches);
+      await this.nextStep(SyncCodeStep.CLEAN_UP, ipcService, this.cleanup);
+      await this.nextStep(SyncCodeStep.UPLOAD_DIFF, ipcService, this.uploadPatchToServer);
+      await this.nextStep(SyncCodeStep.APPLY_DIFF, ipcService, this.applyPatchToServer);
     } catch (error) {
       if (error.step) {
         ipcService.replyNokWithData<SyncCodeResData>({ step: error.step }, error.message);
       } else {
         ipcService.replyNokWithNoData(error.message, IpcResErrorType.Exception);
       }
-    }
-  }
-
-  private async nextStep(step: SyncCodeStep, handler: () => Promise<void>) {
-    try {
-      this.logger.info(`${step}: start.`);
-      await handler.call(this);
-      this.ipcService.replyOkWithData<SyncCodeResData>({ step });
-    } catch (error) {
-      throw new SyncCodeError(this.logger, step, error.message);
-    } finally {
-      this.logger.info(`${step}: done.`);
     }
   }
 
@@ -98,184 +139,119 @@ export default class SyncCodeChannel extends IpcChannelBase {
         algorithms: sftp_algorithms,
       });
     }
-    // Check if remote prject exists
+
+    // Check if remote prject path exists
     await isRemotePathExist(this.ssh, this.project.remotePath);
   }
 
-  private async getCertainTypeSvnFiles(type: SvnFileType): Promise<string[]> {
-    const files: string[] = [];
-
-    return new Promise((resolve) => {
-      shell.cd(this.project.localPath).exec('svn st', (code, stdout, stderr) => {
-        if (code === 0) {
-          let flag: string;
-          if (type === SvnFileType.MISSING) {
-            flag = '!';
-          } else if (type === SvnFileType.NEW) {
-            flag = '?';
-          }
-
-          const rows = stdout.split('\n');
-          for (const row of rows) {
-            if (row.startsWith(flag)) {
-              const re = new RegExp(`\\${flag}(.*)`);
-              files.push(row.match(re)[1].trim());
-            }
-          }
-          resolve(files);
-        } else {
-          const err = new Error(`getCertainSvnFiles() ${stderr}, ${code}.`);
-          err.name = SyncCodeStep.CREATE_DIFF;
-          throw err;
-        }
-      });
-    });
+  private async createLocalPatch(): Promise<void> {
+    await this.repo.beforePatchCreated(false);
+    return this.repo.createDiff(this.localOriginalPatchPath, false);
   }
 
-  private beforeDiffCreated() {
-    if (this.isSvn) {
-      return this.addOrRemoveSvnFiles();
-    } else {
-      return this.addUntrackedGitFiles();
+  private async analyzePatches(): Promise<any> {
+    this.changedFiles = await this.getChangedFiles();
+
+    // assemble new diff if is partial sychronization
+    if (this.syncType === SyncType.partial) {
+      const diff = this.repo.assemblePatch(this.changedFiles);
+      await promisify(fs.writeFile)(this.assembledPatchPath, diff);
+      return;
     }
   }
 
-  private async createDiff(): Promise<void> {
-    await this.beforeDiffCreated();
 
-    return new Promise((resolve) => {
-      const cmd = this.isSvn ? `svn di > ${DIFF_PATH}` : `git diff > ${DIFF_PATH}`;
-      shell.cd(this.project.localPath).exec(cmd, (code, stdout, stderr) => {
-        if (code === 0) {
-          resolve();
-        } else {
-          throw  new Error(stderr);
-        }
-      });
-    });
-  }
-
-  private async addOrRemoveSvnFiles(): Promise<void> {
-    let cmd: string;
-    const newFiles = await this.getCertainTypeSvnFiles(SvnFileType.NEW);
-    const missingFiles = await this.getCertainTypeSvnFiles(SvnFileType.MISSING);
-
-    if (newFiles.length === 0 && missingFiles.length === 0) {
-      return Promise.resolve();
+  private async cleanup(): Promise<void> {
+    let specificCmd: string;
+    if (this.syncType === SyncType.whole && this.repo instanceof GitRepo) {
+      specificCmd = 'git reset --hard';
     }
 
-    if(newFiles.length) {
-      cmd = 'svn add ';
-      for (const newFile of newFiles) {
-        cmd += newFile + ' ';
+    const revertFiles = [].concat(this.revertFiles);
+    this.changedFiles.forEach(file => {
+      if (file.isNeedToRevert) {
+        revertFiles.push(file);
       }
-      cmd.trim();
-    }
-
-    if (missingFiles.length) {
-      cmd += cmd ? ' && svn rm ' : 'svn rm ';
-      for (const missingFile of missingFiles) {
-        cmd += missingFile + ' ';
-      }
-      cmd.trim();
-    }
-
-    return new Promise((resolve) => {
-      shell.cd(this.project.localPath).exec(cmd, (code, stdout, stderr) => {
-        if (code === 0) {
-          resolve();
-        } else {
-          const err = new Error(`beforeDiffCreated() failed: ${stderr}, ${code}.`);
-          err.name = SyncCodeStep.CREATE_DIFF;
-          throw err;
-        }
-      });
     });
-  }
 
-  private async addUntrackedGitFiles(): Promise<void> {
-    return new Promise((resolve) => {
-      shell.cd(this.project.localPath).exec('git ls-files --others --exclude-standard', (code, stdout) => {
-        if (code === 0) {
-          const untrackedFiles = stdout.replace(/\n/g, ' ');
-          shell.cd(this.project.localPath).exec(`git add -N ${untrackedFiles}`, () => {
-            resolve();
-          });
-        }
-      });
-    });
-  }
-
-  /**
-   * diffAnalysis() would collect each type(normal, new, deleted, renamed) of files,
-   * which would be useful for revertting server's changes
-   */
-  private async diffAnalyze(): Promise<any> {
-    this.changedFiles = await getChangedFiles(DIFF_PATH, this.isSvn);
+    if (revertFiles.length) {
+      return this.repo.cleanup(revertFiles, true, specificCmd);
+    }
   }
 
   private async uploadPatchToServer(): Promise<any> {
-    return this.ssh.putFile(path.join(DIFF_PATH), `${this.project.remotePath}/${moduleConf.diffName}`);
+    if (this.syncType === SyncType.whole || this.syncType === SyncType.partial) {
+      return this.ssh.putFile(this.localFinalPatchPath, this.remotePatchPath);
+    }
   }
 
-  /**
-   * Notice: the older svn don't have command `svn patch`
-   */
   private async applyPatchToServer() {
-    let cmd: string;
-
-    if (this.isSvn) {
-      cmd = `svn patch ${moduleConf.diffName}`;
-    } else {
-      cmd = `git apply ${moduleConf.diffName}`;
-
-      if (Object.keys(this.changedFiles).length) {
-        // git add "new file" and "renamed file"
-        cmd += '  && git add -N ';
-        for (const [filePath, changedType] of Object.entries(this.changedFiles)) {
-          if (changedType === ChangedFileType.NEW || changedType === ChangedFileType.RENAME) {
-            cmd += filePath + ' ';
-          }
-        }
-        cmd.trim();
-      }
+    if (this.syncType === SyncType.whole || this.syncType === SyncType.partial) {
+      return this.repo.applyPatch(this.changedFiles, this.patchName, true);
     }
-
-    return this.ssh.execCommand(cmd, { cwd: this.project.remotePath }).then(({ stdout }) => {
-      if (stdout.includes('conflicts:') || stdout.includes('rejected hunk')) {
-        Promise.reject(stdout);
-      }
-    });
   }
 
-  private async cleanup(): Promise<void> {
-    let cmd: string;
+  private async getChangedFiles() {
+    let remoteChangeFiles = await this.repo.getRemoteChangedFiles();
+    const localChangedFiles = await this.getLocalChangedFiles();
 
-    if (this.isSvn) {
-      cmd = 'svn revert -R .';
-      if (Object.keys(this.changedFiles).length) {
-        cmd += ' && rm -rf ';
-        for (const [filePath, changedType] of Object.entries(this.changedFiles)) {
-          if (changedType === ChangedFileType.NEW) {
-            cmd += filePath + ' ';
-          }
-        }
-        cmd.trim();
-      }
-    } else {
-      cmd = 'git reset --hard';
+    // means remote repository is clean
+    if (remoteChangeFiles.length === 0) {
+      this.syncType = SyncType.whole;
+      return localChangedFiles;
     }
 
-    return this.ssh.execCommand(cmd, { cwd: this.project.remotePath }).then(({ stderr }) => {
-      if (stderr) {
-        Promise.reject(stderr);
+    let haveSameChangeContent = false;
+    const partialChangedFiles: ChangedFile[] = [];
+
+    for (const lcf of localChangedFiles) {
+      let matched = false;
+      remoteChangeFiles = remoteChangeFiles.filter((rcf) => {
+        const isSameFile = lcf.path === rcf.path;
+        const isSameChangeContent = lcf.isSameChange(rcf);
+
+        if (isSameChangeContent) {
+          matched = true;
+          haveSameChangeContent = true;
+        } else if (isSameFile) {
+          matched = true;
+          lcf.isNeedToRevert = true;
+          partialChangedFiles.push(lcf);
+        }
+
+        return !isSameFile;
+      });
+
+      if (!matched) {
+        partialChangedFiles.push(lcf);
+      }
+    }
+
+    // left remoteChangeFiles should all be reverted
+    if (remoteChangeFiles.length) {
+      for (const changedFile of remoteChangeFiles) {
+        changedFile.content = null;
+        this.revertFiles.push(changedFile);
+      }
+    }
+
+    if (partialChangedFiles.length) {
+      if (haveSameChangeContent) {
+        this.syncType = SyncType.partial;
+      }
+    } else {
+      if (this.revertFiles.length) {
+        this.syncType = SyncType.revert;
       } else {
-        Promise.resolve();
+        this.syncType = SyncType.none;
       }
-    });
+    }
+
+    return partialChangedFiles;
   }
 
-  private get isSvn(): boolean {
-    return this.project.versionControl === RepositoryType.SVN;
+  private async getLocalChangedFiles() {
+    const currentDiff = (await promisify(fs.readFile)(this.localOriginalPatchPath)).toString();
+    return await this.repo.diffChecker.getChangedFiles(currentDiff);
   }
 }

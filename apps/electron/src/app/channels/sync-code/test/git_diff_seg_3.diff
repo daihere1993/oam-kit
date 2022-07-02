@@ -1,0 +1,8 @@
+diff --git a/django.txt b/django.txt
+new file mode 100644
+index 0000000000..e18c37483a
+--- /dev/null
++++ b/django.txt
+@@ -0,0 +1 @@
++just for test
+\ No newline at end of file
