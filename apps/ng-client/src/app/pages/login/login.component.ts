@@ -6,8 +6,7 @@ import { IpcService } from '@ng-client/core/services/ipc.service';
 import { NotificationService } from '@ng-client/core/services/notification.service';
 import { StoreService } from '@ng-client/core/services/store.service';
 import { Model } from '@oam-kit/utility/model';
-import { MODEL_NAME } from '@oam-kit/utility/overall-config';
-import { GeneralModel, Profile } from '@oam-kit/utility/types';
+import { SettingsModel, AuthInfos, MODEL_NAME } from '@oam-kit/utility/types';
 
 @Component({
   selector: 'app-login',
@@ -109,10 +108,10 @@ import { GeneralModel, Profile } from '@oam-kit/utility/types';
 })
 export class LoginComponent {
   public form: FormGroup;
-  public profile: Profile;
+  public auth: AuthInfos;
   public isLogin = false;
 
-  private gModel: Model<GeneralModel>;
+  private gModel: Model<SettingsModel>;
   private get nsbUsername(): FormControl {
     return this.form.get('nsbUsername') as FormControl;
   }
@@ -135,14 +134,14 @@ export class LoginComponent {
     private router: Router,
     private authService: AuthService
   ) {
-    this.gModel = this.store.getModel<GeneralModel>(MODEL_NAME.GENERAL);
-    this.gModel.subscribe<Profile>('profile', (data) => {
-      this.profile = data;
+    this.gModel = this.store.getModel<SettingsModel>(MODEL_NAME.SETTINGS);
+    this.gModel.subscribe<AuthInfos>('auth', (data) => {
+      this.auth = data;
     });
     this.form = this.fb.group({
-      nsbUsername: [this.profile?.nsbAccount.username, [Validators.required]],
-      nsbPassword: [this.profile?.nsbAccount.password, [Validators.required]],
-      svnPassword: [this.profile?.svnAccount.password, [Validators.required]],
+      nsbUsername: [this.auth?.nsbAccount.username, [Validators.required]],
+      nsbPassword: [this.auth?.nsbAccount.password, [Validators.required]],
+      svnPassword: [this.auth?.svnAccount.password, [Validators.required]],
       isSamePassword: [true],
     });
   }
@@ -178,7 +177,7 @@ export class LoginComponent {
       return;
     }
 
-    this.gModel.set('profile', (draft) => {
+    this.gModel.set('auth', (draft) => {
       draft.nsbAccount.username = this.nsbUsername.value;
       draft.nsbAccount.password = this.nsbPassword.value;
       draft.svnAccount.password = this.svnPassword.value;

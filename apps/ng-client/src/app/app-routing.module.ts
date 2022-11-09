@@ -22,11 +22,6 @@ const routes: AppRoute[] = [
       .then(m => m.HomeModule),
   },
   {
-    path: 'login',
-    loadChildren: () => import('./pages/login/login.module')
-      .then(m => m.LoginModule),
-  },
-  {
     path: 'env-checking',
     loadChildren: () => import('./pages/env-checking/env-checking.module')
       .then(m => m.EnvCheckingModule),

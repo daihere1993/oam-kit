@@ -4,7 +4,7 @@ import {
   NsbAccountVerificationResData,
   SvnAccountVerificationResData,
 } from '@oam-kit/utility/types';
-import { profileFixture } from '../fixtures/appData';
+import { authFixture } from '../fixtures/appData';
 import { MainFixture } from '../fixtures/mainFixture';
 
 describe('Navigation', () => {
@@ -50,8 +50,8 @@ describe('Navigation', () => {
       svnReady: true,
       gitReady: true,
     });
-    cy.getBySel('nsb-username-input').type(profileFixture.nsbAccount.username);
-    cy.getBySel('nsb-password-input').type(profileFixture.nsbAccount.password);
+    cy.getBySel('nsb-username-input').type(authFixture.nsbAccount.username);
+    cy.getBySel('nsb-password-input').type(authFixture.nsbAccount.password);
     cy.getBySel('login-button')
       .click()
       .wait(500)

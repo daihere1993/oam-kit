@@ -1,6 +1,6 @@
 import { Model } from '@oam-kit/utility/model';
-import { MODEL_INIT_VALUE, MODEL_NAME } from '@oam-kit/utility/overall-config';
-import { SyncCodeModel, GeneralModel, RbToolsModel, IpcChannel, IpcRequest, APPData } from '@oam-kit/utility/types';
+import { MODEL_INIT_VALUE } from '@oam-kit/utility/overall-config';
+import { SyncCodeModel, SettingsModel, IpcChannel, IpcRequest, APPData, MODEL_NAME } from '@oam-kit/utility/types';
 import { IpcService } from '@electron/app/utils/ipcService';
 import { IpcChannelBase } from '../ipcChannelBase';
 
@@ -19,21 +19,15 @@ export default class ModelChannel extends IpcChannelBase {
 
   startup(): void {
     this.store.add(
-      new Model<GeneralModel>({
-        name: MODEL_NAME.GENERAL,
-        initValue: MODEL_INIT_VALUE.general,
+      new Model<SettingsModel>({
+        name: MODEL_NAME.SETTINGS,
+        initValue: MODEL_INIT_VALUE.settings,
       })
     );
     this.store.add(
       new Model<SyncCodeModel>({
         name: MODEL_NAME.SYNC_CODE,
         initValue: MODEL_INIT_VALUE.syncCode,
-      })
-    );
-    this.store.add(
-      new Model<RbToolsModel>({
-        name: MODEL_NAME.RB_TOOLS,
-        initValue: MODEL_INIT_VALUE.rbTools,
       })
     );
   }

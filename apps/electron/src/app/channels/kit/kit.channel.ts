@@ -2,10 +2,10 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import {
-  GeneralModel,
+  SettingsModel,
   IpcChannel,
   IpcRequest,
-  Profile,
+  AuthInfos,
   SelectPathReqData,
   SelectPathResData,
   SvnAccountVerificationReqData,
@@ -17,10 +17,11 @@ import {
   ServerCheckReqData,
   ServerDirCheckReqData,
   CheckNecessaryCommandsResData,
+  MODEL_NAME,
 } from '@oam-kit/utility/types';
 import { dialog, Notification, shell } from 'electron';
 import { NodeSSH } from 'node-ssh';
-import { MODEL_NAME, sftp_algorithms } from '@oam-kit/utility/overall-config';
+import { sftp_algorithms } from '@oam-kit/utility/overall-config';
 import axios from 'axios';
 import * as fetcher from '@electron/app/utils/fetcher';
 import { IpcService } from '@electron/app/utils/ipcService';
@@ -46,12 +47,12 @@ export default class KitChannel extends IpcChannelBase {
   ];
 
   private ssh: NodeSSH = new NodeSSH();
-  private profile: Profile;
+  private auth: AuthInfos;
 
   startup(): void {
-    const gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
-    gModel.subscribe<Profile>('profile', (profile) => {
-      this.profile = profile;
+    const gModel = this.store.get<SettingsModel>(MODEL_NAME.SETTINGS);
+    gModel.subscribe<AuthInfos>('auth', (auth) => {
+      this.auth = auth;
     });
   }
 
@@ -117,7 +118,7 @@ export default class KitChannel extends IpcChannelBase {
   private async serverDirectoryCheck(ipcService: IpcService, req: IpcRequest<ServerDirCheckReqData>) {
     const { host, directory } = req.data;
     try {
-      const nsbAccount = this.profile.nsbAccount;
+      const nsbAccount = this.auth.nsbAccount;
       await this.ssh.connect({
         host: host,
         username: nsbAccount.username,
@@ -142,7 +143,7 @@ export default class KitChannel extends IpcChannelBase {
   private async serverCheck(ipcService: IpcService, req: IpcRequest<ServerCheckReqData>) {
     const serverAddr = req.data.host;
     try {
-      const nsbAccount = this.profile.nsbAccount;
+      const nsbAccount = this.auth.nsbAccount;
       await this.ssh.connect({
         host: serverAddr,
         username: nsbAccount.username,

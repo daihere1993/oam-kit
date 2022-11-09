@@ -1,16 +1,15 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import {
-  GeneralModel,
+  SettingsModel,
   IpcChannel,
   Project,
-  RepositoryType,
   ServerCheckReqData,
   ServerDirCheckReqData,
+  MODEL_NAME,
 } from '@oam-kit/utility/types';
 import { NzModalRef } from 'ng-zorro-antd/modal';
 import { FormGroup, FormBuilder, Validators, FormControl, ValidationErrors } from '@angular/forms';
 import { StoreService } from '@ng-client/core/services/store.service';
-import { MODEL_NAME } from '@oam-kit/utility/overall-config';
 import { NzSelectComponent } from 'ng-zorro-antd/select';
 import { Observable, Observer } from 'rxjs';
 import { IpcService } from '@ng-client/core/services/ipc.service';
@@ -62,16 +61,6 @@ export interface DialogRes {
         </nz-form-item>
 
         <nz-form-item>
-          <nz-form-label [nzSm]="8" nzRequired nzFor="versionControl">VersionControl</nz-form-label>
-          <nz-form-control [nzSm]="13">
-            <nz-select formControlName="versionControl" data-test="project-versionControl-input">
-              <nz-option nzLabel="svn" nzValue="svn"></nz-option>
-              <nz-option nzLabel="git" nzValue="git"></nz-option>
-            </nz-select>
-          </nz-form-control>
-        </nz-form-item>
-
-        <nz-form-item>
           <nz-form-label [nzSm]="8" nzRequired nzFor="serverAddr">Linsee/EECloud address</nz-form-label>
           <nz-form-control [nzSm]="13" nzHasFeedback nzValidatingTip="Validating..." [nzErrorTip]="serverAddrErrorTpl">
             <nz-select
@@ -79,7 +68,6 @@ export interface DialogRes {
               nzAllowClear
               data-test="server-addr-select"
               formControlName="serverAddr"
-              [nzDropdownRender]="dropdownRender"
             >
               <nz-option *ngFor="let server of serverList" [nzLabel]="server" [nzValue]="server"></nz-option>
             </nz-select>
@@ -87,15 +75,6 @@ export interface DialogRes {
               <p data-test="server-addr-validation-alert">
                 Can't connect to {{ form.value.serverAddr }}, please make sure it is working.
               </p>
-            </ng-template>
-            <ng-template #dropdownRender>
-              <nz-divider></nz-divider>
-              <div class="dropdown-render__containner">
-                <input #inputElement data-test="new-server-addr-input" nz-input type="text" />
-                <a data-test="add-server-addr-button" class="dropdown-render__button" (click)="onAddServer(inputElement.value)">
-                  <i nz-icon nzType="plus"></i>
-                </a>
-              </div>
             </ng-template>
           </nz-form-control>
         </nz-form-item>
@@ -159,7 +138,7 @@ export interface DialogRes {
         >
           Save
         </button>
-        <button nz-button data-test="delete-project-button" class="dialog_btn" *ngIf="isEdit" nzType="danger" (click)="delete()">
+        <button nz-button data-test="delete-project-button" class="dialog_btn" *ngIf="isEdit" nzType="primary" nzDanger (click)="delete()">
           Delete
         </button>
         <button nz-button class="dialog_btn" (click)="close()">Close</button>
@@ -173,7 +152,6 @@ export class ProjectSettingComponent implements OnInit {
     serverAddr: null,
     localPath: null,
     remotePath: null,
-    versionControl: RepositoryType.SVN,
   };
 
   @ViewChild(NzSelectComponent) selectComp: NzSelectComponent;
@@ -181,7 +159,7 @@ export class ProjectSettingComponent implements OnInit {
   public form: FormGroup;
   public isEdit: boolean;
   public serverList: string[];
-  public gModel: Model<GeneralModel>;
+  public settingsModel: Model<SettingsModel>;
 
   serverAddrValidator = (control: FormControl) => {
     return new Observable((observer: Observer<ValidationErrors | null>) => {
@@ -241,16 +219,13 @@ export class ProjectSettingComponent implements OnInit {
 
   ngOnInit() {
     this.isEdit = !!this.data.name;
-    this.gModel = this.store.getModel<GeneralModel>(MODEL_NAME.GENERAL);
-    this.gModel.subscribe<string[]>('serverList', (data) => {
-      this.serverList = data;
-    });
+    this.settingsModel = this.store.getModel<SettingsModel>(MODEL_NAME.SETTINGS);
+    this.serverList = this.settingsModel.get('server').serverList;
     this.form = this.fb.group({
       name: [this.data.name, [Validators.required]],
       serverAddr: [this.data.serverAddr, [Validators.required], [this.serverAddrValidator]],
       localPath: [this.data.localPath, [Validators.required]],
       remotePath: [this.data.remotePath, [Validators.required], [this.remotePathValidator]],
-      versionControl: [this.data.versionControl, [Validators.required]],
     });
   }
 
@@ -276,8 +251,8 @@ export class ProjectSettingComponent implements OnInit {
   }
 
   public onAddServer(value: string) {
-    this.gModel.set('serverList', (draft) => {
-      draft.push(value);
+    this.settingsModel.set('server', (draft) => {
+      draft.serverList.push(value);
     });
   }
 

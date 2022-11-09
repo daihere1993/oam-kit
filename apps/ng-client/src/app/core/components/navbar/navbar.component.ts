@@ -23,8 +23,8 @@ export class NavbarComponent {
       icon: 'cloud-upload-outline',
     },
     {
-      title: 'Profile',
-      link: '/profile',
+      title: 'auth',
+      link: '/auth',
       icon: 'settings-outline',
     },
   ];

@@ -16,9 +16,6 @@ export class CacheRouteStrategy implements RouteReuseStrategy {
    * @param current The current route
    */
   shouldReuseRoute(future: ActivatedRouteSnapshot, current: ActivatedRouteSnapshot): boolean {
-    if ((future.component as any)?.decorators.length === 2) {
-      (future.component as any).decorators[1].type();
-    }
     return future.routeConfig === current.routeConfig;
   }
 
