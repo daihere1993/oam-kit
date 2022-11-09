@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import { MODEL_NAME } from '@oam-kit/utility/overall-config';
 import {
-  GeneralModel,
+  SettingsModel,
   IpcChannel,
   NsbAccountVerificationReqData,
   NsbAccountVerificationResData,
   SvnAccountVerificationReqData,
   SvnAccountVerificationResData,
+  MODEL_NAME,
 } from '@oam-kit/utility/types';
 import { IpcService } from './ipc.service';
 import { StoreService } from './store.service';
@@ -51,12 +51,12 @@ export class AuthService {
   }
 
   private getAccount() {
-    const gModel = this.store.getModel<GeneralModel>(MODEL_NAME.GENERAL);
-    const profile = gModel.get('profile');
+    const settingsModel = this.store.getModel<SettingsModel>(MODEL_NAME.SETTINGS);
+    const auth = settingsModel.get('auth');
     return {
-      nsbUsername: profile.nsbAccount.username,
-      nsbPassword: profile.nsbAccount.password,
-      svnPassword: profile.svnAccount.password,
+      nsbUsername: auth.nsbAccount.username,
+      nsbPassword: auth.nsbAccount.password,
+      svnPassword: auth.svnAccount.password,
     };
   }
 }

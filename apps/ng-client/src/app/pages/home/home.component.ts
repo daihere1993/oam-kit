@@ -1,4 +1,8 @@
 import { Component } from '@angular/core';
+import { StoreService } from '@ng-client/core/services/store.service';
+import { MODEL_NAME, SettingsModel } from '@oam-kit/utility/types';
+import { NzModalService } from 'ng-zorro-antd/modal';
+import { SettingsComponent } from './subviews/settings/settings.component';
 
 interface Menu {
   name: string;
@@ -14,57 +18,102 @@ interface Menu {
       .container {
         height: 100%;
         width: 100%;
+        padding: 10px 20px 0 20px;
+        display:  flex;
       }
-
-      .content_container {
-        padding: 20px;
-        height: 100%;
-      }
-      /* ul {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-      } */
-      /* .nav-menu-item {
+      .body {
         flex-grow: 1;
-        font-size: 16px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      } */
-      .nav-menu-item:not(.ant-menu-item-selected):hover {
-        background: #f0f2f5;
+      }
+      section:not(:last-of-type) {
+        margin-bottom: 12px;
+      }
+      nz-sider {
+        background: #fff;
+        color: #000;
+        line-height: 120px;
+      }
+      .anchor-wrapper {
+        margin-left: 6px;
+      }
+      ::ng-deep .ant-anchor-ink::before {
+        background-color: #1890ffe0;
+      }
+      nz-footer {
+        padding: 0;
+        margin-top: 10px;
+      }
+      .settings-btn {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+      }
+      .settings-btn span {
+        font-size: 24px;
       }
     </style>
-    <nz-layout class="container">
-      <nz-sider nzTheme="light" nzWidth="160px">
-        <ul nz-menu nzTheme="light">
-          <li class="nav-menu-item" nz-menu-item nzMatchRouter *ngFor="let menu of menus">
-            <a [routerLink]="menu.link">
-              <i *ngIf="!menu.isCustomIcon; else custom_icon" nz-icon [nzType]="menu.icon" nzTheme="outline"></i>
-              <ng-template #custom_icon>
-                <i nz-icon [nzIconfont]="menu.icon"></i>
-              </ng-template>
-              <span>{{ menu.name }}</span>
-            </a>
-          </li>
-        </ul>
-      </nz-sider>
-      <nz-layout style="padding: 10px;">
-        <nz-content style="background-color: white; position: relative; overflow: auto;">
-          <div class="content_container">
-            <router-outlet></router-outlet>
+
+    <nz-layout style="height: 100%">
+      <nz-layout>
+        <nz-content class="container">
+          <div class="body">
+            <section id="sync-code">
+              <nz-card nzTitle="Code Sychronization">
+                <app-sync-code></app-sync-code>
+              </nz-card>
+            </section>
+            <section id="knife-generator">
+              <nz-card nzTitle="Knife generator">
+                <app-knife-generator></app-knife-generator>
+              </nz-card>
+            </section>
           </div>
         </nz-content>
       </nz-layout>
+
+      <button class="settings-btn" nzType="link" nz-button nzShape="circle" nzSize="large" (click)="toSettings()">
+        <span nz-icon nzType="setting" nzTheme="outline"></span>
+      </button>
+
+      <nz-modal
+        [(nzVisible)]="isShowSettings"
+        [nzTitle]="'Settings'"
+        [nzContent]="modalContent"
+        [nzFooter]="null"
+        [nzWidth]="600"
+        [nzCentered]="'true'"
+        (nzOnCancel)="handleCancel()"
+      >
+        <ng-template #modalContent>
+          <app-settings></app-settings>
+        </ng-template>
+      </nz-modal>
     </nz-layout>
   `,
 })
 export class HomeComponent {
-  menus: Menu[] = [
-    { name: 'Sync Code', icon: 'sync', link: '/home/sync-code', isCustomIcon: false },
-    // { name: 'Auto Commit', icon: 'field-time', link: '/home/auto-commit', isCustomIcon: false },
-    { name: 'Knife Generator', icon: 'icon-jenkins', link: '/home/knife-generator', isCustomIcon: true },
-    // { name: 'Profile', icon: 'profile', link: '/home/profile', isCustomIcon: false },
-  ];
+  isShowSettings = false;
+  settings: SettingsModel;
+
+  constructor(private store: StoreService, private modalService: NzModalService) {
+    const settingsModel = this.store.getModel<SettingsModel>(MODEL_NAME.SETTINGS);
+    this.settings = settingsModel.data;
+  }
+
+  toSettings() {
+    // this.isShowSettings = true;
+    this.modalService.create({
+        nzWidth: 600,
+        nzTitle: 'Settings',
+        nzContent: SettingsComponent,
+        nzCentered: true,
+      });
+  }
+
+  handleCancel() {
+    this.isShowSettings = false;
+  }
+
+  saveSettings() {
+    
+  }
 }

@@ -1,8 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import { assert } from 'console';
-import { IpcChannel, IpcRequest } from '@oam-kit/utility/types';
-import { GeneralModel, ReviewBoard } from '@oam-kit/utility/types';
-import { MODEL_NAME } from '@oam-kit/utility/overall-config';
+import { IpcChannel, IpcRequest, MODEL_NAME } from '@oam-kit/utility/types';
+import { SettingsModel, ReviewBoard } from '@oam-kit/utility/types';
 import { Model } from '@oam-kit/utility/model';
 import { IpcService } from '@electron/app/utils/ipcService';
 import { IpcChannelBase } from '../ipcChannelBase';
@@ -25,14 +24,14 @@ export default class RbChannel extends IpcChannelBase {
 
   private cookies = '';
   private hasAuthenticationReady = false;
-  private gModel: Model<GeneralModel>;
+  private settingsModel: Model<SettingsModel>;
   // Cache partialrb for corresponding rb id
   private cachedPartialRb: { [key: string]: PartialRb } = {};
 
   startup(): void {
-    this.gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
+    this.settingsModel = this.store.get<SettingsModel>(MODEL_NAME.SETTINGS);
     // if user account got changed, need to resetup anthentication
-    this.gModel.subscribe('profile', () => {
+    this.settingsModel.subscribe('auth', () => {
       this.hasAuthenticationReady = false;
     });
   }
@@ -285,8 +284,8 @@ export default class RbChannel extends IpcChannelBase {
 
   private async setupSvnCredentials(rbId: number) {
     this.logger.info('[setupSvnCredentials] start');
-    const nsbAccount = this.gModel.get('profile').nsbAccount;
-    const svnAccount = this.gModel.get('profile').svnAccount;
+    const nsbAccount = this.settingsModel.get('auth').nsbAccount;
+    const svnAccount = this.settingsModel.get('auth').svnAccount;
     const url = this.getUrlFromTmp(SETUP_SVN_CREDENTIALS, rbId);
     try {
       const { data } = await axios.post(url, `svn_username=${nsbAccount.username}&svn_password=${svnAccount.password}`, {
@@ -314,7 +313,7 @@ export default class RbChannel extends IpcChannelBase {
    * the seesionid exists in the response header of "set-cookie"
    */
   private async setupRbSessionId(rbId: number) {
-    const nsbAccount = this.gModel.get('profile').nsbAccount;
+    const nsbAccount = this.settingsModel.get('auth').nsbAccount;
     try {
       const { headers } = await axios.post(SETUP_RBSESSION_URL, `review_request_id=${rbId}`, {
         headers: {

@@ -1,7 +1,7 @@
 import * as config from '@oam-kit/utility/overall-config';
 import * as branchLockParser from '@electron/app/utils/branchLockParser';
 import * as fetcher from '@electron/app/utils/fetcher';
-import { GeneralModel, Repo, ReviewBoard, LockInfo, BranchLockInfo, RepoLockInfo, IpcResErrorType } from '@oam-kit/utility/types';
+import { SettingsModel, Repo, ReviewBoard, LockInfo, BranchLockInfo, RepoLockInfo, IpcResErrorType, MODEL_NAME } from '@oam-kit/utility/types';
 import { IpcChannel, IpcRequest } from '@oam-kit/utility/types';
 import { IpcService } from '@electron/app/utils/ipcService';
 import { IpcChannelBase } from '../ipcChannelBase';
@@ -54,9 +54,9 @@ export default class LockInfoChannel extends IpcChannelBase {
 
   private async getRepoLockInfo(branch: string, repo: Repo): Promise<RepoLockInfo> {
     const svnPath = `${config.svnroot}/${repo.repository}/LOCKS/locks.conf`;
-    const gModel = this.store.get<GeneralModel>(config.MODEL_NAME.GENERAL);
-    const nsbAccount = gModel.get('profile').nsbAccount;
-    const svnAccount = gModel.get('profile').svnAccount;
+    const settingsModel = this.store.get<SettingsModel>(MODEL_NAME.SETTINGS);
+    const nsbAccount = settingsModel.get('auth').nsbAccount;
+    const svnAccount = settingsModel.get('auth').svnAccount;
     const locksContent = await fetcher.svnCat(svnPath, {
       username: nsbAccount.username,
       password: svnAccount.password,
@@ -71,9 +71,9 @@ export default class LockInfoChannel extends IpcChannelBase {
 
   private getJsonBranchLockJson() {
     const jsonPath = `${config.svnroot}/${moduleConf.oam_repository}/conf/BranchFor.json`;
-    const gModel = this.store.get<GeneralModel>(config.MODEL_NAME.GENERAL);
-    const nsbAccount = gModel.get('profile').nsbAccount;
-    const svnAccount = gModel.get('profile').svnAccount;
+    const settingsModel = this.store.get<SettingsModel>(MODEL_NAME.SETTINGS);
+    const nsbAccount = settingsModel.get('auth').nsbAccount;
+    const svnAccount = settingsModel.get('auth').svnAccount;
     try {
       return fetcher.svnCat(jsonPath, { username: nsbAccount.username, password: svnAccount.password });
     } catch (error) {

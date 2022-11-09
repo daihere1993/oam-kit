@@ -3,7 +3,7 @@
 
 import { SyncCodeResData, SyncCodeStep } from '@oam-kit/utility/types';
 import { IpcChannel } from '@oam-kit/utility/types';
-import { profileFixture, projectFixture } from '../fixtures/appData';
+import { authFixture, projectFixture } from '../fixtures/appData';
 import { MainFixture } from '../fixtures/mainFixture';
 
 function finishSyncStep(fixture: MainFixture, n: number, opt: { isSuccess: boolean; errorMsg?: string } = { isSuccess: true }) {
@@ -46,7 +46,7 @@ describe('Scenario1: add new project', () => {
     syncCode: {
       projects: [],
     },
-    general: { serverList: [projectFixture.serverAddr], profile: profileFixture },
+    general: { serverList: [projectFixture.serverAddr], auth: authFixture },
   };
   const fixture = new MainFixture({ initData });
   beforeEach(() => {
@@ -109,7 +109,7 @@ describe('Scenario2: project modification', () => {
     syncCode: {
       projects: [projectFixture, project2],
     },
-    general: { serverList: [projectFixture.serverAddr], profile: profileFixture },
+    general: { serverList: [projectFixture.serverAddr], auth: authFixture },
   };
   const fixture = new MainFixture({ initData });
   beforeEach(() => {
@@ -148,7 +148,7 @@ describe('Scenario2: project modification', () => {
 });
 
 describe('Scenario3: sync code', () => {
-  const initData: any = { general: { profile: profileFixture }, syncCode: { projects: [projectFixture] } };
+  const initData: any = { general: { auth: authFixture }, syncCode: { projects: [projectFixture] } };
   const fixture = new MainFixture({ initData });
   beforeEach(() => {
     fixture.visit('');

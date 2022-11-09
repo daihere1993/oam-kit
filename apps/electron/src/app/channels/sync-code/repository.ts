@@ -1,13 +1,19 @@
+import * as fs from 'fs';
 import * as shell from 'shelljs';
 import { NodeSSH } from 'node-ssh';
 import { PatchChecker, GitPatchChecker, SvnPatchChecker } from './patchChecker';
 import { ChangedFile, ChangedFileType } from './changedFile';
+import { RepositoryType } from '@oam-kit/utility/types';
 
 export abstract class Repository {
   ssh: NodeSSH;
   localRepoPath: string;
   remoteRepoPath: string;
-  diffChecker: PatchChecker;
+  patchChecker: PatchChecker;
+
+  static WithSSSH(): Repository {
+    return
+  }
 
   constructor(ssh: NodeSSH, localRepoPath: string, remoteRepoPath: string) {
     this.ssh = ssh;
@@ -19,6 +25,16 @@ export abstract class Repository {
   abstract beforePatchCreated(isRemote: boolean): Promise<any>;
   abstract applyPatch(changedFiles: ChangedFile[], diffPath: string, isRemote: boolean): Promise<any>;
   abstract cleanup(changedFiles: ChangedFile[], isRemote: boolean, specificCmd: string): Promise<void>;
+
+  static getRepositoryType(path: string): RepositoryType {
+    if (fs.existsSync(`${path}\\.git`)) {
+      return RepositoryType.Git;
+    } else if (fs.existsSync(`${path}\\.svn`)) {
+      return RepositoryType.Svn;
+    } else {
+      return RepositoryType.None;
+    }
+  }
 
   assemblePatch(changedFiles: ChangedFile[]): string {
     const contentList = [];
@@ -33,14 +49,14 @@ export abstract class Repository {
 
   async getRemoteChangedFiles(): Promise<ChangedFile[]> {
     const patchFile = 'tmp.diff';
-    await this.createDiff(patchFile, true);
+    await this.createPatch(patchFile, true);
     const patchContent = await this.execRemoteCommand(`cat ${patchFile}`);
     await this.removeFile(patchFile, true);
 
-    return this.diffChecker.getChangedFiles(patchContent);
+    return this.patchChecker.getChangedFiles(patchContent);
   }
 
-  async createDiff(file: string, isRemote = false): Promise<any> {
+  async createPatch(file: string, isRemote = false): Promise<any> {
     return this.execCommand(this.getCreatePatchCmd(file), isRemote);
   }
 
@@ -87,7 +103,7 @@ export abstract class Repository {
 }
 
 export class GitRepo extends Repository {
-  diffChecker = new GitPatchChecker();
+  patchChecker = new GitPatchChecker();
 
   getCreatePatchCmd(patchPath: string): string {
     return `git diff > ${patchPath}`;
@@ -175,7 +191,7 @@ export class GitRepo extends Repository {
 }
 
 export class SvnRepo extends Repository {
-  diffChecker = new SvnPatchChecker();
+  patchChecker = new SvnPatchChecker();
 
   getCreatePatchCmd(patchPath: string): string {
     return `svn di > ${patchPath}`;

@@ -3,14 +3,13 @@ import { APPData, IpcChannel } from '@oam-kit/utility/types';
 import { Model } from '@oam-kit/utility/model';
 import { IpcService } from './ipc.service';
 import { from, Subscription } from 'rxjs';
-import { MODEL_INIT_VALUE } from '@oam-kit/utility/overall-config';
 import { ElectronService } from './electron.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class StoreService implements OnDestroy {
-  private data: APPData = MODEL_INIT_VALUE;
+  private data: APPData = null;
   private models: Model<any>[] = [];
   private observers: Subscription[] = [];
 

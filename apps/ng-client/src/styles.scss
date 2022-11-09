@@ -1,2 +1,11 @@
 /* You can add global styles to this file, and also import other style files */
 @import '~@angular/cdk/overlay-prebuilt.css';
+
+.ant-form-item {
+  margin-bottom: 0 !important;
+  padding: 6px !important;
+}
+
+.ant-form-item-label {
+  padding: 0 !important;
+}

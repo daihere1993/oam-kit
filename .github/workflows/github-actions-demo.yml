@@ -10,6 +10,6 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@master
       - run: yarn install
-      - run: yarn lint
+      # - run: yarn lint
       - run: yarn ut
       - run: yarn e2e

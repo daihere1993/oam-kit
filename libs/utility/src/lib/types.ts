@@ -1,23 +1,41 @@
 export interface APPData {
-  general: GeneralModel;
+  settings: SettingsModel;
   syncCode: SyncCodeModel;
-  rbTools: RbToolsModel;
 }
 
-export interface Profile {
+export enum MODEL_NAME {
+  SETTINGS = 'settings',
+  SYNC_CODE = 'syncCode',
+}
+
+export interface AuthInfos {
   svnAccount: { password: string };
   nsbAccount: { username: string; password: string };
 }
 
-export interface GeneralModel {
-  // repositoryList: string[];
+export interface SettingsModel {
+  auth: AuthInfos,
+  server: ServerSettings;
+}
+
+export enum ServerConnectWay {
+  ByPrivateKeyPath = 'ByPrivateKeyPath',
+  ByPassword = 'ByPassword',
+}
+
+export interface ServerSettings {
+  // The path of ".ssh/id_rsa"
+  privateKeyPath: string;
+  // Linsee/eecloud server list
   serverList: string[];
-  profile: Profile;
+  // The connect way, by defaul connect server by "privateKeyPath"
+  connectWay: ServerConnectWay;
 }
 
 export enum RepositoryType {
-  GIT = 'git',
-  SVN = 'svn',
+  Git,
+  Svn,
+  None
 }
 
 export interface Project {
@@ -25,7 +43,6 @@ export interface Project {
   localPath: string;
   remotePath: string;
   serverAddr: string;
-  versionControl: RepositoryType;
 }
 
 export interface SyncCodeModel {
@@ -47,10 +64,10 @@ export interface ReviewBoard {
   committedDate?: Date;
 }
 
-export interface RbToolsModel {
-  rbs: ReviewBoard[];
-  preferences: { checkLockInfoInterval: number };
-}
+// export interface RbToolsModel {
+//   rbs: ReviewBoard[];
+//   preferences: { checkLockInfoInterval: number };
+// }
 
 export interface BranchLockInfo {
   name: string;
@@ -91,6 +108,7 @@ export interface IpcResponse<T> {
 }
 
 export enum IpcChannel {
+  LOG_SYNC = 'log_sync',
   SELECT_PATH = 'select_path',
   SHOW_NOTIFICATION = 'show_notification',
   OPEN_EXTERNAL_URL = 'open_external_url',

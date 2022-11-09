@@ -24,17 +24,12 @@ import { EnvService } from '@ng-client/core/services/env.service';
 export class LoadingComponent implements OnInit {
   spinTip = '';
 
-  constructor(private auth: AuthService, private envService: EnvService, private router: Router) {}
+  constructor(private envService: EnvService, private router: Router) {}
 
   async ngOnInit() {
     this.spinTip = 'Checking necessary commands...'
     if (await this.envService.isCommandsReady()) {
-      this.spinTip = 'Checking user authentication...'
-      if (this.auth.isEmptyAccount() || !await this.auth.isValidAuthentication()) {
-        this.router.navigateByUrl('login');
-      } else {
-        this.router.navigateByUrl('home');
-      }
+      this.router.navigateByUrl('home');
     } else {
       this.router.navigateByUrl('env-checking');
     }

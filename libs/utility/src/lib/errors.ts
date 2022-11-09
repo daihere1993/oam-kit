@@ -18,6 +18,6 @@ export class SyncCodeError extends DomainError {
   constructor(logger: Logger, step: SyncCodeStep, message: string) {
     super(`${step}: ${message}`);
     this.step = step;
-    logger.error(this.message);
+    logger.error(this.message, { needInformFrontEnd: true });
   }
 } 

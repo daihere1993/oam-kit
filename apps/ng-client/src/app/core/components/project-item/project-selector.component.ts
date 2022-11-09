@@ -1,9 +1,8 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { NzModalService } from 'ng-zorro-antd/modal';
-import { Project, SyncCodeModel } from '@oam-kit/utility/types';
+import { MODEL_NAME, Project, SyncCodeModel } from '@oam-kit/utility/types';
 import { ProjectSettingComponent, DialogRes, DialogAction } from './project-setting.component';
 import { StoreService } from '@ng-client/core/services/store.service';
-import { MODEL_NAME } from '@oam-kit/utility/overall-config';
 import { Model } from '@oam-kit/utility/model';
 
 @Component({

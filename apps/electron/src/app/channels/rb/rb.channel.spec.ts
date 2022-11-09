@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { GeneralModel, IpcChannel } from '@oam-kit/utility/types';
+import { SettingsModel, IpcChannel } from '@oam-kit/utility/types';
 import RbChannel from './rb.channel';
 import {
   IS_COMMIT_ALLOWED,
@@ -50,8 +50,8 @@ async function isRbReady(channel: RbChannel) {
 
 const fakeStore = new Store();
 fakeStore.add(
-  new Model<GeneralModel>({
-    name: MODEL_NAME.GENERAL,
+  new Model<SettingsModel>({
+    name: MODEL_NAME.SETTINGS,
     initValue: MODEL_INIT_VALUE.general,
   })
 );
