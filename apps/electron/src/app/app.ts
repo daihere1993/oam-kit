@@ -191,6 +191,7 @@ export default class App {
         backgroundThrottling: false,
       },
     });
+    Logger.mainWindow = App.mainWindow;
     App.mainWindow.setMenu(null);
     App.mainWindow.center();
     // App.mainWindow.maximize();

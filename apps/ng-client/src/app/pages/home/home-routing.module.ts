@@ -1,30 +1,12 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Route } from '@angular/router';
+import { RouterModule } from '@angular/router';
+import { AppRoute } from '@ng-client/app-routing.module';
 import { HomeComponent } from './home.component';
 
-export interface HomeRoute extends Route {
-  shouldCache?: boolean;
-}
-
-const routes: HomeRoute[] = [
+const routes: AppRoute[] = [
   {
     path: '',
     component: HomeComponent,
-    children: [
-      {
-        path: 'sync-code',
-        loadChildren: () => import('./subviews/sync-code/sync-code.module').then((m) => m.SyncCodeModule),
-      },
-      {
-        path: 'knife-generator',
-        loadChildren: () => import('./subviews/knife-generator/knife-generator.module').then((m) => m.KnifeGeneratorModule),
-      },
-      {
-        path: '',
-        redirectTo: 'sync-code',
-        pathMatch: 'full',
-      }
-    ],
   },
 ];
 

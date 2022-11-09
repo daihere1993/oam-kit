@@ -4,7 +4,7 @@ import { Project, SyncCodeModel, RepositoryType } from '@oam-kit/utility/types';
 const initValue = {
   type: 'A',
   preferences: { theme: 'white', list: [] },
-  projects: [{ name: 'TRUNK', localPath: '/locak', remotePath: '/remote', serverAddr: '/server', versionControl: RepositoryType.SVN }],
+  projects: [{ name: 'TRUNK', localPath: '/locak', remotePath: '/remote', serverAddr: '/server', versionControl: RepositoryType.Svn }],
 };
 
 describe('API', () => {
@@ -43,7 +43,7 @@ describe('API', () => {
       expect(model.get('preferences')).toEqual({ theme: 'dark' });
     });
     it(`- with callback to add new item`, () => {
-      const newProject: Project = { name: 'SBTS21A', localPath: '/locak', remotePath: '/remote', serverAddr: '/server', versionControl: RepositoryType.SVN };
+      const newProject: Project = { name: 'SBTS21A', localPath: '/locak', remotePath: '/remote', serverAddr: '/server' };
       model.set('projects', (draft) => {
         draft.push(newProject);
       });

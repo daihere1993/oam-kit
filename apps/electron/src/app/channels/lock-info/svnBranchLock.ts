@@ -1,12 +1,12 @@
-import { LockInfo, Profile, Repo } from '@oam-kit/utility/types';
+import { LockInfo, AuthInfos, Repo } from '@oam-kit/utility/types';
 import * as config from '@oam-kit/utility/overall-config';
 import * as fetcher from '@electron/app/utils/fetcher';
 import * as branchLockParser from '@electron/app/utils/branchLockParser';
 
 const moduleConf = config.modules.lockInfo;
 
-async function getBranchLockInfo(profile: Profile, branch: string) {
-  const json = await getJsonBranchLockJson(profile);
+async function getBranchLockInfo(auth: AuthInfos, branch: string) {
+  const json = await getJsonBranchLockJson(auth);
   const lockedBranches = JSON.parse(json);
   const lockedBranch = lockedBranches[branch];
   if (!lockedBranch) {
@@ -19,10 +19,10 @@ async function getBranchLockInfo(profile: Profile, branch: string) {
   };
 }
 
-function getJsonBranchLockJson(profile: Profile) {
+function getJsonBranchLockJson(auth: AuthInfos) {
   const jsonPath = `${config.svnroot}/${moduleConf.oam_repository}/conf/BranchFor.json`;
-  const nsbAccount = profile.nsbAccount;
-  const svnAccount = profile.svnAccount;
+  const nsbAccount = auth.nsbAccount;
+  const svnAccount = auth.svnAccount;
   try {
     return fetcher.svnCat(jsonPath, { username: nsbAccount.username, password: svnAccount.password });
   } catch (error) {
@@ -34,10 +34,10 @@ function getJsonBranchLockJson(profile: Profile) {
   }
 }
 
-async function getRepoLockInfo(profile: Profile, branch: string, repo: Repo) {
+async function getRepoLockInfo(auth: AuthInfos, branch: string, repo: Repo) {
   const svnPath = `${config.svnroot}/${repo.repository}/LOCKS/locks.conf`;
-  const nsbAccount = profile.nsbAccount;
-  const svnAccount = profile.svnAccount;
+  const nsbAccount = auth.nsbAccount;
+  const svnAccount = auth.svnAccount;
   const locksContent = await fetcher.svnCat(svnPath, {
     username: nsbAccount.username,
     password: svnAccount.password,
@@ -51,9 +51,9 @@ async function getRepoLockInfo(profile: Profile, branch: string, repo: Repo) {
 }
 
 export default {
-  async getLockInfo(profile: Profile, branch: string, repo: Repo): Promise<LockInfo> {
-    const branchLockInfo = await getBranchLockInfo(profile, branch);
-    const repoLockInfo = await getRepoLockInfo(profile, branch, repo);
+  async getLockInfo(auth: AuthInfos, branch: string, repo: Repo): Promise<LockInfo> {
+    const branchLockInfo = await getBranchLockInfo(auth, branch);
+    const repoLockInfo = await getRepoLockInfo(auth, branch, repo);
 
     return {
       repo: repoLockInfo,

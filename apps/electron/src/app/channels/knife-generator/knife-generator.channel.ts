@@ -7,6 +7,7 @@ import * as path from 'path';
 import { zip } from 'zip-a-folder';
 import { IpcService } from '@electron/app/utils/ipcService';
 import { IpcChannelBase } from '../ipcChannelBase';
+import { Repository } from '../sync-code/repository';
 
 export default class KnifeGeneratorChannel extends IpcChannelBase {
   logName = 'KnifeGeneratorChannel';
@@ -26,15 +27,12 @@ export default class KnifeGeneratorChannel extends IpcChannelBase {
 
   public async generateKnife(ipcService: IpcService, req: IpcRequest<KnifeGeneratorReqData>) {
     try {
-      const isValidEnv = await this.checkEnvironment();
-      if (isValidEnv) {
-        const repositoryType = this.getRepositoryType(req.data.projectPath);
-        const isGit = repositoryType === RepositoryType.GIT;
-        if (await this.isValidVersion(req.data.projectPath, req.data.targetVersion, isGit)) {
-          const changedFiles = await this.getChangedFiles(req.data.projectPath, isGit);
-          await this.createZipFile(changedFiles, req.data.projectPath);
-          ipcService.replyOkWithData<KnifeGeneratorResData>({ knifePath: path.join(this._downloadsFolderPath, 'knife.zip') });
-        }
+      const repositoryType = Repository.getRepositoryType(req.data.projectPath);
+      const isGit = repositoryType === RepositoryType.Git;
+      if (await this.isValidVersion(req.data.projectPath, req.data.targetVersion, isGit)) {
+        const changedFiles = await this.getChangedFiles(req.data.projectPath, isGit);
+        await this.createZipFile(changedFiles, req.data.projectPath);
+        ipcService.replyOkWithData<KnifeGeneratorResData>({ knifePath: path.join(this._downloadsFolderPath, 'knife.zip') });
       }
     } catch (error) {
       const message = `Failed due to ${error.message}`;
@@ -59,28 +57,6 @@ export default class KnifeGeneratorChannel extends IpcChannelBase {
     }
     this.logger.info('checkEnvironment: done.');
     return true;
-  }
-
-  public getRepositoryType(projectPath: string): RepositoryType {
-    if (this.isGitRepository(projectPath)) {
-      return RepositoryType.GIT;
-    } else if (this.isSvnRepository(projectPath)) {
-      return RepositoryType.SVN;
-    }
-  }
-
-  public isGitRepository(projectPath: string): boolean {
-    return fs.existsSync(`${projectPath}\\.git`);
-  }
-
-  public isSvnRepository(projectPath: string): boolean {
-    let isSvnRepository: boolean;
-    try {
-      isSvnRepository = !!this.execCmd(projectPath, 'svn info');
-    } catch (error) {
-      isSvnRepository = false;
-    }
-    return isSvnRepository;
   }
 
   public async isValidVersion(projectPath: string, targetRevision: string, isGit: boolean): Promise<boolean> {

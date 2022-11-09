@@ -1,6 +1,6 @@
 {
-  "general": {
-    "profile": {
+  "settings": {
+    "autho": {
       "nsbAccount": { "username": "nsbusername", "password": "nsbpassword" },
       "svnAccount": { "password": "svnpassword" }
     },
@@ -15,6 +15,5 @@
         "remotePath": "/var/fpwork/zowu/moam/trunk"
       }
     ]
-  },
-  "rbTools": { "rbs": [], "preferences": { "checkLockInfoInterval": 300000 } }
+  }
 }

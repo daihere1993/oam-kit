@@ -1,29 +1,32 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
-import { NodeSSH } from 'node-ssh';
+import { NodeSSH, Config as SSHConfig } from 'node-ssh';
 import {
-  GeneralModel,
+  SettingsModel,
   Project,
   IpcChannel,
   IpcRequest,
-  Profile,
+  AuthInfos,
   RepositoryType,
   SyncCodeReqData,
   SyncCodeStep,
   SyncCodeResData,
   IpcResErrorType,
+  MODEL_NAME,
+  ServerSettings,
+  ServerConnectWay,
 } from '@oam-kit/utility/types';
 import { getUserDataPath, isRemotePathExist } from '@electron/app/utils';
 import { SyncCodeError } from '@oam-kit/utility/errors';
-import { MODEL_NAME, sftp_algorithms } from '@oam-kit/utility/overall-config';
+import { sftp_algorithms } from '@oam-kit/utility/overall-config';
 import { IpcService } from '@electron/app/utils/ipcService';
 import { IpcChannelBase } from '../ipcChannelBase';
 import { GitRepo, Repository, SvnRepo } from './repository';
 import { ChangedFile } from './changedFile';
 
-const LOCAL_DATA_PATH = getUserDataPath();
 const PATCH_PREFIX = 'oamkit';
+const LOCAL_DATA_PATH = getUserDataPath();
 
 enum SyncType {
   whole,
@@ -42,6 +45,8 @@ export default class SyncCodeChannel extends IpcChannelBase {
   private changedFiles: ChangedFile[];
   private revertFiles: ChangedFile[];
   private ssh: NodeSSH = new NodeSSH();
+  private privateKeyPath: string;
+  private connectWay: ServerConnectWay;
   private nsbAccount: { username: string; password: string };
 
   private get localFinalPatchPath() {
@@ -68,14 +73,18 @@ export default class SyncCodeChannel extends IpcChannelBase {
   }
 
   startup(): void {
-    const gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
-    gModel.subscribe<Profile>('profile', (profile) => {
-      if (this.nsbAccount && this.nsbAccount.username !== profile.nsbAccount.username) {
+    const settingsModel = this.store.get<SettingsModel>(MODEL_NAME.SETTINGS);
+    settingsModel.subscribe<AuthInfos>('auth', (auth) => {
+      if (this.nsbAccount && this.nsbAccount.username !== auth.nsbAccount.username) {
         if (this.ssh && this.ssh.isConnected()) {
           this.ssh.dispose();
         }
       }
-      this.nsbAccount = profile.nsbAccount;
+      this.nsbAccount = auth.nsbAccount;
+    });
+    settingsModel.subscribe<ServerSettings>('server', (server) => {
+      this.privateKeyPath = server.privateKeyPath;
+      this.connectWay = server.connectWay;
     });
 
     // W/A: to fix "Exception has occurred: Error: read ECONNRESET"
@@ -86,7 +95,7 @@ export default class SyncCodeChannel extends IpcChannelBase {
 
   private async nextStep(step: SyncCodeStep, ipcService: IpcService, handler: () => Promise<void>) {
     try {
-      this.logger.info(`${step}: start.`);
+      this.logger.info(`${step}: start.`, { needInformFrontEnd: true });
 
       if (this.syncType === SyncType.none) {
         this.logger.info(`${step}: skip this step due to nothing change`);
@@ -100,7 +109,7 @@ export default class SyncCodeChannel extends IpcChannelBase {
       const message = error.message || error;
       throw new SyncCodeError(this.logger, step, message);
     } finally {
-      this.logger.info(`${step}: done.`);
+      this.logger.info(`${step}: done.`, { needInformFrontEnd: true });
     }
   }
 
@@ -110,7 +119,7 @@ export default class SyncCodeChannel extends IpcChannelBase {
     this.syncType = SyncType.whole;
     this.project = request.data.project;
     this.repo =
-      this.project.versionControl === RepositoryType.SVN
+      Repository.getRepositoryType(this.project.localPath) === RepositoryType.Svn
         ? new SvnRepo(this.ssh, this.project.localPath, this.project.remotePath)
         : new GitRepo(this.ssh, this.project.localPath, this.project.remotePath);
 
@@ -132,12 +141,19 @@ export default class SyncCodeChannel extends IpcChannelBase {
 
   private async connectServer() {
     if (!this.ssh.isConnected()) {
-      await this.ssh.connect({
+      const connectArgs: SSHConfig = {
         host: this.project.serverAddr,
         username: this.nsbAccount.username,
-        password: this.nsbAccount.password,
         algorithms: sftp_algorithms,
-      });
+      };
+
+      if (this.connectWay === ServerConnectWay.ByPrivateKeyPath) {
+        connectArgs.privateKeyPath = this.privateKeyPath;
+      } else if (this.connectWay === ServerConnectWay.ByPassword) {
+        connectArgs.password = this.nsbAccount.password;
+      }
+
+      await this.ssh.connect(connectArgs);
     }
 
     // Check if remote prject path exists
@@ -146,7 +162,7 @@ export default class SyncCodeChannel extends IpcChannelBase {
 
   private async createLocalPatch(): Promise<void> {
     await this.repo.beforePatchCreated(false);
-    return this.repo.createDiff(this.localOriginalPatchPath, false);
+    return this.repo.createPatch(this.localOriginalPatchPath, false);
   }
 
   private async analyzePatches(): Promise<any> {
@@ -197,7 +213,7 @@ export default class SyncCodeChannel extends IpcChannelBase {
 
     // means remote repository is clean
     if (remoteChangeFiles.length === 0) {
-      this.syncType = SyncType.whole;
+      this.syncType = localChangedFiles.length === 0 ? SyncType.none : SyncType.whole;
       return localChangedFiles;
     }
 
@@ -252,6 +268,6 @@ export default class SyncCodeChannel extends IpcChannelBase {
 
   private async getLocalChangedFiles() {
     const currentDiff = (await promisify(fs.readFile)(this.localOriginalPatchPath)).toString();
-    return await this.repo.diffChecker.getChangedFiles(currentDiff);
+    return await this.repo.patchChecker.getChangedFiles(currentDiff);
   }
 }

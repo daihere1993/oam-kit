@@ -1,6 +1,6 @@
 {
   "name": "oam-kit",
-  "version": "0.3.11",
+  "version": "0.4.0",
   "license": "MIT",
   "author": {
     "name": "Luke Wu",
@@ -18,7 +18,7 @@
     "lint": "nx workspace-lint && ng lint",
     "precommit": "npm run lint && npm run ut && npm run e2e",
     "postinstall": "patch-package && exitzero electron-builder install-app-deps",
-    "package": "yarn run build --prod && nx run electron:package --platform windows --arch x64 --publishPolicy never",
+    "package": "yarn run build --configuration production && nx run electron:package --platform windows --arch x64 --publishPolicy never",
     "publish": "./scripts/publish.sh",
     "publish-only": "nx run electron:make --platform windows --arch x64 --publishPolicy always"
   },
@@ -27,15 +27,15 @@
     "*": "yarn lint"
   },
   "dependencies": {
-    "@angular/animations": "^11.0.0",
+    "@angular/animations": "^13.3.11",
     "@angular/cdk": "^11.2.6",
-    "@angular/common": "^11.0.0",
-    "@angular/compiler": "^11.0.0",
-    "@angular/core": "^11.0.0",
-    "@angular/forms": "^11.0.0",
-    "@angular/platform-browser": "^11.0.0",
-    "@angular/platform-browser-dynamic": "^11.0.0",
-    "@angular/router": "^11.0.0",
+    "@angular/common": "^13.3.11",
+    "@angular/compiler": "^13.3.11",
+    "@angular/core": "^13.3.11",
+    "@angular/forms": "^13.3.11",
+    "@angular/platform-browser": "^13.3.11",
+    "@angular/platform-browser-dynamic": "^13.3.11",
+    "@angular/router": "^13.3.11",
     "@nrwl/angular": "11.1.5",
     "@nrwl/node": "^11.1.5",
     "axios": "^0.21.1",
@@ -45,23 +45,23 @@
     "electron-updater": "^4.6.1",
     "immer": "^8.0.1",
     "lodash-es": "^4.17.21",
-    "ng-zorro-antd": "^11.0.2",
-    "node-ssh": "^12.0.4",
+    "ng-zorro-antd": "^13.4.0",
+    "node-ssh": "^13.0.0",
     "rxjs": "~6.5.5",
     "shelljs": "^0.8.4",
     "tslib": "^2.0.0",
     "winston": "^3.3.3",
     "zip-a-folder": "^1.1.0",
-    "zone.js": "^0.10.2"
+    "zone.js": "~0.11.4"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~0.1100.1",
+    "@angular-devkit/build-angular": "~13.3.9",
     "@angular-eslint/eslint-plugin": "~1.0.0",
     "@angular-eslint/eslint-plugin-template": "~1.0.0",
     "@angular-eslint/template-parser": "~1.0.0",
-    "@angular/cli": "~11.0.0",
-    "@angular/compiler-cli": "^11.0.0",
-    "@angular/language-service": "^11.0.0",
+    "@angular/cli": "~13.3.9",
+    "@angular/compiler-cli": "^13.3.11",
+    "@angular/language-service": "^13.3.11",
     "@nrwl/cli": "11.1.5",
     "@nrwl/cypress": "11.1.5",
     "@nrwl/eslint-plugin-nx": "11.1.5",
@@ -98,7 +98,7 @@
     "ts-jest": "26.5.4",
     "ts-node": "~9.1.1",
     "tslint": "~6.1.0",
-    "typescript": "~4.0.3"
+    "typescript": "~4.6.4"
   },
   "resolutions": {
     "electron-builder": "22.14.11"

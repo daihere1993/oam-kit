@@ -1,11 +1,11 @@
 import { getTempDir } from '@electron/app/utils';
-import { Profile } from '@oam-kit/utility/types';
+import { AuthInfos } from '@oam-kit/utility/types';
 import { join } from 'path';
 import * as shell from 'shelljs';
 import ConfigParser from 'configparser';
 
-async function initOrUpdateLocalRepo(localRepoPath: string, profile: Profile, repoName: string) {
-  const fullRepoUrl = `https://${profile.nsbAccount.username}:${profile.nsbAccount.password}@gerrit.ext.net.nokia.com/gerrit/a/MN/OAM/${repoName}`;
+async function initOrUpdateLocalRepo(localRepoPath: string, auth: AuthInfos, repoName: string) {
+  const fullRepoUrl = `https://${auth.nsbAccount.username}:${auth.nsbAccount.password}@gerrit.ext.net.nokia.com/gerrit/a/MN/OAM/${repoName}`;
   const scriptsDir = join(__dirname, '..', '..', 'scripts');
   const script = join(scriptsDir, 'git-init-or-update.sh');
   const cmd = ['sh', script, fullRepoUrl, localRepoPath].join(' ');
@@ -47,9 +47,9 @@ async function getLockMsg(localRepoPath: string): Promise<string> {
   });
 }
 
-async function getLockStatus(profile: Profile, branch: string, repoName: string) {
+async function getLockStatus(auth: AuthInfos, branch: string, repoName: string) {
   const localRepoPath = join(getTempDir(), 'cache-gitbranchlock');
-  await initOrUpdateLocalRepo(localRepoPath, profile, repoName);
+  await initOrUpdateLocalRepo(localRepoPath, auth, repoName);
   const locked = isLocked(localRepoPath, branch);
   const lockMsg = locked ? await getLockMsg(localRepoPath) : '';
 
@@ -57,9 +57,9 @@ async function getLockStatus(profile: Profile, branch: string, repoName: string)
 }
 
 export default {
-//   async getLockInfo(profile: Profile, branch: string, repo: Repo) {
-//     const branchLockStatus = await getLockStatus(profile, branch, 'template');
-//     const repoLockStatus = await getLockStatus(profile, branch, repo.name);
+//   async getLockInfo(auth: auth, branch: string, repo: Repo) {
+//     const branchLockStatus = await getLockStatus(auth, branch, 'template');
+//     const repoLockStatus = await getLockStatus(auth, branch, repo.name);
 //   },
   getLockStatus,
 };

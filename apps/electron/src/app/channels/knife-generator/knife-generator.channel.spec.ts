@@ -17,32 +17,6 @@ describe.skip('checkEnvironment()', () => {
   });
 });
 
-describe.skip('isGitRepository()', () => {
-  let channel: KnifeGeneratorChannel;
-  beforeAll(() => {
-    channel = createInstance();
-  });
-  it('should return true if under the git repository', () => {
-    expect(channel.isGitRepository('C:\\N-5CG8300N4C-Data\\zowu\\Development\\oam\\moam\\TRUNK')).toBeTruthy();
-  });
-  it('should return false if not under the git repository', () => {
-    expect(channel.isGitRepository('C:\\N-5CG8300N4C-Data\\zowu\\Development\\oam\\moam')).toBeFalsy();
-  });
-});
-
-describe.skip('isSvnRepository()', () => {
-  let channel: KnifeGeneratorChannel;
-  beforeAll(() => {
-    channel = createInstance();
-  });
-  it('should return true if under the svn repository', () => {
-    expect(channel.isSvnRepository('C:\\N-5CG8300N4C-Data\\zowu\\Development\\oam\\moam\\meta_trunk')).toBeTruthy;
-  });
-  it('should return false if not under the svn repository', () => {
-    expect(channel.isSvnRepository('C:\\N-5CG8300N4C-Data\\zowu\\Development\\oam\\moam')).toBeFalsy;
-  });
-});
-
 describe.skip('isValidVersion()', () => {
   let channel: KnifeGeneratorChannel;
   beforeAll(() => {
