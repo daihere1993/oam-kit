@@ -28,8 +28,7 @@ import { IpcChannelBase } from '../ipcChannelBase';
 import commandExists from 'command-exists';
 import { isRemotePathExist } from '@electron/app/utils';
 
-const NSB_LOGIN_URL = 'https://wam.inside.nsn.com/siteminderagent/forms/login.fcc';
-const NSB_LOGIN_TARGET = 'HTTPS://pronto.int.net.nokia.com/pronto/home.html';
+const NSB_LOGIN_URL = 'https://rep-portal.wroclaw.nsn-rdnet.net/jwt/obtain/';
 const REVIEWBOARD_LOGIN_URL = 'https://svne1.access.nsn.com/isource/svnroot/BTS_SC_OAM_LTE/conf/BranchFor.json';
 
 export default class KitChannel extends IpcChannelBase {
@@ -86,14 +85,15 @@ export default class KitChannel extends IpcChannelBase {
     }
   }
 
+  // Use "https://rep-portal.wroclaw.nsn-rdnet.net/login/?next=/traffic-lights/main/%3Fby%3Dnew_hybrid" as the interface to test NSB account
   private async isRightNsbAccount(username: string, password: string) {
     try {
-      const { data } = await axios.post(NSB_LOGIN_URL, `USER=${username}&PASSWORD=${password}&target=${NSB_LOGIN_TARGET}`);
-      if ((data as string).includes('Authentication Error')) {
+      const { status } = await axios.post(NSB_LOGIN_URL, `username=${username}&password=${password}`);
+      if (status === 200) {
+        return true;
+      } else {
         this.logger.error('login nsb account failed due to invalid username or password');
         return false;
-      } else {
-        return true;
       }
     } catch (error) {
       this.logger.error('login nsb account failed, %s', error);
