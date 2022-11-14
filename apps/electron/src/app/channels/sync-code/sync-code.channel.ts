@@ -197,7 +197,11 @@ export default class SyncCodeChannel extends IpcChannelBase {
 
     // means remote repository is clean
     if (remoteChangeFiles.length === 0) {
-      this.syncType = SyncType.whole;
+      if (localChangedFiles.length === 0) {
+        this.syncType = SyncType.none;  
+      } else {
+        this.syncType = SyncType.whole;
+      }
       return localChangedFiles;
     }
 
