@@ -124,8 +124,10 @@ export default class App {
   }
 
   private static initAutoUpdater() {
+    logger.info(`HTTP_PROXY: ${process.env["HTTP_PROXY"]}`);
+    logger.info(`GH_TOKEN: ${process.env["GH_TOKEN"]}`);
     autoUpdater.netSession.setProxy({
-      proxyRules: `http: ${proxy.address}:${proxy.port}`
+      proxyRules: `http://${proxy.address}:${proxy.port}`
     });
     autoUpdater.checkForUpdatesAndNotify();
   }
