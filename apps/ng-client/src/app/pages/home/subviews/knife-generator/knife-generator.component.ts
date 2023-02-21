@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { IpcService } from '@ng-client/core/services/ipc.service';
-import { IpcChannel, KnifeGeneratorReqData, KnifeGeneratorResData } from '@oam-kit/utility/types';
+import { IpcService } from '../../../../core/services/ipc.service';
+import { IpcResponseCode } from '@oam-kit/shared-interfaces';
 
 enum AlertType {
   SUCCESS = 'success',
@@ -77,22 +77,22 @@ export class KnifeGeneratorComponent implements OnInit {
   }
 
   onTargetProjectPathChange(path: string) {
-    this.form.controls.targetProject.setValue(path);
+    this.form.controls['targetProject'].setValue(path);
   }
 
   async start() {
     this.ongoing = true;
     this.alertInfo.show = false;
-    const res = await this.ipcService.send<KnifeGeneratorReqData, KnifeGeneratorResData>(IpcChannel.KNIFE_GENERATOR, {
+    const res = await this.ipcService.send('/knife_generator', {
       projectPath: this.form.get('targetProject').value,
       targetVersion: this.form.get('revision').value,
     });
-    if (res.isOk) {
+    if (res.code === IpcResponseCode.success) {
       this.alertInfo.type = AlertType.SUCCESS;
       this.alertInfo.message = `You can find zip file from: ${res.data.knifePath}`;
-    } else {
+    } else if (res.code === IpcResponseCode.exception) {
       this.alertInfo.type = AlertType.ERROR;
-      this.alertInfo.message = res.error.message;
+      this.alertInfo.message = res.description
     }
     this.alertInfo.show = true;
     this.ongoing = false;

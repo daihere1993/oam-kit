@@ -8,17 +8,14 @@
       "name": "Debug Main Process",
       "type": "node",
       "request": "launch",
-      "port": 5858,
       "cwd": "${workspaceFolder}",
       "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
-      "windows": {
-        "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
-      },
       "args": [
         "dist/apps/electron/main.js"
       ],
       "outputCapture": "std",
-      "preLaunchTask": "build:main"
+      "preLaunchTask": "build:main",
+      "sourceMaps": true
     },
   ]
 }

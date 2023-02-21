@@ -1,11 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Route } from '@angular/router';
 
-export interface AppRoute extends Route {
-  shouldCache?: boolean;
-}
-
-const routes: AppRoute[] = [
+const routes: Route[] = [
   {
     path: '',
     redirectTo: 'loading',

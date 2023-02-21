@@ -1,21 +1,13 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import {
-  GeneralModel,
-  IpcChannel,
-  Project,
-  RepositoryType,
-  ServerCheckReqData,
-  ServerDirCheckReqData,
-} from '@oam-kit/utility/types';
 import { NzModalRef } from 'ng-zorro-antd/modal';
 import { FormGroup, FormBuilder, Validators, FormControl, ValidationErrors } from '@angular/forms';
-import { StoreService } from '@ng-client/core/services/store.service';
-import { MODEL_NAME } from '@oam-kit/utility/overall-config';
+import { StoreService } from '../../../../core/services/store.service';
 import { NzSelectComponent } from 'ng-zorro-antd/select';
 import { Observable, Observer } from 'rxjs';
-import { IpcService } from '@ng-client/core/services/ipc.service';
-import { Model } from '@oam-kit/utility/model';
-import { NotificationService } from '@ng-client/core/services/notification.service';
+import { IpcService } from '../../../../core/services/ipc.service';
+import { NotificationService } from '../../../../core/services/notification.service';
+import { Preferences, Project, RepositoryType } from '@oam-kit/shared-interfaces';
+import { Model } from '@oam-kit/data-persistent';
 
 export enum DialogAction {
   CANCEL = 'cancel',
@@ -159,7 +151,7 @@ export interface DialogRes {
         >
           Save
         </button>
-        <button nz-button data-test="delete-project-button" class="dialog_btn" *ngIf="isEdit" nzType="danger" (click)="delete()">
+        <button nz-button data-test="delete-project-button" class="dialog_btn" *ngIf="isEdit" nzDanger="true" (click)="delete()">
           Delete
         </button>
         <button nz-button class="dialog_btn" (click)="close()">Close</button>
@@ -181,16 +173,16 @@ export class ProjectSettingComponent implements OnInit {
   public form: FormGroup;
   public isEdit: boolean;
   public serverList: string[];
-  public gModel: Model<GeneralModel>;
+  public pModel: Model<Preferences>;
 
   serverAddrValidator = (control: FormControl) => {
     return new Observable((observer: Observer<ValidationErrors | null>) => {
       const serverAddr = control.value;
       if (serverAddr && this.data.serverAddr !== serverAddr) {
         this.ipcService
-          .send<ServerCheckReqData, null>(IpcChannel.SERVER_CHECK, { host: serverAddr })
+          .send('/server/is_connected', { host: serverAddr })
           .then((res) => {
-            if (res.isOk) {
+            if (res.data) {
               observer.next(null);
             } else {
               observer.next({ error: true });
@@ -212,12 +204,12 @@ export class ProjectSettingComponent implements OnInit {
         observer.complete();
       } else if (remotePath && this.data.remotePath !== remotePath) {
         this.ipcService
-          .send<ServerDirCheckReqData, null>(IpcChannel.SERVER_DIRECTORY_CHECK, {
+          .send('/server/is_path_exist', {
             host: this.form.value.serverAddr,
             directory: remotePath,
           })
           .then((res) => {
-            if (res.isOk) {
+            if (res.data) {
               observer.next(null);
             } else {
               observer.next({ error: true, notExisted: true });
@@ -241,8 +233,8 @@ export class ProjectSettingComponent implements OnInit {
 
   ngOnInit() {
     this.isEdit = !!this.data.name;
-    this.gModel = this.store.getModel<GeneralModel>(MODEL_NAME.GENERAL);
-    this.gModel.subscribe<string[]>('serverList', (data) => {
+    this.pModel = this.store.getModel<Preferences>('preferences');
+    this.pModel.subscribe<string[]>('serverList', (data) => {
       this.serverList = data;
     });
     this.form = this.fb.group({
@@ -276,7 +268,7 @@ export class ProjectSettingComponent implements OnInit {
   }
 
   public onAddServer(value: string) {
-    this.gModel.set('serverList', (draft) => {
+    this.pModel.set('serverList', (draft) => {
       draft.push(value);
     });
   }
@@ -286,12 +278,12 @@ export class ProjectSettingComponent implements OnInit {
   }
 
   public onLocalPathChange(value: string) {
-    this.form.controls.localPath.setValue(value);
+    this.form.controls['localPath'].setValue(value);
   }
 
   private isDirty() {
     for (const key in this.data) {
-      if (this.form?.value[key] !== this.data[key]) {
+      if (this.form?.value[key] !== (this.data as any)[key]) {
         return true;
       }
     }

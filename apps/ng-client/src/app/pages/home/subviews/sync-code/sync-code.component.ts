@@ -1,11 +1,10 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { GeneralModel, Project, SyncCodeReqData, SyncCodeResData } from '@oam-kit/utility/types';
-import { IpcChannel, SyncCodeStep } from '@oam-kit/utility/types';
 import { IpcService } from '../../../../core/services/ipc.service';
-import { Stepper, StepStatus, StepperStatus, Step } from '@oam-kit/utility';
-import { StoreService } from '@ng-client/core/services/store.service';
-import { MODEL_NAME } from '@oam-kit/utility/overall-config';
-import { NotificationService } from '@ng-client/core/services/notification.service';
+import { StoreService } from '../../../../core/services/store.service';
+import { NotificationService } from '../../../../core/services/notification.service';
+import { Step, Stepper, StepperStatus, StepStatus } from './stepper';
+import { Preferences, Project } from '@oam-kit/shared-interfaces';
+import { IpcResponseCode, SyncCodeStep } from '@oam-kit/shared-interfaces';
 
 @Component({
   selector: 'app-sync-code',
@@ -82,8 +81,6 @@ export class SyncCodeComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // To cover the scenario of entering a keyboard to sync code.
-    this.ipcService.on<void>(IpcChannel.SYNC_CODE_FROM_MAIN, this.sync.bind(this));
     this.initStepper();
   }
 
@@ -96,17 +93,17 @@ export class SyncCodeComponent implements OnInit, OnDestroy {
       this.syncStepper.start();
 
       this.ipcService
-        .send$<SyncCodeReqData, SyncCodeResData>(IpcChannel.SYNC_CODE, { project: this.currentProject })
+        .send$('/sync_code', { project: this.currentProject })
         .subscribe((response) => {
           this.lastSyncDate = new Date();
 
-          if (response.isOk) {
+          if (response.code === IpcResponseCode.success) {
             this.syncStepper.setStatusForSingleStep(response.data.step, StepStatus.FINISHED);
-          } else {
-            const { error } = response;
-            this.syncStepper.errorInfo = error.message;
+          } else if (response.code === IpcResponseCode.exception) {
+            const { description } = response;
+            this.syncStepper.errorInfo = description;
             this.syncStepper.setStatusForSingleStep(response.data.step, StepStatus.FAILED);
-            this.alertMessage = error.message;
+            this.alertMessage = description;
           }
           this.cd.markForCheck();
         });
@@ -141,8 +138,8 @@ export class SyncCodeComponent implements OnInit, OnDestroy {
   }
 
   private isProfileReady() {
-    const gModel = this.store.getModel<GeneralModel>(MODEL_NAME.GENERAL);
-    const profile = gModel.get('profile');
+    const pModel = this.store.getModel<Preferences>('preferences');
+    const profile = pModel.get('profile');
     return profile.nsbAccount.password && profile.nsbAccount.username;
   }
 }

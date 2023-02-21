@@ -1,10 +1,9 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { NzModalService } from 'ng-zorro-antd/modal';
-import { Project, SyncCodeModel } from '@oam-kit/utility/types';
 import { ProjectSettingComponent, DialogRes, DialogAction } from './project-setting.component';
-import { StoreService } from '@ng-client/core/services/store.service';
-import { MODEL_NAME } from '@oam-kit/utility/overall-config';
-import { Model } from '@oam-kit/utility/model';
+import { StoreService } from '../../../../core/services/store.service';
+import { Project, SyncCode } from '@oam-kit/shared-interfaces';
+import { Model } from '@oam-kit/data-persistent';
 
 @Component({
   selector: 'app-project-selector',
@@ -75,20 +74,23 @@ export class ProjectSelectorComponent implements OnInit {
   @Output() projectChange = new EventEmitter();
 
   public selected: Project;
-  public projects: Project[];
-  public model: Model<SyncCodeModel>;
+  public projects: Project[] = [];
+  public model!: Model<SyncCode>;
 
   constructor(private modalService: NzModalService, private store: StoreService) {}
 
   ngOnInit() {
-    this.model = this.store.getModel<SyncCodeModel>(MODEL_NAME.SYNC_CODE);
+    this.model = this.store.getModel<SyncCode>('syncCode');
     this.model.subscribe<Project[]>('projects', (data) => {
       this.projects = data;
       if (this.projects.length) {
         if (!this.selected) {
           this.setSelection(this.projects[0]);
         } else {
-          this.setSelection(this.projects.find((item) => item.name === this.selected.name));
+          const project = this.projects.find((item) => item.name === this.selected.name);
+          if (project) {
+            this.setSelection(project);
+          }
         }
       }
     });
@@ -102,14 +104,14 @@ export class ProjectSelectorComponent implements OnInit {
   public edit(e: Event, project?: Project): void {
     const isAddAction = !project;
     const isEditSelectedProject = project?.name === this.selected?.name;
-    const nzComponentParams = isAddAction ? null : { data: project };
+    const nzComponentParams = isAddAction ? undefined : { data: project };
     this.modalService
       .create({
         nzWidth: 600,
         nzContent: ProjectSettingComponent,
         nzComponentParams,
       })
-      .afterClose.subscribe(({ content, action }: DialogRes = { content: null, action: null }) => {
+      .afterClose.subscribe(({ content, action }: DialogRes) => {
         if (action === DialogAction.SAVE) {
           if (isAddAction) {
             // select added project

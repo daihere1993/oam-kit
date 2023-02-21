@@ -1,62 +1,52 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import fs from 'fs';
+import path from 'path';
 import { promisify } from 'util';
 import { NodeSSH } from 'node-ssh';
-import {
-  GeneralModel,
-  Project,
-  IpcChannel,
-  IpcRequest,
-  Profile,
-  RepositoryType,
-  SyncCodeReqData,
-  SyncCodeStep,
-  SyncCodeResData,
-  IpcResErrorType,
-} from '@oam-kit/utility/types';
-import { getUserDataPath, isRemotePathExist } from '@electron/app/utils';
-import { SyncCodeError } from '@oam-kit/utility/errors';
-import { MODEL_NAME, sftp_algorithms } from '@oam-kit/utility/overall-config';
-import { IpcService } from '@electron/app/utils/ipcService';
-import { IpcChannelBase } from '../ipcChannelBase';
+import { getUserDataPath, isRemotePathExist } from '@oam-kit/utility/backend';
 import { GitRepo, Repository, SvnRepo } from './repository';
-import { ChangedFile } from './changedFile';
+import { ChangedFile } from './changed-file';
+import { Channel, IpcEvent, Path, Req } from '@oam-kit/decorators';
+import { Preferences, Project, RepositoryType, IpcResponse, IpcResponseCode, IpcRequest, SyncCodeStep } from '@oam-kit/shared-interfaces';
+import { StoreService } from '../../services/store.service';
+import { sftp_algorithms } from '../../common/contants/electron-config';
+import { IpcMainEvent } from 'electron';
+import { IpcException } from '../../common/exceptions/ipc.exception';
+import Logger from '../../../app/core/logger';
 
-const LOCAL_DATA_PATH = getUserDataPath();
+const logger = Logger.for('sync-code');
 const PATCH_PREFIX = 'oamkit';
+const LOCAL_DATA_PATH = getUserDataPath();
 
 enum SyncType {
   whole,
   partial,
   revert,
-  none,
+  skip,
 }
 
-export default class SyncCodeChannel extends IpcChannelBase {
-  logName = 'SyncCode';
-  handlers = [{ name: IpcChannel.SYNC_CODE, fn: this.handle }];
-
-  private project: Project;
-  private repo: Repository;
-  private syncType: SyncType;
-  private changedFiles: ChangedFile[];
-  private revertFiles: ChangedFile[];
-  private ssh: NodeSSH = new NodeSSH();
-  private nsbAccount: { username: string; password: string };
+@Channel('sync_code')
+export class SyncCodeChannel {
+  private _project: Project;
+  private _repo: Repository;
+  private _syncType: SyncType;
+  private _changedFiles: ChangedFile[];
+  private _revertFiles: ChangedFile[];
+  private _ssh: NodeSSH = new NodeSSH();
+  private _nsbAccount: { username: string; password: string };
 
   private get localFinalPatchPath() {
-    if (this.syncType === SyncType.partial) {
+    if (this._syncType === SyncType.partial) {
       return this.assembledPatchPath;
     }
     return this.localOriginalPatchPath;
   }
 
   private get assembledPatchPath() {
-    return path.join(LOCAL_DATA_PATH, `${PATCH_PREFIX}_${this.project.name}_assenmbled.diff`);
+    return path.join(LOCAL_DATA_PATH, `${PATCH_PREFIX}_${this._project.name}_assenmbled.diff`);
   }
 
   private get patchName() {
-    return `${PATCH_PREFIX}_${this.project.name}.diff`;
+    return `${PATCH_PREFIX}_${this._project.name}.diff`;
   }
 
   private get localOriginalPatchPath() {
@@ -64,97 +54,94 @@ export default class SyncCodeChannel extends IpcChannelBase {
   }
 
   private get remotePatchPath() {
-    return `${this.project.remotePath}/${this.patchName}`;
+    return `${this._project.remotePath}/${this.patchName}`;
   }
 
-  startup(): void {
-    const gModel = this.store.get<GeneralModel>(MODEL_NAME.GENERAL);
-    gModel.subscribe<Profile>('profile', (profile) => {
-      if (this.nsbAccount && this.nsbAccount.username !== profile.nsbAccount.username) {
-        if (this.ssh && this.ssh.isConnected()) {
-          this.ssh.dispose();
-        }
-      }
-      this.nsbAccount = profile.nsbAccount;
-    });
-
+  constructor(private _storeService: StoreService) {
     // W/A: to fix "Exception has occurred: Error: read ECONNRESET"
     process.on('uncaughtException', (err) => {
-      console.error(err.stack);
+      logger.error(err.stack);
     });
   }
 
-  private async nextStep(step: SyncCodeStep, ipcService: IpcService, handler: () => Promise<void>) {
+  private async nextStep(step: SyncCodeStep, event: IpcMainEvent, handler: () => Promise<void>) {
     try {
-      this.logger.info(`${step}: start.`);
+      logger.info(`${step}: start.`);
+      const res: IpcResponse = { code: IpcResponseCode.success, data: {step} };
 
-      if (this.syncType === SyncType.none) {
-        this.logger.info(`${step}: skip this step due to nothing change`);
-        ipcService.replyOkWithData<SyncCodeResData>({ step });
+      if (this._syncType === SyncType.skip) {
+        logger.info(`${step}: skip this step due to nothing change`);
+        event.reply('/sync_code', res);
         return Promise.resolve();
       }
 
       await handler.call(this);
-      ipcService.replyOkWithData<SyncCodeResData>({ step });
+      event.reply('/sync_code', res);
     } catch (error) {
       const message = error.message || error;
-      throw new SyncCodeError(this.logger, step, message);
+      const ipcError = new IpcException(message);
+      ipcError['step'] = step;
+      throw ipcError;
     } finally {
-      this.logger.info(`${step}: done.`);
+      logger.info(`${step}: done.`);
     }
   }
-
-  private async handle(ipcService: IpcService, request: IpcRequest<SyncCodeReqData>) {
-    this.changedFiles = [];
-    this.revertFiles = [];
-    this.syncType = SyncType.whole;
-    this.project = request.data.project;
-    this.repo =
-      this.project.versionControl === RepositoryType.SVN
-        ? new SvnRepo(this.ssh, this.project.localPath, this.project.remotePath)
-        : new GitRepo(this.ssh, this.project.localPath, this.project.remotePath);
+  
+  @Path('')
+  public async startSync(@Req request: IpcRequest, @IpcEvent event: IpcMainEvent) {
+    this._changedFiles = [];
+    this._revertFiles = [];
+    this._syncType = SyncType.whole;
+    this._project = request.data.project;
+    this._nsbAccount = this._storeService
+      .getModel<Preferences>('preferences')
+      .get('profile').nsbAccount;
+    this._repo =
+      this._project.versionControl === RepositoryType.SVN
+        ? new SvnRepo(this._ssh, this._project.localPath, this._project.remotePath)
+        : new GitRepo(this._ssh, this._project.localPath, this._project.remotePath);
 
     try {
-      await this.nextStep(SyncCodeStep.CONNECT_TO_SERVER, ipcService, this.connectServer);
-      await this.nextStep(SyncCodeStep.CREATE_DIFF, ipcService, this.createLocalPatch);
-      await this.nextStep(SyncCodeStep.DIFF_ANALYZE, ipcService, this.analyzePatches);
-      await this.nextStep(SyncCodeStep.CLEAN_UP, ipcService, this.cleanup);
-      await this.nextStep(SyncCodeStep.UPLOAD_DIFF, ipcService, this.uploadPatchToServer);
-      await this.nextStep(SyncCodeStep.APPLY_DIFF, ipcService, this.applyPatchToServer);
+      await this.nextStep(SyncCodeStep.CONNECT_TO_SERVER, event, this.connectServer);
+      await this.nextStep(SyncCodeStep.CREATE_DIFF, event, this.createLocalPatch);
+      await this.nextStep(SyncCodeStep.DIFF_ANALYZE, event, this.analyzePatches);
+      await this.nextStep(SyncCodeStep.CLEAN_UP, event, this.cleanup);
+      await this.nextStep(SyncCodeStep.UPLOAD_DIFF, event, this.uploadPatchToServer);
+      await this.nextStep(SyncCodeStep.APPLY_DIFF, event, this.applyPatchToServer);
     } catch (error) {
+      const res: IpcResponse = { code: IpcResponseCode.exception, data: null, description: error.message };
       if (error.step) {
-        ipcService.replyNokWithData<SyncCodeResData>({ step: error.step }, error.message);
-      } else {
-        ipcService.replyNokWithNoData(error.message, IpcResErrorType.Exception);
+        res.data = { step: error.step };
       }
+      event.reply('/sync_code', res);
     }
   }
 
   private async connectServer() {
-    if (!this.ssh.isConnected()) {
-      await this.ssh.connect({
-        host: this.project.serverAddr,
-        username: this.nsbAccount.username,
-        password: this.nsbAccount.password,
+    if (!this._ssh.isConnected()) {
+      await this._ssh.connect({
+        host: this._project.serverAddr,
+        username: this._nsbAccount.username,
+        password: this._nsbAccount.password,
         algorithms: sftp_algorithms,
       });
     }
 
     // Check if remote prject path exists
-    await isRemotePathExist(this.ssh, this.project.remotePath);
+    await isRemotePathExist(this._ssh, this._project.remotePath);
   }
 
   private async createLocalPatch(): Promise<void> {
-    await this.repo.beforePatchCreated(false);
-    return this.repo.createDiff(this.localOriginalPatchPath, false);
+    await this._repo.beforePatchCreated(false);
+    return this._repo.createDiff(this.localOriginalPatchPath, false);
   }
 
   private async analyzePatches(): Promise<any> {
-    this.changedFiles = await this.getChangedFiles();
+    this._changedFiles = await this.getChangedFiles();
 
     // assemble new diff if is partial sychronization
-    if (this.syncType === SyncType.partial) {
-      const diff = this.repo.assemblePatch(this.changedFiles);
+    if (this._syncType === SyncType.partial) {
+      const diff = this._repo.assemblePatch(this._changedFiles);
       await promisify(fs.writeFile)(this.assembledPatchPath, diff);
       return;
     }
@@ -163,44 +150,44 @@ export default class SyncCodeChannel extends IpcChannelBase {
 
   private async cleanup(): Promise<void> {
     let specificCmd: string;
-    if (this.syncType === SyncType.whole && this.repo instanceof GitRepo) {
+    if (this._syncType === SyncType.whole && this._repo instanceof GitRepo) {
       specificCmd = 'git reset --hard';
     }
 
-    const revertFiles = [].concat(this.revertFiles);
-    this.changedFiles.forEach(file => {
+    const revertFiles = [].concat(this._revertFiles);
+    this._changedFiles.forEach(file => {
       if (file.isNeedToRevert) {
         revertFiles.push(file);
       }
     });
 
     if (revertFiles.length) {
-      return this.repo.cleanup(revertFiles, true, specificCmd);
+      return this._repo.cleanup(revertFiles, true, specificCmd);
     }
   }
 
   private async uploadPatchToServer(): Promise<any> {
-    if (this.syncType === SyncType.whole || this.syncType === SyncType.partial) {
-      return this.ssh.putFile(this.localFinalPatchPath, this.remotePatchPath);
+    if (this._syncType === SyncType.whole || this._syncType === SyncType.partial) {
+      return this._ssh.putFile(this.localFinalPatchPath, this.remotePatchPath);
     }
   }
 
   private async applyPatchToServer() {
-    if (this.syncType === SyncType.whole || this.syncType === SyncType.partial) {
-      return this.repo.applyPatch(this.changedFiles, this.patchName, true);
+    if (this._syncType === SyncType.whole || this._syncType === SyncType.partial) {
+      return this._repo.applyPatch(this._changedFiles, this.patchName, true);
     }
   }
 
   private async getChangedFiles() {
-    let remoteChangeFiles = await this.repo.getRemoteChangedFiles();
+    let remoteChangeFiles = await this._repo.getRemoteChangedFiles();
     const localChangedFiles = await this.getLocalChangedFiles();
 
     // means remote repository is clean
     if (remoteChangeFiles.length === 0) {
       if (localChangedFiles.length === 0) {
-        this.syncType = SyncType.none;  
+        this._syncType = SyncType.skip;  
       } else {
-        this.syncType = SyncType.whole;
+        this._syncType = SyncType.whole;
       }
       return localChangedFiles;
     }
@@ -235,19 +222,19 @@ export default class SyncCodeChannel extends IpcChannelBase {
     if (remoteChangeFiles.length) {
       for (const changedFile of remoteChangeFiles) {
         changedFile.content = null;
-        this.revertFiles.push(changedFile);
+        this._revertFiles.push(changedFile);
       }
     }
 
     if (partialChangedFiles.length) {
       if (haveSameChangeContent) {
-        this.syncType = SyncType.partial;
+        this._syncType = SyncType.partial;
       }
     } else {
-      if (this.revertFiles.length) {
-        this.syncType = SyncType.revert;
+      if (this._revertFiles.length) {
+        this._syncType = SyncType.revert;
       } else {
-        this.syncType = SyncType.none;
+        this._syncType = SyncType.skip;
       }
     }
 
@@ -256,6 +243,6 @@ export default class SyncCodeChannel extends IpcChannelBase {
 
   private async getLocalChangedFiles() {
     const currentDiff = (await promisify(fs.readFile)(this.localOriginalPatchPath)).toString();
-    return await this.repo.diffChecker.getChangedFiles(currentDiff);
+    return await this._repo.diffChecker.getChangedFiles(currentDiff);
   }
 }

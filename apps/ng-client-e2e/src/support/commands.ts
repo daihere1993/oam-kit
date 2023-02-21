@@ -1,23 +1,33 @@
-// @ts-check
-///<reference path="../global.d.ts" />
+// ***********************************************
+// This example commands.js shows you how to
+// create various custom commands and overwrite
+// existing commands.
+//
+// For more comprehensive examples of custom
+// commands please read more here:
+// https://on.cypress.io/custom-commands
+// ***********************************************
 
-import { NotificationStatus } from '../types';
-import './custom-commands/sync-code.cmds';
-
-Cypress.Commands.add('getBySel', (selector, ...args) => {
-  return cy.get(`[data-test=${selector}]`, ...args);
-});
-
-Cypress.Commands.add("getBySelLike", (selector, ...args) => {
-  return cy.get(`[data-test*=${selector}]`, ...args);
-});
-
-Cypress.Commands.add('expectNotification', (status: NotificationStatus, message: string) => {
-  if (status === NotificationStatus.success) {
-    cy.get('[ng-reflect-nz-type=check-circle]').should('exist');
-    return cy.get('.ant-notification-notice-message').should('have.text', message);
-  } else if (status === NotificationStatus.failed) {
-    cy.get('[ng-reflect-nz-type=close-circle]').should('exist');
-    cy.get('.ant-notification-notice-description').should('have.text', message);
+// eslint-disable-next-line @typescript-eslint/no-namespace
+declare namespace Cypress {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface Chainable<Subject> {
+    login(email: string, password: string): void;
   }
-})
+}
+//
+// -- This is a parent command --
+Cypress.Commands.add('login', (email, password) => {
+  console.log('Custom command example: Login', email, password);
+});
+//
+// -- This is a child command --
+// Cypress.Commands.add("drag", { prevSubject: 'element'}, (subject, options) => { ... })
+//
+//
+// -- This is a dual command --
+// Cypress.Commands.add("dismiss", { prevSubject: 'optional'}, (subject, options) => { ... })
+//
+//
+// -- This will overwrite an existing command --
+// Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })

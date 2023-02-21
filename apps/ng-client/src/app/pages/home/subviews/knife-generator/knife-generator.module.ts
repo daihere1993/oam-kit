@@ -10,7 +10,7 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 
 import { KnifeGeneratorRoutingModule } from './knife-generator-routing.module';
 import { KnifeGeneratorComponent } from './knife-generator.component';
-import { PathInputModule } from '@ng-client/core/components/path-field';
+import { PathInputModule } from '../../../../core/components/path-field';
 
 
 @NgModule({

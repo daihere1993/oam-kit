@@ -1,13 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MODEL_NAME } from '@oam-kit/utility/overall-config';
-import {
-  GeneralModel,
-  IpcChannel,
-  NsbAccountVerificationReqData,
-  NsbAccountVerificationResData,
-  SvnAccountVerificationReqData,
-  SvnAccountVerificationResData,
-} from '@oam-kit/utility/types';
+import { Preferences } from '@oam-kit/shared-interfaces';
 import { IpcService } from './ipc.service';
 import { StoreService } from './store.service';
 
@@ -16,25 +8,25 @@ export class AuthService {
   constructor(private store: StoreService, private ipcService: IpcService) {}
 
   public async isValidNsbAuth(username: string, password: string) {
-    const res = await this.ipcService.send<NsbAccountVerificationReqData, NsbAccountVerificationResData>(
-      IpcChannel.NSB_ACCOUNT_VERIFICATION,
+    const res = await this.ipcService.send(
+      '/auth/is_nsb_account_correct',
       {
         username: username,
         password: password,
       }
     );
-    return res.isOk && res.data.isRightAccount;
+    return res.data;
   }
 
   public async isValidSvnAuth(username: string, password: string) {
-    const res = await this.ipcService.send<SvnAccountVerificationReqData, SvnAccountVerificationResData>(
-      IpcChannel.SVN_ACCOUNT_VERIFICATION,
+    const res = await this.ipcService.send(
+      '/auth/is_svn_account_correct',
       {
         username: username,
         password: password,
       }
     );
-    return res.isOk && res.data.isRightAccount;
+    return res.data;
   }
 
   public async isValidAuthentication() {
@@ -51,8 +43,8 @@ export class AuthService {
   }
 
   private getAccount() {
-    const gModel = this.store.getModel<GeneralModel>(MODEL_NAME.GENERAL);
-    const profile = gModel.get('profile');
+    const pModel = this.store.getModel<Preferences>('preferences');
+    const profile = pModel.get('profile');
     return {
       nsbUsername: profile.nsbAccount.username,
       nsbPassword: profile.nsbAccount.password,

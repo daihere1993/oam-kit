@@ -1,13 +1,12 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '@ng-client/core/services/auth.service';
-import { IpcService } from '@ng-client/core/services/ipc.service';
-import { NotificationService } from '@ng-client/core/services/notification.service';
-import { StoreService } from '@ng-client/core/services/store.service';
-import { Model } from '@oam-kit/utility/model';
-import { MODEL_NAME } from '@oam-kit/utility/overall-config';
-import { GeneralModel, Profile } from '@oam-kit/utility/types';
+import { AuthService } from '../../core/services/auth.service';
+import { IpcService } from '../../core/services/ipc.service';
+import { NotificationService } from '../../core/services/notification.service';
+import { StoreService } from '../../core/services/store.service';
+import { Model } from '@oam-kit/data-persistent';
+import { Preferences, Profile } from '@oam-kit/shared-interfaces';
 
 @Component({
   selector: 'app-login',
@@ -112,7 +111,7 @@ export class LoginComponent {
   public profile: Profile;
   public isLogin = false;
 
-  private gModel: Model<GeneralModel>;
+  private pModel: Model<Preferences>;
   private get nsbUsername(): FormControl {
     return this.form.get('nsbUsername') as FormControl;
   }
@@ -135,8 +134,8 @@ export class LoginComponent {
     private router: Router,
     private authService: AuthService
   ) {
-    this.gModel = this.store.getModel<GeneralModel>(MODEL_NAME.GENERAL);
-    this.gModel.subscribe<Profile>('profile', (data) => {
+    this.pModel = this.store.getModel<Preferences>('preferences');
+    this.pModel.subscribe<Profile>('profile', (data) => {
       this.profile = data;
     });
     this.form = this.fb.group({
@@ -178,7 +177,7 @@ export class LoginComponent {
       return;
     }
 
-    this.gModel.set('profile', (draft) => {
+    this.pModel.set('profile', (draft) => {
       draft.nsbAccount.username = this.nsbUsername.value;
       draft.nsbAccount.password = this.nsbPassword.value;
       draft.svnAccount.password = this.svnPassword.value;
