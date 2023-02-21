@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
-import { CheckNecessaryCommandsResData, IpcChannel } from '@oam-kit/utility/types';
 import { IpcService } from './ipc.service';
 
 @Injectable({ providedIn: 'root' })
 export class EnvService {
-  private _isCommandsReady = null;
+  private _isCommandsReady: boolean = null;
 
   constructor(private ipcService: IpcService) {}
   public async isCommandsReady(recheck = false) {
@@ -13,8 +12,8 @@ export class EnvService {
     }
 
     if (this._isCommandsReady === null) {
-      const res = await this.ipcService.send<void, CheckNecessaryCommandsResData>(IpcChannel.CHECK_NECESSARY_COMMANDS);
-      this._isCommandsReady = res.isOk && res.data.gitReady && res.data.svnReady;
+      const res = await this.ipcService.send('/cmds/is_commands_ready');
+      this._isCommandsReady = res.data && res.data.gitReady && res.data.svnReady;
     }
 
     return this._isCommandsReady;

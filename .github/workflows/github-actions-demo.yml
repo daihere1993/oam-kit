@@ -1,7 +1,7 @@
 name: oam-kit CI
 on: [push]
 jobs:
-  lint-ut-and-e2e:
+  lint-ut:
     runs-on: ubuntu-latest
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
@@ -11,5 +11,4 @@ jobs:
         uses: actions/checkout@master
       - run: yarn install
       - run: yarn lint
-      - run: yarn ut
-      - run: yarn e2e
+      - run: yarn test

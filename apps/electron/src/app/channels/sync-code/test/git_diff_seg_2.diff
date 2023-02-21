@@ -1,4 +1,0 @@
-diff --git a/SC_MONOLITH/DM_RUMAG/test/UT/tests/ECpri/PerformanceMonitoringManagement/ECpriTechLogHandlerTests.cpp b/SC_MONOLITH/DM_RUMAG/test/UT/tests/ECpri/PerformanceMonitoringManagement/ECpriTechLogHandlerTests1.cpp
-similarity index 100%
-rename from SC_MONOLITH/DM_RUMAG/test/UT/tests/ECpri/PerformanceMonitoringManagement/ECpriTechLogHandlerTests.cpp
-rename to SC_MONOLITH/DM_RUMAG/test/UT/tests/ECpri/PerformanceMonitoringManagement/ECpriTechLogHandlerTests1.cpp

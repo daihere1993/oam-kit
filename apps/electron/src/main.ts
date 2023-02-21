@@ -1,38 +1,16 @@
-import SquirrelEvents from './app/events/squirrel.events';
-import ElectronEvents from './app/events/electron.events';
-import { app, BrowserWindow } from 'electron';
-import App from './app/app';
+import { AppModule } from './app/app.module';
+import { AppFactory } from './app/core/app-factory';
+import Logger from './app/core/logger';
+import { onActivate, onElectronReady, onWindowAllClosed } from './app/startup';
 
-// To remove "Electron Security Warning" console
-process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
+const logger = Logger.for('main.js');
 
-export default class Main {
-
-    static initialize() {
-        if (SquirrelEvents.handleEvents()) {
-            // squirrel event handled (except first run event) and app will exit in 1000ms, so don't do anything else
-            app.quit();
-        }
-    }
-
-    static bootstrapApp() {
-        App.main(app, BrowserWindow);
-    }
-
-    static bootstrapAppEvents() {
-        ElectronEvents.bootstrapElectronEvents();
-
-        // initialize auto updater service
-        if (!App.isDevelopmentMode()) {
-            // UpdateEvents.initAutoUpdateService();
-        }
-    }
-
+try {
+  const app = AppFactory.create(AppModule);
+  app.on('window-all-closed', onWindowAllClosed); // Quit when all windows are closed.
+  app.on('ready', onElectronReady); // App is ready to load data
+  app.on('activate', onActivate); // App is activated
+  app.startup();
+} catch (err) {
+  logger.error(err);
 }
-
-// handle setup events as quickly as possible
-Main.initialize();
-
-// bootstrap app
-Main.bootstrapApp();
-Main.bootstrapAppEvents();

@@ -63,8 +63,6 @@ interface Menu {
 export class HomeComponent {
   menus: Menu[] = [
     { name: 'Sync Code', icon: 'sync', link: '/home/sync-code', isCustomIcon: false },
-    // { name: 'Auto Commit', icon: 'field-time', link: '/home/auto-commit', isCustomIcon: false },
     { name: 'Knife Generator', icon: 'icon-jenkins', link: '/home/knife-generator', isCustomIcon: true },
-    // { name: 'Profile', icon: 'profile', link: '/home/profile', isCustomIcon: false },
   ];
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '@ng-client/core/services/auth.service';
-import { EnvService } from '@ng-client/core/services/env.service';
+import { AuthService } from '../../core/services/auth.service';
+import { EnvService } from '../../core/services/env.service';
 
 @Component({
   selector: 'app-loading',

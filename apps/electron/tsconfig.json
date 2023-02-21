@@ -2,8 +2,6 @@
   "extends": "../../tsconfig.base.json",
   "files": [],
   "include": [],
-  // It should point out the corresponding reference in case vscode couldn't
-  // figure out the "jest" environment
   "references": [
     {
       "path": "./tsconfig.app.json"

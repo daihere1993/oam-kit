@@ -1,7 +1,7 @@
-import * as shell from 'shelljs';
+import shell from 'shelljs';
 import { NodeSSH } from 'node-ssh';
-import { PatchChecker, GitPatchChecker, SvnPatchChecker } from './patchChecker';
-import { ChangedFile, ChangedFileType } from './changedFile';
+import { PatchChecker, GitPatchChecker, SvnPatchChecker } from './patch-checker';
+import { ChangedFile, ChangedFileType } from './changed-file';
 
 export abstract class Repository {
   ssh: NodeSSH;
@@ -90,7 +90,7 @@ export class GitRepo extends Repository {
   diffChecker = new GitPatchChecker();
 
   getCreatePatchCmd(patchPath: string): string {
-    return `git diff > ${patchPath}`;
+    return `git diff > '${patchPath}'`;
   }
 
   // need to 'git add -N {untracked new files}' after that patch could include those changes

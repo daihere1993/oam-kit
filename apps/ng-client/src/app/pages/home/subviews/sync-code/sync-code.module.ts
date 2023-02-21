@@ -18,7 +18,7 @@ import { SyncCodeComponent } from './sync-code.component';
 import { ProjectSelectorComponent } from './project-selector.component';
 import { ProjectSettingComponent } from './project-setting.component';
 import { SyncCodeRoutingModule } from './sync-code-routing.module';
-import { PathInputModule } from '@ng-client/core/components/path-field';
+import { PathInputModule } from '../../../../core/components/path-field';
 
 @NgModule({
   declarations: [ProjectSelectorComponent, ProjectSettingComponent, SyncCodeComponent],

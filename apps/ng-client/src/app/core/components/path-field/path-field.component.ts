@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy, Output, EventEmitter } from '@angular/core';
-import { IpcChannel, SelectPathReqData, SelectPathResData } from '@oam-kit/utility/types';
+import { IpcResponseCode } from '@oam-kit/shared-interfaces';
 import { IpcService } from '../../services/ipc.service';
 
 enum Type {
@@ -15,7 +15,7 @@ enum Type {
 export class PathInputComponent implements OnDestroy {
   @Output() valueChange: EventEmitter<string> = new EventEmitter();
 
-  @Input() value: string;
+  @Input() value!: string;
 
   @Input() type: Type = Type.DIR;
 
@@ -35,10 +35,9 @@ export class PathInputComponent implements OnDestroy {
 
   public async toSelectPath(e: Event) {
     const isDirectory = this.isDirectory;
-    const res = await this.ipcService
-      .send<SelectPathReqData, SelectPathResData>(IpcChannel.SELECT_PATH, { isDirectory },);
-    if (res.isOk) {
-      this.setValue(res.data.path);
+    const res = await this.ipcService.send('/file/select_path', { isDirectory });
+    if (res.code === IpcResponseCode.success) {
+      this.setValue(res.data);
     }
     e.stopPropagation();
   }

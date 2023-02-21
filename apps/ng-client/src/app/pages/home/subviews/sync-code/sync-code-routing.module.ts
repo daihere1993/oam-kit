@@ -1,14 +1,13 @@
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { AppRoute } from '@ng-client/app-routing.module';
+import { Route, RouterModule } from '@angular/router';
 
 import { SyncCodeComponent } from './sync-code.component';
 
-export const routes: AppRoute[] = [
+export const routes: Route[] = [
   {
-    shouldCache: true,
     path: '',
     component: SyncCodeComponent,
+    data: { reuse: true },
   },
 ];
 

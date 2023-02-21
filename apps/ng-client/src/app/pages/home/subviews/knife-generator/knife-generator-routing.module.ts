@@ -1,9 +1,9 @@
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { Route, RouterModule } from '@angular/router';
 import { KnifeGeneratorComponent } from './knife-generator.component';
 
-const routes: Routes = [
-  { path: '', component: KnifeGeneratorComponent },
+const routes: Route[] = [
+  { path: '', component: KnifeGeneratorComponent, data: { reuse: true } },
 ];
 
 @NgModule({

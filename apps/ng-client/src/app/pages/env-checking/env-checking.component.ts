@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '@ng-client/core/services/auth.service';
-import { EnvService } from '@ng-client/core/services/env.service';
-import { NotificationService } from '@ng-client/core/services/notification.service';
+import { AuthService } from '../../core/services/auth.service';
+import { EnvService } from '../../core/services/env.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-env-check',

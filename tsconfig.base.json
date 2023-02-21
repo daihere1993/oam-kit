@@ -5,23 +5,26 @@
     "sourceMap": true,
     "declaration": false,
     "moduleResolution": "node",
-    "esModuleInterop": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
-    "lib": ["es2019", "dom"],
+    "lib": ["es2017", "dom"],
     "skipLibCheck": true,
+    "strictNullChecks": false,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
+    "allowSyntheticDefaultImports": true,
     "paths": {
       "@electron/*": ["apps/electron/src/*"],
-      "@electron/types": ["apps/electron/src/app/constants/types"],
       "@ng-client/*": ["apps/ng-client/src/app/*"],
-      "@oam-kit/utility": ["libs/utility/src/index.ts"],
-      "@oam-kit/utility/*": ["libs/utility/src/lib/*"],
-      "@oam-kit/logger": ["libs/logger/src/index.ts"]
+      "@oam-kit/data-persistent": ["libs/data-persistent/src/index.ts"],
+      "@oam-kit/decorators": ["libs/decorators/src/index.ts"],
+      "@oam-kit/electron-plugin": ["libs/electron-plugin/src/index.ts"],
+      "@oam-kit/shared-interfaces": ["libs/shared-interfaces/src/index.ts"],
+      "@oam-kit/utility/backend": ["libs/utility/src/backend/index.ts"],
+      "@oam-kit/utility/common": ["libs/utility/src/common/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
