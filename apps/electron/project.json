@@ -4,11 +4,9 @@
   "projectType": "application",
   "targets": {
     "tsc": {
-      "executor": "@nrwl/webpack:webpack",
+      "executor": "nx-electron:build",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "target": "node",
-        "compiler": "tsc",
         "outputPath": "dist/apps/electron",
         "main": "apps/electron/src/main.ts",
         "tsConfig": "apps/electron/tsconfig.app.json",

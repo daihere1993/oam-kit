@@ -10,9 +10,7 @@
       "request": "launch",
       "cwd": "${workspaceFolder}",
       "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
-      "args": [
-        "dist/apps/electron/main.js"
-      ],
+      "args": ["dist/apps/electron/main.js"],
       "outputCapture": "std",
       "preLaunchTask": "build:main",
       "sourceMaps": true
