@@ -5,7 +5,7 @@
   "scripts": {
     "preversion": "yarn run lint && yarn run test",
     "version": "",
-    "postversion": "git push origin without_nx_electron && git push --tags && yarn run publish:win",
+    "postversion": "git push origin master && git push --tags && yarn run publish:win",
     "postinstall": "electron-builder install-app-deps && node ./decorate-angular-cli.js",
     "lint": "nx run-many --target=lint",
     "test": "nx run-many --target=test",
