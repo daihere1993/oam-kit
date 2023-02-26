@@ -40,7 +40,9 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.6.0",
     "shelljs": "^0.8.5",
+    "temp": "^0.9.4",
     "tslib": "^2.3.0",
+    "unzipper": "^0.10.11",
     "winston": "^3.8.2",
     "zip-a-folder": "^1.1.5",
     "zone.js": "~0.11.4"
