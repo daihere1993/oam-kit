@@ -36,6 +36,7 @@
     "fix-path": "3.0.0",
     "immer": "^9.0.16",
     "ng-zorro-antd": "^15.0.3",
+    "node-liblzma": "^1.1.9",
     "node-ssh": "^13.0.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.6.0",
