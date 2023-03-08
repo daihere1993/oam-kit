@@ -76,6 +76,8 @@
     "@types/jest": "28.1.1",
     "@types/node": "16.11.7",
     "@types/reflect-metadata": "^0.1.0",
+    "@types/shelljs": "^0.8.11",
+    "@types/unzipper": "^0.10.5",
     "@typescript-eslint/eslint-plugin": "^5.36.1",
     "@typescript-eslint/parser": "^5.36.1",
     "cypress": "^12.2.0",

@@ -2,10 +2,9 @@ import * as path from 'path';
 import { IpcRequest } from '@oam-kit/shared-interfaces';
 import { Rule, ZipParser } from './zip-parser.channel';
 
-
 const testZipPath = path.join(
   __dirname,
-  'test-resources/Snapshot_MRBTS-2515_MRBTS-2515_SBTS23R2_ENB_9999_230205_000010_20230206-1559.zip'
+  'test-resources/snapshot.zip'
 );
 
 describe('ZipParser', () => {
