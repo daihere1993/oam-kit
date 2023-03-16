@@ -1,5 +1,5 @@
-import fs from 'fs';
-import util from 'util';
+import * as fs from 'fs';
+import * as util from 'util';
 import { Injectable } from '@oam-kit/decorators';
 import { StoreBase, DEFAULT_APP_DATA } from '@oam-kit/data-persistent';
 import { getUserDataPath } from '@oam-kit/utility/backend';

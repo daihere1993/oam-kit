@@ -63,16 +63,12 @@ export class Application {
             try {
               const params = self.reflectHandlerParams(event, req, channel.instance, route.handler.name);
               res.data = await route.handler.apply(channel.instance, params);
-              if (res.data !== undefined) {
-                res.code = IpcResponseCode.success;
-              }
+              res.code = IpcResponseCode.success;
             } catch (error) {
               res.description = error.message;
-              res.code = IpcResponseCode.exception;
+              res.code = IpcResponseCode.failed;
             } finally {
-              if (res.code !== null) {
-                event.reply(route.path, res);
-              }
+              event.reply(route.path, res);
             }
           });
         })(route, channel);

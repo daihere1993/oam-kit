@@ -109,7 +109,7 @@ export class SyncCodeChannel {
       await this.nextStep(SyncCodeStep.UPLOAD_DIFF, event, this.uploadPatchToServer);
       await this.nextStep(SyncCodeStep.APPLY_DIFF, event, this.applyPatchToServer);
     } catch (error) {
-      const res: IpcResponse = { code: IpcResponseCode.exception, data: null, description: error.message };
+      const res: IpcResponse = { code: IpcResponseCode.failed, data: null, description: error.message };
       if (error.step) {
         res.data = { step: error.step };
       }

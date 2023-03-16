@@ -20,6 +20,10 @@ const routes: HomeRoute[] = [
         loadChildren: () => import('./subviews/knife-generator/knife-generator.module').then((m) => m.KnifeGeneratorModule),
       },
       {
+        path: 'zip-parser',
+        loadChildren: () => import('./subviews/zip-parser/zip-parser.module').then((m) => m.ZipParserModule),
+      },
+      {
         path: '',
         redirectTo: 'sync-code',
         pathMatch: 'full',

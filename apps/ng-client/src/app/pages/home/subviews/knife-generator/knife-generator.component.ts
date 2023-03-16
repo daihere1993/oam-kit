@@ -90,7 +90,7 @@ export class KnifeGeneratorComponent implements OnInit {
     if (res.code === IpcResponseCode.success) {
       this.alertInfo.type = AlertType.SUCCESS;
       this.alertInfo.message = `You can find zip file from: ${res.data.knifePath}`;
-    } else if (res.code === IpcResponseCode.exception) {
+    } else if (res.code === IpcResponseCode.failed) {
       this.alertInfo.type = AlertType.ERROR;
       this.alertInfo.message = res.description
     }

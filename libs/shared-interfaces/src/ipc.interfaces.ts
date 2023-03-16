@@ -10,5 +10,5 @@ export interface IpcResponse {
 
 export enum IpcResponseCode {
   success = 0,
-  exception = 1
+  failed = 1
 }

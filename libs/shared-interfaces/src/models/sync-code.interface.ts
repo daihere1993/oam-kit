@@ -1,5 +1,11 @@
+import { Rule } from "../channels";
+
 export interface SyncCode {
   projects: Project[];
+}
+
+export interface ZipParser {
+  rules: Rule[]
 }
 
 export enum RepositoryType {

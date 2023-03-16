@@ -64,5 +64,6 @@ export class HomeComponent {
   menus: Menu[] = [
     { name: 'Sync Code', icon: 'sync', link: '/home/sync-code', isCustomIcon: false },
     { name: 'Knife Generator', icon: 'icon-jenkins', link: '/home/knife-generator', isCustomIcon: true },
+    { name: 'Zip Parser', icon: 'file-zip', link: '/home/zip-parser', isCustomIcon: false },
   ];
 }
