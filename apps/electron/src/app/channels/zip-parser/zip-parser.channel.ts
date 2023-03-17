@@ -76,7 +76,10 @@ export class ZipParserChannel {
       src = req.data.zipPath;
     }
 
-    const dest = path.join(path.dirname(src), this.getZipFileName(src));
+    if (!rules)
+      throw new Error(`Can not find any rules, please clean legacy data.`);
+
+    const dest = path.join(path.dirname(src), path.parse(src).name);
 
     // can only parse '.zip' file
     if (path.extname(src) != '.zip')
@@ -205,13 +208,6 @@ export class ZipParserChannel {
     await decompressor(src, dest);
 
     return dest;
-  }
-
-  private getZipFileName(src: string): string {
-    const regexRet = src.match(/([^/]+?)\.zip$/);
-    if (!regexRet)
-      throw(new Error(`Unable to find zip file name by path=${src}`));
-    return regexRet[1];
   }
 
   private getCompressionType(file: string): CompressionType {
