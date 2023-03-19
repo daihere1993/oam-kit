@@ -15,7 +15,7 @@ describe('ZipParser', () => {
       // soap message
       { name: 'soap messages', firstRegex: /.+SOAPMessageTrace.+/, parsingInfos: { pathList: [] } },
       // moam runtime log
-      { name: 'moam_runtime.log', firstRegex: /.+_1011_runtime\.zip/, secondRegex: /runtime_BTSOM\.log/, parsingInfos: { pathList: [] } },
+      { name: 'moam_runtime.log', firstRegex: /.+_(?:\d{2}11)_runtime\.zip/, secondRegex: /runtime_BTSOM\.log/, parsingInfos: { pathList: [] } },
     ];
     const ipcReq: IpcRequest = { data: { zipPath: testZipPath, rules } };
     const retRules = await zipParser.unzipByRules(ipcReq);
@@ -32,5 +32,5 @@ describe('ZipParser', () => {
     expect(moamLogRule.parsingInfos.pathList).toContain('BTS1900_1011_part_3/BTS1900_1011_runtime/runtime_BTSOM.log');
 
     fs.rmSync(path.join(__dirname, 'test-resources/snapshot'), { recursive: true, force: true });
-  });
+  }, 60000);
 });

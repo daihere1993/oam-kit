@@ -16,7 +16,7 @@ export const DEFAULT_APP_DATA: APPData = {
       // soap messages
       { name: 'soap messages', firstRegex: /.+SOAPMessageTrace.+/, parsingInfos: { pathList: [] } },
       // moam runtime log
-      { name: 'moam runtime log', firstRegex: /.+_1011_runtime\.zip/, secondRegex: /runtime_BTSOM\.log/, parsingInfos: { pathList: [] } },
+      { name: 'moam runtime log', firstRegex: /.+_(?:\d{4})_runtime\.zip/, secondRegex: /runtime_BTSOM\.log/, parsingInfos: { pathList: [] } },
     ],
   },
 };

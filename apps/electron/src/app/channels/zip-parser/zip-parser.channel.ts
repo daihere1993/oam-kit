@@ -90,7 +90,9 @@ export class ZipParserChannel {
     if (fs.existsSync(dest))
       fs.rmSync(dest, { recursive: true, force: true });
     // unzip the zip file to the current folder
+    console.time('decompress snapshot');
     await this.decompress(src);
+    console.timeEnd('decompress snapshot');
     // check if the zip file has snapshot_file_list.txt, if not, throw an error
     if (!fs.existsSync(path.join(dest, 'snapshot_file_list.txt')))
       throw new Error('The zip file does not have snapshot_file_list.txt, thus I can not parse it.');
@@ -102,6 +104,7 @@ export class ZipParserChannel {
     for (const rule of rules) {
       rule.parsingInfos.rootDir = dest;
       rule.parsingInfos.pathList = [];
+      console.time(`decompress for rule=${rule.name}`);
       const firstParts = await this.handleFirstRegex(dest, snapshotFileListContent, rule);
       for (const firstPart of firstParts) {
         if (rule.secondRegex) {
@@ -113,6 +116,7 @@ export class ZipParserChannel {
           rule.parsingInfos.pathList.push(firstPart);
         }
       }
+      console.timeEnd(`decompress for rule=${rule.name}`);
     }
 
     return rules;
