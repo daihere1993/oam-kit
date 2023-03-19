@@ -2,6 +2,7 @@ import { Channel, Path, Req } from '@oam-kit/decorators';
 import { IpcRequest } from '@oam-kit/shared-interfaces';
 import { dialog } from 'electron';
 import { shell } from 'electron';
+import * as path from 'path'
 
 @Channel('file')
 export class FileChannel {
@@ -17,6 +18,7 @@ export class FileChannel {
 
   @Path('/reveal_file')
   public revealFile(@Req req: IpcRequest) {
-    shell.showItemInFolder(req.data);
+    const file = path.join(req.data)
+    shell.showItemInFolder(file);
   }
 }
