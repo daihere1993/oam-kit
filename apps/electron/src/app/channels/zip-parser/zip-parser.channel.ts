@@ -23,8 +23,11 @@ const decompressorMap = {
     return new Promise((resolve, reject) => {
       const input = fs.createReadStream(src);
       const output = fs.createWriteStream(dest);
-
-      output.on('finish', () => resolve());
+      console.time('decompress xz file');
+      output.on('finish', () => {
+        console.timeEnd('decompress xz file');
+        resolve()
+      });
       output.on('error', (err) => {
         reject(err);
       });
