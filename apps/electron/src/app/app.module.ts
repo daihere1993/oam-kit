@@ -7,6 +7,7 @@ import { StorageChannel } from './channels/storage.channel';
 import { SyncCodeChannel } from './channels/sync-code/sync-code.channel';
 import { KnifeGeneratorChannel } from './channels/knife-generator.channel';
 import { StoreService } from './services/store.service';
+import { ZipParserChannel } from './channels/zip-parser/zip-parser.channel';
 
 @Module({
   channels: [
@@ -17,6 +18,7 @@ import { StoreService } from './services/store.service';
     ServerChannel,
     SyncCodeChannel,
     KnifeGeneratorChannel,
+    ZipParserChannel,
   ],
   providers: [StoreService],
 })

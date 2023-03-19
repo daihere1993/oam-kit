@@ -1,10 +1,10 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { IpcService } from '../../../../core/services/ipc.service';
-import { StoreService } from '../../../../core/services/store.service';
-import { NotificationService } from '../../../../core/services/notification.service';
 import { Step, Stepper, StepperStatus, StepStatus } from './stepper';
 import { Preferences, Project } from '@oam-kit/shared-interfaces';
 import { IpcResponseCode, SyncCodeStep } from '@oam-kit/shared-interfaces';
+import { IpcService } from '@ng-client/core/services/ipc.service';
+import { StoreService } from '@ng-client/core/services/store.service';
+import { NotificationService } from '@ng-client/core/services/notification.service';
 
 @Component({
   selector: 'app-sync-code',
@@ -99,7 +99,7 @@ export class SyncCodeComponent implements OnInit, OnDestroy {
 
           if (response.code === IpcResponseCode.success) {
             this.syncStepper.setStatusForSingleStep(response.data.step, StepStatus.FINISHED);
-          } else if (response.code === IpcResponseCode.exception) {
+          } else if (response.code === IpcResponseCode.failed) {
             const { description } = response;
             this.syncStepper.errorInfo = description;
             this.syncStepper.setStatusForSingleStep(response.data.step, StepStatus.FAILED);

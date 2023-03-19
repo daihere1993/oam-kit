@@ -17,11 +17,11 @@ const routes: Route[] = [
     loadChildren: () => import('./pages/home/home.module')
       .then(m => m.HomeModule),
   },
-  {
-    path: 'login',
-    loadChildren: () => import('./pages/login/login.module')
-      .then(m => m.LoginModule),
-  },
+  // {
+  //   path: 'login',
+  //   loadChildren: () => import('./pages/login/login.module')
+  //     .then(m => m.LoginModule),
+  // },
   {
     path: 'env-checking',
     loadChildren: () => import('./pages/env-checking/env-checking.module')

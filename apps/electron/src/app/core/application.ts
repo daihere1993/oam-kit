@@ -1,5 +1,4 @@
 import { app, BrowserWindow, ipcMain, IpcMainEvent } from 'electron';
-import { getPersistentDataPath } from '@oam-kit/utility/backend';
 import { IpcRequest, IpcResponse, IpcResponseCode } from '@oam-kit/shared-interfaces';
 import { StoreService } from '../services/store.service';
 import { AppContainer } from './app-container';
@@ -63,16 +62,12 @@ export class Application {
             try {
               const params = self.reflectHandlerParams(event, req, channel.instance, route.handler.name);
               res.data = await route.handler.apply(channel.instance, params);
-              if (res.data !== undefined) {
-                res.code = IpcResponseCode.success;
-              }
+              res.code = IpcResponseCode.success;
             } catch (error) {
               res.description = error.message;
-              res.code = IpcResponseCode.exception;
+              res.code = IpcResponseCode.failed;
             } finally {
-              if (res.code !== null) {
-                event.reply(route.path, res);
-              }
+              event.reply(route.path, res);
             }
           });
         })(route, channel);
@@ -106,6 +101,6 @@ export class Application {
   private async initalizeStoreService(): Promise<void> {
     const module = this._container.getModule();
     const storeService = module.injector.get(StoreService) as StoreService;
-    await storeService.initialize(getPersistentDataPath());
+    await storeService.initialize();
   }
 }

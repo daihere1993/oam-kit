@@ -7,7 +7,7 @@ import { Channel, Path, Req } from '@oam-kit/decorators';
 import { RepositoryType, IpcRequest } from '@oam-kit/shared-interfaces';
 import Logger from '../core/logger';
 
-const logger = Logger.for('knife-generator');
+const logger = Logger.for('KnifeGeneratorChannel');
 
 @Channel('knife_generator')
 export class KnifeGeneratorChannel {
@@ -143,7 +143,7 @@ export class KnifeGeneratorChannel {
       fs.copyFileSync(src, dest);
     } catch (error) {
       const errorMsg = `create folder failed, changedFile: ${changedFile}, error: ${error.message}`;
-      console.error(errorMsg);
+      logger.error(errorMsg);
       throw Error(errorMsg);
     }
   }

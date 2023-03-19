@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import { NodeSSH } from 'node-ssh';
-import { getUserDataPath, isRemotePathExist } from '@oam-kit/utility/backend';
+import { getUserDataDir, isRemotePathExist } from '@oam-kit/utility/backend';
 import { GitRepo, Repository, SvnRepo } from './repository';
 import { ChangedFile } from './changed-file';
 import { Channel, IpcEvent, Path, Req } from '@oam-kit/decorators';
@@ -13,9 +13,9 @@ import { IpcMainEvent } from 'electron';
 import { IpcException } from '../../common/exceptions/ipc.exception';
 import Logger from '../../../app/core/logger';
 
-const logger = Logger.for('sync-code');
+const logger = Logger.for('SyncCodeChannel');
 const PATCH_PREFIX = 'oamkit';
-const LOCAL_DATA_PATH = getUserDataPath();
+const LOCAL_DATA_PATH = getUserDataDir();
 
 enum SyncType {
   whole,
@@ -109,7 +109,7 @@ export class SyncCodeChannel {
       await this.nextStep(SyncCodeStep.UPLOAD_DIFF, event, this.uploadPatchToServer);
       await this.nextStep(SyncCodeStep.APPLY_DIFF, event, this.applyPatchToServer);
     } catch (error) {
-      const res: IpcResponse = { code: IpcResponseCode.exception, data: null, description: error.message };
+      const res: IpcResponse = { code: IpcResponseCode.failed, data: null, description: error.message };
       if (error.step) {
         res.data = { step: error.step };
       }

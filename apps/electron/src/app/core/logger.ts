@@ -1,5 +1,6 @@
 import * as path from 'path';
-import { getUserDataPath } from '@oam-kit/utility/backend';
+import { app } from 'electron';
+import { getUserDataDir } from '@oam-kit/utility/backend';
 import { createLogger, format, LoggerOptions, transports } from 'winston';
 
 const WHOLE_LOG_FILE_NAME = 'oam-kit.prod.log';
@@ -14,13 +15,13 @@ const defaultOptions: LoggerOptions = {
   ),
   defaultMeta: { module: 'GENERAL' },
   transports: [
-    new transports.File({ filename: path.join(getUserDataPath(), 'logs', WHOLE_LOG_FILE_NAME) }),
+    new transports.File({ filename: path.join(getUserDataDir(), 'logs', WHOLE_LOG_FILE_NAME) }),
   ],
 };
 
 const Logger = {
   for(module: string) {
-    console.log(`data path: ${getUserDataPath()}`);
+    console.log(`data path: ${getUserDataDir()}`);
     const options = partialDeepCopy<LoggerOptions>(defaultOptions, ['defaultMeta']);
     options.defaultMeta.module = module;
     const logger = createLogger(options);

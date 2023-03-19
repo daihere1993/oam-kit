@@ -10,6 +10,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { HomeRoutingModule } from './home-routing.module';
 import { SyncCodeModule } from './subviews/sync-code/sync-code.module';
 import { KnifeGeneratorModule } from './subviews/knife-generator/knife-generator.module';
+import { ZipParserModule } from './subviews/zip-parser/zip-parser.module';
 
 @NgModule({
   declarations: [HomeComponent],
@@ -22,6 +23,7 @@ import { KnifeGeneratorModule } from './subviews/knife-generator/knife-generator
     NzIconModule,
     SyncCodeModule,
     KnifeGeneratorModule,
+    ZipParserModule
   ],
 })
 export class HomeModule {}

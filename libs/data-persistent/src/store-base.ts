@@ -6,7 +6,7 @@ export abstract class StoreBase {
   protected _models: Model<any>[] = [];
   protected _observers: Subscription[] = [];
 
-  public abstract initialize(persistentDataPath?: string): Promise<void>;
+  public abstract initialize(): Promise<void>;
   protected abstract persist(model?: Model<any>): any;
 
   public getModel<T>(name: string): Model<T> {

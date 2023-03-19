@@ -59,11 +59,13 @@ export class EnvCheckingComponent {
     this.rechecking = true;
     if (await this.envService.isCommandsReady(true)) {
       this.rechecking = false;
-      if (this.authService.isEmptyAccount() || !(await this.authService.isValidAuthentication())) {
-        this.router.navigateByUrl('login');
-      } else {
-        this.router.navigateByUrl('home');
-      }
+      this.router.navigateByUrl('home');
+
+      // if (this.authService.isEmptyAccount() || !(await this.authService.isValidAuthentication())) {
+      //   this.router.navigateByUrl('login');
+      // } else {
+      //   this.router.navigateByUrl('home');
+      // }
     } else {
       this.rechecking = false;
       this.notifier.error('Rechecking result', 'Still failed, please double check!!');

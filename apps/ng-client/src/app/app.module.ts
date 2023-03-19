@@ -19,6 +19,11 @@ import { StoreService } from './core/services/store.service';
 
 /** Global zorro module */
 import { NzNotificationModule } from 'ng-zorro-antd/notification';
+import { NzConfig, NZ_CONFIG } from 'ng-zorro-antd/core/config';
+
+const ngZorroConfig: NzConfig = {
+  message: { nzDuration: 5000 }
+};
 
 @NgModule({
   declarations: [AppComponent],
@@ -33,6 +38,9 @@ import { NzNotificationModule } from 'ng-zorro-antd/notification';
     {
       provide: RouteReuseStrategy,
       useClass: CacheRouteStrategy,
+    },
+    {
+      provide: NZ_CONFIG, useValue: ngZorroConfig
     },
     {
       multi: true,
