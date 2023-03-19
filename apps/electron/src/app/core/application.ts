@@ -1,5 +1,4 @@
 import { app, BrowserWindow, ipcMain, IpcMainEvent } from 'electron';
-import { getPersistentDataPath } from '@oam-kit/utility/backend';
 import { IpcRequest, IpcResponse, IpcResponseCode } from '@oam-kit/shared-interfaces';
 import { StoreService } from '../services/store.service';
 import { AppContainer } from './app-container';
@@ -102,6 +101,6 @@ export class Application {
   private async initalizeStoreService(): Promise<void> {
     const module = this._container.getModule();
     const storeService = module.injector.get(StoreService) as StoreService;
-    await storeService.initialize(getPersistentDataPath());
+    await storeService.initialize();
   }
 }

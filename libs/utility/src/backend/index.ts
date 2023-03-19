@@ -7,10 +7,6 @@ export async function isRemotePathExist(ssh: NodeSSH, path: string) {
   return !stderr && stdout === path;
 }
 
-export function getUserDataPath(): string {
-  return path.join(app.getPath('userData'), 'data');
-}
-
-export function getPersistentDataPath(): string {
-  return path.join(getUserDataPath(), 'persistent_data.json');
+export function getUserDataDir(): string {
+  return app ? path.join(app.getPath('userData'), 'data') : '';
 }

@@ -17,6 +17,6 @@ export class FileChannel {
 
   @Path('/reveal_file')
   public revealFile(@Req req: IpcRequest) {
-    console.log(shell.showItemInFolder(req.data));
+    shell.showItemInFolder(req.data);
   }
 }

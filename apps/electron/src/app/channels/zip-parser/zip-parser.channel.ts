@@ -3,12 +3,14 @@ import * as path from 'path';
 import * as unzipper from 'unzipper';
 import * as escapeStringRegexp from 'escape-string-regexp';
 import * as xzStream from 'node-liblzma';
-import * as shell from 'shelljs';
 import * as zlib from 'zlib';
 import { Rule } from '@oam-kit/shared-interfaces';
 import { Channel, Path, Req } from '@oam-kit/decorators';
 import { IpcRequest, ZipParser } from '@oam-kit/shared-interfaces';
 import { StoreService } from '@electron/app/services/store.service';
+import Logger from '@electron/app/core/logger';
+
+const logger = Logger.for('ZipParserChannel');
 
 export enum CompressionType {
   ZIP = 'zip',
@@ -116,23 +118,6 @@ export class ZipParserChannel {
     return rules;
   }
 
-  @Path('/openFileByRule')
-  public openFileByRule(@Req req: IpcRequest) {
-    try {
-      const { editor, filePath } = req.data;
-      shell.exec(`open ${filePath} -a ${editor}`, (code, stdout, stderr) => {
-        if (code === 0) {
-          return null;
-        } else {
-          console.error(code);
-          Promise.reject();
-        }
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
   private async handleFirstRegex(src: string, snapshotFileListContent: string, rule: Rule): Promise<string[]> {
     const pathList = [];
     const results = snapshotFileListContent.match(new RegExp(rule.firstRegex, 'g'));
@@ -192,7 +177,6 @@ export class ZipParserChannel {
     type = type || this.getCompressionType(src);
 
     if (!type) {
-      console.log('can not find correct compression type, then no need cot decompress');
       return;
     }
 
@@ -213,7 +197,7 @@ export class ZipParserChannel {
   private getCompressionType(file: string): CompressionType {
     const type = path.extname(file).match(/\.(.+)/)[1];
     if (!(type in decompressorMap)) {
-      console.log(`Don't support decompress '${path.extname(file)}' file, can only parse '.zip' file`);
+      logger.info(`Don't support decompress '${path.extname(file)}' file, can only parse '.zip' file`);
       return null;
     }
 
