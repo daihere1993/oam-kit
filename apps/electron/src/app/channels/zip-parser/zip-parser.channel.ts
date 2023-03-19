@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as unzipper from 'unzipper';
 import * as escapeStringRegexp from 'escape-string-regexp';
-import * as xzStream from 'node-liblzma';
+// import * as xzStream from 'node-liblzma';
 import * as zlib from 'zlib';
 import { Rule } from '@oam-kit/shared-interfaces';
 import { Channel, Path, Req } from '@oam-kit/decorators';
@@ -11,31 +11,27 @@ import { StoreService } from '@electron/app/services/store.service';
 import Logger from '@electron/app/core/logger';
 
 const logger = Logger.for('ZipParserChannel');
-
-export enum CompressionType {
-  ZIP = 'zip',
-  XZ = 'xz',
-  GZ = 'gz'
-}
+const COMPRESSION_TYPES = new Set(['.zip', '.gz', '.xz']);
 
 const decompressorMap = {
-  [CompressionType.XZ]: (src: string, dest: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const input = fs.createReadStream(src);
-      const output = fs.createWriteStream(dest);
-      console.time('decompress xz file');
-      output.on('finish', () => {
-        console.timeEnd('decompress xz file');
-        resolve()
-      });
-      output.on('error', (err) => {
-        reject(err);
-      });
+  // 由于在 windows 下使用 node-liblzma 来解压 xz 文件特别慢，W/A 就是让用户自己来解压
+  // ['.xz']: (src: string, dest: string): Promise<void> => {
+  //   return new Promise((resolve, reject) => {
+  //     const input = fs.createReadStream(src);
+  //     const output = fs.createWriteStream(dest);
+  //     console.time('decompress xz file');
+  //     output.on('finish', () => {
+  //       console.timeEnd('decompress xz file');
+  //       resolve()
+  //     });
+  //     output.on('error', (err) => {
+  //       reject(err);
+  //     });
 
-      input.pipe(new xzStream.Unxz()).pipe(output);
-    });
-  },
-  [CompressionType.ZIP]: (src: string, dest: string): Promise<void> => {
+  //     input.pipe(new xzStream.Unxz()).pipe(output);
+  //   });
+  // },
+  ['.zip']: (src: string, dest: string): Promise<void> => {
     return new Promise((resolve, reject) => {
       const unzip = unzipper.Extract({ path: dest });
       const input = fs.createReadStream(src);
@@ -48,7 +44,7 @@ const decompressorMap = {
       input.pipe(unzip);
     });
   },
-  [CompressionType.GZ]: (src: string, dest: string): Promise<void> => {
+  ['.gz']: (src: string, dest: string): Promise<void> => {
     return new Promise((resolve, reject) => {
       const input = fs.createReadStream(src);
       const output = fs.createWriteStream(dest);
@@ -71,16 +67,13 @@ export class ZipParserChannel {
 
   @Path('/unzipByRules')
   public async unzipByRules(@Req req: IpcRequest): Promise<Rule[]> {
-    let rules: Rule[];
-    let src: string;
-    if (this._store) {
-      src = req.data;
-      rules = this._store.getModel<ZipParser>('zipParser').get('rules');
-    } else {
-      rules = req.data.rules;
-      src = req.data.zipPath;
-    }
+    const src = req.data;
+    const rules = this._store.getModel<ZipParser>('zipParser').get('rules');
+    return await this._unzipByRules(src, rules);
+    
+  }
 
+  private async _unzipByRules(src: string, rules: Rule[]): Promise<Rule[]> {
     if (!rules)
       throw new Error(`Can not find any rules, please clean legacy data.`);
 
@@ -89,17 +82,18 @@ export class ZipParserChannel {
     // can only parse '.zip' file
     if (path.extname(src) != '.zip')
       throw(new Error(`Don't support decompress '${path.extname(src)}' file, can only parse '.zip' file`));
-    // if file had been unzipped, delete it
-    if (fs.existsSync(dest))
-      fs.rmSync(dest, { recursive: true, force: true });
+
     // unzip the zip file to the current folder
-    console.time('decompress snapshot');
-    await this.decompress(src);
-    console.timeEnd('decompress snapshot');
+    if (this.isCompressed(src)) {
+      console.time('decompress snapshot');
+      await this.decompress(src);
+      console.timeEnd('decompress snapshot');
+    }
+
     // check if the zip file has snapshot_file_list.txt, if not, throw an error
     if (!fs.existsSync(path.join(dest, 'snapshot_file_list.txt')))
       throw new Error('The zip file does not have snapshot_file_list.txt, thus I can not parse it.');
-    
+
     const snapshotFileListContent = fs.readFileSync(path.join(dest, 'snapshot_file_list.txt'), 'utf8');
     if (!snapshotFileListContent)
       throw new Error('The snapshot_file_list.txt is empty, thus I can not parse it.');
@@ -142,22 +136,16 @@ export class ZipParserChannel {
           throw new Error(`Unable to find subfolder for rule=${rule.name}`);
 
         let subfolder = regexRet[1];
-        if (this.isCompressed(subfolder)) {
-          const dest = await this.decompress(path.join(rule.parsingInfos.rootDir, subfolder));
-          subfolder = path.parse(dest).base;
-        }
+        subfolder = this.isCompressed(subfolder) ?
+          await this.decompress(path.join(rule.parsingInfos.rootDir, subfolder)) : subfolder;
 
-        if (this.isCompressed(item)) {
-          const dest = await this.decompress(path.join(rule.parsingInfos.rootDir, subfolder, item));
-          item = path.parse(dest).base;
-        }
+        item = this.isCompressed(item) ?
+          await this.decompress(path.join(rule.parsingInfos.rootDir, subfolder, item)) : item;
         pathList.push(`${subfolder}/${item}`);
       } else {
         item = item.trim();
-        if (this.isCompressed(item)) {
-          const dest = await this.decompress(path.join(rule.parsingInfos.rootDir, item));
-          item = path.parse(dest).base;
-        }
+        item = this.isCompressed(item) ?
+          await this.decompress(path.join(rule.parsingInfos.rootDir, item)) : item;
         pathList.push(item);
       }
     }
@@ -166,49 +154,53 @@ export class ZipParserChannel {
   }
 
   private async handleSecondRegex(src: string, firstPart: string, rule: Rule): Promise<string[]> {
-    const ret = [];
+    const ret: Set<string> = new Set();
     const files = fs.readdirSync(path.join(src, firstPart));
     for (let file of files) {
       if (rule.secondRegex.test(file)) {
-        if (this.isCompressed(file)) {
-          const dest = await this.decompress(path.join(src, firstPart, file));
-          file = path.parse(dest).base;
-        }
-        ret.push(file);
+        file = this.isCompressed(file) ?
+          await this.decompress(path.join(src, firstPart, file)) : file;
+        ret.add(file);
       }
     }
-    return ret;
+    return Array.from(ret);
   }
 
-  private async decompress(src: string, dest?: string, type?: CompressionType): Promise<string> {
+  private async decompress(src: string, dest?: string, type?: string): Promise<string> {
     type = type || this.getCompressionType(src);
 
+    const filename = path.parse(src).base;
     if (!type) {
-      return;
+      logger.info(`${filename} has not been compressed, then no needs to decompress`);
+      return filename;
+    }
+
+    dest = dest || src.match(new RegExp(`(.+)${type}$`))[1];
+    if (!dest)
+      throw(new Error(`Unable to find correct destination path, src=${src}`));
+    if (fs.existsSync(dest)) {
+      logger.info(`${src} has been decompressed to ${dest}`);
+      return path.parse(dest).base;
     }
 
     const decompressor = decompressorMap[type];
-    if (!decompressor)
-      throw(new Error(`Unsupported compression type: ${type}`));
-
-    dest = dest || src.match(new RegExp(`(.+).${type}$`))[1];
-
-    if (!dest)
-      throw(new Error(`Unable to find correct destination path, src=${src}`));
-
+    if (!decompressor) {
+      logger.info(`Unsupported compression type: ${type}`);
+      return filename;
+    }
     await decompressor(src, dest);
 
-    return dest;
+    return path.parse(dest).base;
   }
 
-  private getCompressionType(file: string): CompressionType {
-    const type = path.extname(file).match(/\.(.+)/)[1];
-    if (!(type in decompressorMap)) {
-      logger.info(`Don't support decompress '${path.extname(file)}' file, can only parse '.zip' file`);
+  private getCompressionType(file: string): string {
+    const type = path.extname(file);
+
+    if (COMPRESSION_TYPES.has(type)) {
+      return type;
+    } else {
       return null;
     }
-
-    return type as CompressionType;
   }
 
   private isUnderSubfolder(name: string): boolean {
@@ -216,6 +208,6 @@ export class ZipParserChannel {
   }
 
   private isCompressed(file: string): boolean {
-    return !!this.getCompressionType(file);
+    return COMPRESSION_TYPES.has(path.extname(file));
   }
 }

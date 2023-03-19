@@ -4,6 +4,9 @@
 /apps/electron/src/__test__/logs
 /apps/electron/src/__test__/tmp
 
+# logs
+/logs
+
 # compiled output
 /dist
 /tmp
