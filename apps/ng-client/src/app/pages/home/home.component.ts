@@ -9,42 +9,33 @@ interface Menu {
 
 @Component({
   selector: 'app-root',
+  styleUrls: ['./home.component.scss'],
   template: `
-    <style>
-      .container {
-        height: 100%;
-        width: 100%;
-      }
-
-      .content_container {
-        padding: 20px;
-        height: 100%;
-      }
-      .nav-menu-item:not(.ant-menu-item-selected):hover {
-        background: #f0f2f5;
-      }
-    </style>
     <nz-layout class="container">
-      <nz-sider nzTheme="light" nzWidth="180px">
-        <ul nz-menu nzTheme="light">
-          <li class="nav-menu-item" nz-menu-item nzMatchRouter *ngFor="let menu of menus">
-            <a [routerLink]="menu.link">
-              <i *ngIf="!menu.isCustomIcon; else custom_icon" nz-icon [nzType]="menu.icon" nzTheme="outline"></i>
-              <ng-template #custom_icon>
-                <i nz-icon [nzIconfont]="menu.icon"></i>
-              </ng-template>
-              <span>{{ menu.name }}</span>
-            </a>
-          </li>
-        </ul>
-      </nz-sider>
-      <nz-layout style="padding: 10px;">
-        <nz-content style="background-color: white; position: relative; overflow: auto;">
-          <div class="content_container">
-            <router-outlet></router-outlet>
-          </div>
-        </nz-content>
-      </nz-layout>
+      <nz-content class="main-wrapper">
+        <nz-layout>
+          <nz-sider nzTheme="light" nzWidth="180px">
+            <ul nz-menu nzMode="inline" nzTheme="light" style="height: 100%">
+              <li class="nav-menu-item" nz-menu-item nzMatchRouter *ngFor="let menu of menus">
+                <a [routerLink]="menu.link">
+                  <i *ngIf="!menu.isCustomIcon; else custom_icon" nz-icon [nzType]="menu.icon" nzTheme="outline"></i>
+                  <ng-template #custom_icon>
+                    <i nz-icon [nzIconfont]="menu.icon"></i>
+                  </ng-template>
+                  <span>{{ menu.name }}</span>
+                </a>
+              </li>
+            </ul>
+          </nz-sider>
+          
+          <nz-content style="background-color: white; position: relative; overflow: scroll;">
+            <div class="content-container">
+              <router-outlet></router-outlet>
+            </div>
+          </nz-content>
+        </nz-layout>
+      </nz-content>
+      <nz-footer>OAM-KIT @2023 Powered by @Luke Wu(luke.wu@nokia-sbell.com)</nz-footer>
     </nz-layout>
   `,
 })

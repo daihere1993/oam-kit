@@ -1,0 +1,28 @@
+.container {
+  height: 100%;
+  width: 100%;
+}
+.main-wrapper {
+  margin-bottom: 46px;
+}
+.content-container {
+  padding: 20px;
+  min-height: 440px;
+}
+.nav-menu-item:not(.ant-menu-item-selected):hover {
+  background: #f0f2f5;
+}
+nz-layout {
+  height: 100%;
+}
+nz-footer {
+  width: 100%;
+  height: 46px;
+  bottom: 0;
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: gray;
+  font-size: 12px;
+}
