@@ -22,11 +22,11 @@ const routes: Route[] = [
   //   loadChildren: () => import('./pages/login/login.module')
   //     .then(m => m.LoginModule),
   // },
-  {
-    path: 'env-checking',
-    loadChildren: () => import('./pages/env-checking/env-checking.module')
-      .then(m => m.EnvCheckingModule),
-  },
+  // {
+  //   path: 'env-checking',
+  //   loadChildren: () => import('./pages/env-checking/env-checking.module')
+  //     .then(m => m.EnvCheckingModule),
+  // },
 ];
 
 @NgModule({

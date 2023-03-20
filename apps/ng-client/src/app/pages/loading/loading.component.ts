@@ -27,9 +27,14 @@ export class LoadingComponent implements OnInit {
   constructor(private auth: AuthService, private envService: EnvService, private router: Router) {}
 
   async ngOnInit() {
-    this.spinTip = 'Checking necessary commands...'
-    if (await this.envService.isCommandsReady()) {
+    this.spinTip = 'Initializing...'
+    setTimeout(() => {
       this.router.navigateByUrl('home');
+    }, 1000);
+
+    // this.spinTip = 'Checking necessary commands...'
+    // if (await this.envService.isCommandsReady()) {
+    //   this.router.navigateByUrl('home');
 
       // this.spinTip = 'Checking user authentication...'
       // if (this.auth.isEmptyAccount() || !await this.auth.isValidAuthentication()) {
@@ -37,8 +42,8 @@ export class LoadingComponent implements OnInit {
       // } else {
       //   this.router.navigateByUrl('home');
       // }
-    } else {
-      this.router.navigateByUrl('env-checking');
-    }
+    // } else {
+    //   this.router.navigateByUrl('env-checking');
+    // }
   }
 }
