@@ -96,9 +96,9 @@ import { NzMessageService } from 'ng-zorro-antd/message';
           <p class="upload-drag-icon">
             <span nz-icon nzType="inbox"></span>
           </p>
-          <p class="upload-text">Click or drag snapshot to this area</p>
+          <p class="upload-text">Drag or copy snapshot to this area</p>
           <p class="upload-hint">
-            Please make sure the file you upload is snapshot which collected from WEBEM.
+            Please make sure the file you drag is a snapshot which collected from WEBEM.
           </p>
         </ng-template>
       </div>
