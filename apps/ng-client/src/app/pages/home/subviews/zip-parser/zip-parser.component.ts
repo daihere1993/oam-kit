@@ -107,17 +107,9 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 })
 export class ZipParserComponent {
   get hasParsed(): boolean {
-    if (this.rules.length == 0) {
-      return false;
-    }
-
-    const ims2PathLength = this.rules[0].parsingInfos.pathList.length;
-    const soapPathLength = this.rules[1].parsingInfos.pathList.length;
-    const moamRuntimePathLength = this.rules[2].parsingInfos.pathList.length;
-
-    return !!ims2PathLength || !!soapPathLength || !!moamRuntimePathLength;
+    return this.isParsing === false;
   }
-  isParsing = false;
+  isParsing: boolean = null;
 
   rules: Rule[] = [];
 
@@ -127,7 +119,10 @@ export class ZipParserComponent {
   @HostListener('window:paste', ['$event'])
   async onPaste(e: ClipboardEvent) {
     if (e && e.clipboardData) {
-      this.startParsing(e.clipboardData.files[0].path);
+      const file = e.clipboardData.files[0];
+      if (file) {
+        this.startParsing(file.path);
+      }
     }
   }
 
