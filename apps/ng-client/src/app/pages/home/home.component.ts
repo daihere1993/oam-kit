@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { IpcService } from '@ng-client/core/services/ipc.service';
+import { AppInfo, IpcResponseCode } from '@oam-kit/shared-interfaces';
 
 interface Menu {
   name: string;
@@ -35,14 +37,26 @@ interface Menu {
           </nz-content>
         </nz-layout>
       </nz-content>
-      <nz-footer>OAM-KIT @2023 Powered by @Luke Wu(luke.wu@nokia-sbell.com)</nz-footer>
+      <nz-footer>
+        {{ appInfo?.version + " " + appInfo?.name }} @2023 Powered by @Luke Wu(luke.wu@nokia-sbell.com)
+      </nz-footer>
     </nz-layout>
   `,
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
+  appInfo: AppInfo;
   menus: Menu[] = [
     { name: 'Snapshot Parser', icon: 'file-zip', link: '/home/zip-parser', isCustomIcon: false },
     { name: 'Code Synchronizer', icon: 'sync', link: '/home/sync-code', isCustomIcon: false },
     { name: 'Knife Generator', icon: 'icon-jenkins', link: '/home/knife-generator', isCustomIcon: true },
   ];
+
+  constructor(private _ipcService: IpcService) {}
+
+  async ngOnInit() {
+    const res = await this._ipcService.send('/app_info/get_app_info');
+    if (res.code === IpcResponseCode.success) {
+      this.appInfo = res.data;
+    }
+  }
 }

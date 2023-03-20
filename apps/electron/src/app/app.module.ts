@@ -8,6 +8,7 @@ import { SyncCodeChannel } from './channels/sync-code/sync-code.channel';
 import { KnifeGeneratorChannel } from './channels/knife-generator.channel';
 import { StoreService } from './services/store.service';
 import { ZipParserChannel } from './channels/zip-parser/zip-parser.channel';
+import { AppInfoChannel } from './channels/app-info.channel';
 
 @Module({
   channels: [
@@ -19,6 +20,7 @@ import { ZipParserChannel } from './channels/zip-parser/zip-parser.channel';
     SyncCodeChannel,
     KnifeGeneratorChannel,
     ZipParserChannel,
+    AppInfoChannel,
   ],
   providers: [StoreService],
 })
