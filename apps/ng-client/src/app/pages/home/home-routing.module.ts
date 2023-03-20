@@ -25,7 +25,7 @@ const routes: HomeRoute[] = [
       },
       {
         path: '',
-        redirectTo: 'sync-code',
+        redirectTo: 'zip-parser',
         pathMatch: 'full',
       }
     ],
