@@ -30,7 +30,7 @@ interface Menu {
             </ul>
           </nz-sider>
           
-          <nz-content style="background-color: white; position: relative; overflow: scroll;">
+          <nz-content style="background-color: white; position: relative; overflow: auto;">
             <div class="content-container">
               <router-outlet></router-outlet>
             </div>
