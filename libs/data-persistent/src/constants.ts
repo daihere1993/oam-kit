@@ -15,8 +15,10 @@ export const DEFAULT_APP_DATA: APPData = {
       { name: 'ims2', firstRegex: /.+\.ims2/, parsingInfos: { pathList: [] } },
       // soap messages
       { name: 'soap messages', firstRegex: /.+SOAPMessageTrace.+/, parsingInfos: { pathList: [] } },
-      // moam runtime log
-      { name: 'moam runtime log', firstRegex: /.+_(?:\d{4})_runtime\.zip/, secondRegex: /runtime_BTSOM\.log/, parsingInfos: { pathList: [] } },
+      // OAM runtime log
+      { name: 'oam runtime log', firstRegex: /.+_(?:\d{2}11)_runtime\.zip/, secondRegex: /runtime_BTSOM\.log/, parsingInfos: { pathList: [] } },
+      // OAM pm log
+      { name: 'oam pm log', firstRegex: /.+_(?:\d{2}11)_pm_(?:\d+)_syslog\.zip/, secondRegex: /runtime_BTSOM\.log/, parsingInfos: { pathList: [] } },
     ],
   },
 };

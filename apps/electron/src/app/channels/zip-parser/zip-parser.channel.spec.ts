@@ -71,6 +71,32 @@ describe('ZipParser: private method', () => {
       expect(moamLogRule.parsingInfos.pathList)
         .toContain('BTS1900_1011_part_3/BTS1900_1011_runtime/runtime_BTSOM.log.xz');
     }, 30000);
+    it('should get all oam pm logs file correctly', async () => {
+      const rules: Rule[] = [
+        {
+          name: 'oam pm log',
+          firstRegex: /.+_(?:\d{2}11)_pm_(?:\d+)_syslog\.zip/,
+          secondRegex: /runtime_BTSOM\.log/,
+          parsingInfos: { pathList: [] },
+        },
+      ];
+      // @ts-ignore
+      const retRules = await zipParser._unzipByRules(src, rules);
+      expect(retRules.length).toBe(1);
+      const oamPmLogs = retRules[0];
+
+      expect(oamPmLogs.parsingInfos.pathList.length).toBe(5);
+      expect(oamPmLogs.parsingInfos.pathList)
+        .toContain('BTS1900_1011_part_5/BTS1900_1011_pm_1_syslog/runtime_BTSOM.log.xz');
+      expect(oamPmLogs.parsingInfos.pathList)
+        .toContain('BTS1900_1011_part_5/BTS1900_1011_pm_2_syslog/runtime_BTSOM.log.xz');
+      expect(oamPmLogs.parsingInfos.pathList)
+        .toContain('BTS1900_1011_part_6/BTS1900_1011_pm_3_syslog/runtime_BTSOM.log.xz');
+      expect(oamPmLogs.parsingInfos.pathList)
+        .toContain('BTS1900_1011_part_7/BTS1900_1011_pm_4_syslog/runtime_BTSOM.log.xz');
+      expect(oamPmLogs.parsingInfos.pathList)
+        .toContain('BTS1900_1011_part_8/BTS1900_1011_pm_5_syslog/runtime_BTSOM.log.xz');
+    }, 30000);
     it('should get all moam_runtime(2011).log.xz files correctlly', () => {});
     it('should get all moam_runtime(1011).log files correctlly when file has been decompressed', () => {});
   });
