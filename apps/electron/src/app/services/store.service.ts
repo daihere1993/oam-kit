@@ -53,7 +53,8 @@ export class StoreService extends StoreBase {
       const timestamp = this.createTimestamp();
       const dataFiles = glob
         .sync(path.join(userDataDir, '*.json'))
-        .filter(file => regex.test(file));
+        .filter(file => regex.test(file))
+        .map(file => path.join(file));
 
       if (!fs.existsSync(userDataDir)) {
         fs.mkdirSync(userDataDir);

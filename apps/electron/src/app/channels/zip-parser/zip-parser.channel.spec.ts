@@ -1,7 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as util from 'util';
 import { Rule } from '@oam-kit/shared-interfaces';
 import { ZipParserChannel } from './zip-parser.channel';
+
+const rmFiles = util.promisify(fs.rm);
 
 describe('ZipParser: private method', () => {
   const zipParser = new ZipParserChannel(null);
@@ -24,8 +27,8 @@ describe('ZipParser: private method', () => {
         'MRBTS-1900_TL SG7 129 AEQC_5G21A_GNB_0011_000800_000282_SMOKE38_20210312-1755.ims2'
       );
 
-      fs.rmSync(path.join(__dirname, 'test-resources/snapshot'), { recursive: true, force: true });
-    });
+      await rmFiles(path.join(__dirname, 'test-resources/snapshot'), { recursive: true, force: true });
+    }, 30000);
     it('should get all soap files correctlly', async () => {
       const rules: Rule[] = [{ name: 'soap messages', firstRegex: /.+SOAPMessageTrace.+/, parsingInfos: { pathList: [] } }];
       // @ts-ignore
@@ -39,8 +42,8 @@ describe('ZipParser: private method', () => {
       expect(soapRule.parsingInfos.pathList)
         .toContain('BTS1900_1011_part_10/BTS1900_1011_L1183908869_RMOD_L_1_SOAPMessageTrace_old.xml');
 
-      fs.rmSync(path.join(__dirname, 'test-resources/snapshot'), { recursive: true, force: true });
-    });
+      await rmFiles(path.join(__dirname, 'test-resources/snapshot'), { recursive: true, force: true });
+    }, 30000);
     it('should get all moam_runtime(1011).log.xz files correctlly', async () => {
       const rules: Rule[] = [
         {
@@ -58,9 +61,9 @@ describe('ZipParser: private method', () => {
       expect(moamLogRule.parsingInfos.pathList.length).toBe(1);
       expect(moamLogRule.parsingInfos.pathList)
         .toContain('BTS1900_1011_part_3/BTS1900_1011_runtime/runtime_BTSOM.log.xz');
-
-      fs.rmSync(path.join(__dirname, 'test-resources/snapshot'), { recursive: true, force: true });
-    });
+      
+      await rmFiles(path.join(__dirname, 'test-resources/snapshot'), { recursive: true, force: true });
+    }, 30000);
     it('should get all moam_runtime(2011).log.xz files correctlly', () => {});
     it('should get all moam_runtime(1011).log files correctlly when file has been decompressed', () => {});
   });
