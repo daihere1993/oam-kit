@@ -97,6 +97,27 @@ describe('ZipParser: private method', () => {
       expect(oamPmLogs.parsingInfos.pathList)
         .toContain('BTS1900_1011_part_8/BTS1900_1011_pm_5_syslog/runtime_BTSOM.log.xz');
     }, 30000);
+    it('should get all radio side soap message file correctly', async () => {
+      const rules: Rule[] = [
+        {
+          name: 'radio side soap messages',
+          firstRegex: /.+_UnitOAM_SOAP_Log\.zip/,
+          secondRegex: /./,
+          parsingInfos: { pathList: [] },
+        },
+      ];
+      // @ts-ignore
+      const retRules = await zipParser._unzipByRules(src, rules);
+      expect(retRules.length).toBe(1);
+      const radioSideSoapMessages = retRules[0];
+
+      expect(radioSideSoapMessages.parsingInfos.pathList.length).toBe(2);
+      expect(radioSideSoapMessages.parsingInfos.pathList)
+        .toContain('BTS_part4/BTS_DH223848227_RMOD_L_1_UnitOAM_SOAP_Log/UnitOAM_SOAP_Runtime_Log');
+      expect(radioSideSoapMessages.parsingInfos.pathList)
+        .toContain('BTS_part4/BTS_DH223848227_RMOD_L_1_UnitOAM_SOAP_Log/UnitOAM_SOAP_Startup_LBTS_OM_L1230610640_Log');
+    }, 30000);
+    
     it('should get all moam_runtime(2011).log.xz files correctlly', () => {});
     it('should get all moam_runtime(1011).log files correctlly when file has been decompressed', () => {});
   });

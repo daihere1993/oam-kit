@@ -13,12 +13,14 @@ export const DEFAULT_APP_DATA: APPData = {
     rules: [
       // ims2
       { name: 'ims2', firstRegex: /.+\.ims2/, parsingInfos: { pathList: [] } },
-      // soap messages
-      { name: 'soap messages', firstRegex: /.+SOAPMessageTrace.+/, parsingInfos: { pathList: [] } },
       // OAM runtime log
       { name: 'oam runtime log', firstRegex: /.+_(?:\d{2}11)_runtime\.zip/, secondRegex: /runtime_BTSOM\.log/, parsingInfos: { pathList: [] } },
-      // OAM pm log
-      { name: 'oam pm log', firstRegex: /.+_(?:\d{2}11)_pm_(?:\d+)_syslog\.zip/, secondRegex: /runtime_BTSOM\.log/, parsingInfos: { pathList: [] } },
+      // OAM pm runtime log
+      { name: 'oam pm runtime log', firstRegex: /.+_(?:\d{2}11)_pm_(?:\d+)_syslog\.zip/, secondRegex: /runtime_BTSOM\.log/, parsingInfos: { pathList: [] } },
+      // rumag soap messages
+      { name: 'rumag side soap messages', firstRegex: /.+SOAPMessageTrace.+/, parsingInfos: { pathList: [] } },
+      // radio side soap message
+      { name: 'radio side soap messages', firstRegex: /.+_UnitOAM_SOAP_Log\.zip/, secondRegex: /./, parsingInfos: { pathList: [] } }
     ],
   },
 };
