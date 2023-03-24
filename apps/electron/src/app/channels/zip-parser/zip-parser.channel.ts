@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as unzipper from 'unzipper';
+import * as StreamZip from 'node-stream-zip';
 import * as escapeStringRegexp from 'escape-string-regexp';
 // import * as xzStream from 'node-liblzma';
 import * as zlib from 'zlib';
@@ -31,18 +31,13 @@ const decompressorMap = {
   //     input.pipe(new xzStream.Unxz()).pipe(output);
   //   });
   // },
-  ['.zip']: (src: string, dest: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const unzip = unzipper.Extract({ path: dest });
-      const input = fs.createReadStream(src);
-
-      unzip.on('finish', () => resolve());
-      unzip.on('error', (err) => {
-        reject(err);
-      });
-
-      input.pipe(unzip);
-    });
+  ['.zip']: async (src: string, dest: string): Promise<void> => {
+    const zip = new StreamZip.async({ file: src });
+    if (!fs.existsSync(dest)) {
+      fs.mkdirSync(dest);
+    }
+    await zip.extract(null, dest);
+    await zip.close();
   },
   ['.gz']: (src: string, dest: string): Promise<void> => {
     return new Promise((resolve, reject) => {

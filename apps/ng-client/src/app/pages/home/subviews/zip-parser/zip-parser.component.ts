@@ -144,7 +144,9 @@ export class ZipParserComponent {
 
     const res = await this._ipcService.send('/file/select_path', { isDirectory: false });
     if (res.code === IpcResponseCode.success) {
-      await this.startParsing(res.data);
+      if (res.data) {
+        await this.startParsing(res.data);
+      }
     } else {
       this._message.error(res.description);
     }
