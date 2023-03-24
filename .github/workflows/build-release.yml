@@ -1,4 +1,4 @@
-name: 'Build and release app'
+name: 'Build and release app after PR closed'
 
 on:
   pull_request:
@@ -8,29 +8,70 @@ on:
       - closed
 
 jobs:
-  release:
+  buid-release-app:
     if: github.event.pull_request.merged == true
     runs-on: windows-latest
     env:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
+      - name: Show github.ref
+        run: echo ${{ github.ref }}
+      - name: Show github.base_ref
+        run: echo ${{ github.base_ref }}
+        
       - name: Check out repository code
         uses: actions/checkout@master
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          branches: ${{ github.base_ref }}
+
+      - name: Git config
+        run: |
+          git config --global user.email "${{ secrets.GH_EMAIL }}"
+          git config --global user.name "${{ secrets.GH_NAME }}"
+
+      - name: Show current branch
+        run: git branch --show-current
+      - name: Show current revision
+        run: git rev-parse HEAD
 
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v1
         with:
           node-version: 18.15.0
-        
-      - name: Setup project
-        run: yarn
+
+      - name: Installing project dependancies
+        run: yarn install --network-timeout 1000000
 
       - name: Apply version bump(major) then release app
         if: contains(github.event.pull_request.labels.*.name, 'major')
         run: npm version major
+        env:
+          NEED_PUBLISH: Yes
       - name: Apply version bump(minor) then release app
         if: contains(github.event.pull_request.labels.*.name, 'minor')
         run: npm version minor
+        env:
+          NEED_PUBLISH: Yes
       - name: Apply version bump(patch) then release app
         if: contains(github.event.pull_request.labels.*.name, 'patch')
         run: npm version patch
+        env:
+          NEED_PUBLISH: Yes
+
+      - name: Show current tag
+        run: git describe --tags
+      - name: Show if need publish
+        run: echo $NEED_PUBLISH
+
+      - name: Publish windows app
+        if: ${{ env.NEED_PUBLISH == 'Yes' }}
+        run: yarn publish:win
+
+      - name: Push changes
+        if: ${{ env.NEED_PUBLISH == 'Yes' }}
+        uses: ad-m/github-push-action@master
+        with:
+          tags: true
+          branch: ${{ github.base_ref }}
+          github_token: ${{ secrets.GH_TOKEN }}
