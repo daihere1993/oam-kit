@@ -1,0 +1,21 @@
+name: 'Dev - PR Label Checker'
+on:
+  pull_request:
+    types:
+      - reopened
+      - labeled
+      - unlabeled
+jobs:
+  check_labels:
+    name: 'Check PR Labels'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@master
+      # 因为需要通过 PR label 来确认是否需要发布新版本，所以 major, minor, patch 这三个 label 在 PR 中只能存在一个
+      - uses: mheap/github-action-required-labels@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          mode: exactly
+          count: 1
+          labels: 'major, minor, patch'
