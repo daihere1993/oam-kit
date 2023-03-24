@@ -23,7 +23,7 @@ describe('ZipParser: private method', () => {
 
     afterEach(async () => {
       await cleanupFiles();
-    })
+    });
 
     it('should get all ims2 files correctlly', async () => {
       const rules: Rule[] = [{ name: 'ims2', firstRegex: /.+\.ims2/, parsingInfos: { pathList: [] } }];
@@ -117,8 +117,21 @@ describe('ZipParser: private method', () => {
       expect(radioSideSoapMessages.parsingInfos.pathList)
         .toContain('BTS_part4/BTS_DH223848227_RMOD_L_1_UnitOAM_SOAP_Log/UnitOAM_SOAP_Startup_LBTS_OM_L1230610640_Log');
     }, 30000);
-    
+
     it('should get all moam_runtime(2011).log.xz files correctlly', () => {});
     it('should get all moam_runtime(1011).log files correctlly when file has been decompressed', () => {});
+  });
+
+  describe('despressor():', () => {
+    it('should decompress BTS_part3.zip correctly', async () => {
+      const src = path.join(__dirname, 'test-resources/BTS_part4.zip');
+      const dest = path.join(__dirname, 'test-resources/BTS_part4');
+      // @ts-ignore
+      await zipParser.decompress(src, dest);
+      const files = fs.readdirSync(dest);
+      expect(files.length).toBe(3);
+
+      fs.rmSync(dest, { recursive: true, force: true });
+    });
   });
 });
