@@ -57,7 +57,7 @@ describe('ZipParser: private method', () => {
       const rules: Rule[] = [
         {
           name: 'moam_runtime.log',
-          firstRegex: /.+_(?:\d{2}11)_runtime\.zip/,
+          firstRegex: /.+BTS(?:\d+)_(?:\d011)_runtime\.zip/,
           secondRegex: /runtime_BTSOM\.log/,
           parsingInfos: { pathList: [] },
         },
@@ -75,7 +75,7 @@ describe('ZipParser: private method', () => {
       const rules: Rule[] = [
         {
           name: 'oam pm log',
-          firstRegex: /.+_(?:\d{2}11)_pm_(?:\d+)_syslog\.zip/,
+          firstRegex: /.+BTS(?:\d+)_(?:\d011)_pm_(?:\d+)_syslog\.zip/,
           secondRegex: /runtime_BTSOM\.log/,
           parsingInfos: { pathList: [] },
         },

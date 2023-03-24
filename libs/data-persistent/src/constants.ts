@@ -14,9 +14,9 @@ export const DEFAULT_APP_DATA: APPData = {
       // ims2
       { name: 'ims2', firstRegex: /.+\.ims2/, parsingInfos: { pathList: [] } },
       // OAM runtime log
-      { name: 'oam runtime log', firstRegex: /.+_(?:\d{2}11)_runtime\.zip/, secondRegex: /runtime_BTSOM\.log/, parsingInfos: { pathList: [] } },
+      { name: 'oam runtime log', firstRegex: /.+BTS(?:\d+)_(?:\d011)_runtime\.zip/, secondRegex: /runtime_BTSOM\.log/, parsingInfos: { pathList: [] } },
       // OAM pm runtime log
-      { name: 'oam pm runtime log', firstRegex: /.+_(?:\d{2}11)_pm_(?:\d+)_syslog\.zip/, secondRegex: /runtime_BTSOM\.log/, parsingInfos: { pathList: [] } },
+      { name: 'oam pm runtime log', firstRegex: /.+BTS(?:\d+)_(?:\d011)_pm_(?:\d+)_syslog\.zip/, secondRegex: /runtime_BTSOM\.log/, parsingInfos: { pathList: [] } },
       // rumag soap messages
       { name: 'rumag side soap messages', firstRegex: /.+SOAPMessageTrace.+/, parsingInfos: { pathList: [] } },
       // radio side soap message
