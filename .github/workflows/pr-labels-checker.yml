@@ -1,13 +1,14 @@
-name: 'Dev - PR Label Checker'
+name: 'PR Label Checker'
 on:
   pull_request:
+    branches:
+      - master
     types:
       - reopened
       - labeled
       - unlabeled
 jobs:
   check_labels:
-    name: 'Check PR Labels'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@master
