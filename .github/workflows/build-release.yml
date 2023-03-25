@@ -63,10 +63,6 @@ jobs:
       - name: Show if need to publish app
         run: echo "${{ env.NEED_PUBLISH }}"
 
-      - name: Publish windows app
-        if: ${{ env.NEED_PUBLISH == 'Yes' }}
-        run: yarn publish:win
-
       - name: Push changes
         if: ${{ env.NEED_PUBLISH == 'Yes' }}
         uses: ad-m/github-push-action@master
@@ -74,3 +70,7 @@ jobs:
           tags: true
           branch: ${{ github.base_ref }}
           github_token: ${{ secrets.GH_TOKEN }}
+
+      - name: Publish windows app
+        if: ${{ env.NEED_PUBLISH == 'Yes' }}
+        run: yarn publish:win
