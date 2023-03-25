@@ -1,0 +1,13 @@
+name: 'test'
+
+on: [push]
+
+jobs:
+  django:
+    runs-on: windows-latest
+    env:
+      TEST_VAR: Nothing
+    steps:
+      - name: "step1"
+        run: echo "TEST_VAR=STEP1" >> $env:GITHUB_ENV
+      - run: echo "${{ env.TEST_VAR }}"
