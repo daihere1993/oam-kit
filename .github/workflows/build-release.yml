@@ -14,8 +14,10 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
-      - run: echo ${{ github.ref }}
-      - run: echo ${{ github.base_ref }}
+      - name: Show github.ref
+        run: echo ${{ github.ref }}
+      - name: Show github.base_ref
+        run: echo ${{ github.base_ref }}
         
       - name: Check out repository code
         uses: actions/checkout@master
@@ -30,8 +32,8 @@ jobs:
 
       - name: Show current branch
         run: git branch --show-current
-      - name: Show latest commit
-        run: git log --name-status HEAD^..HEAD
+      - name: Show current revision
+        run: git rev-parse HEAD
 
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v1
