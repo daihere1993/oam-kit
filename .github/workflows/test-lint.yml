@@ -1,6 +1,6 @@
 name: oam-kit CI
 on:
-  push:
+  pull_request:
     paths:
       - 'apps/**'
       - 'libs/**'
