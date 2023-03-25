@@ -12,6 +12,7 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: windows-latest
     env:
+      NEED_PUBLISH: No
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
       - name: Show github.ref
@@ -45,22 +46,22 @@ jobs:
 
       - name: Apply version bump(major) then release app
         if: contains(github.event.pull_request.labels.*.name, 'major')
-        run: npm version major
-        env:
-          NEED_PUBLISH: Yes
+        run: |
+          npm version major
+          echo "NEED_PUBLISH=Yes" >> $env:GITHUB_ENV
       - name: Apply version bump(minor) then release app
         if: contains(github.event.pull_request.labels.*.name, 'minor')
-        run: npm version minor
-        env:
-          NEED_PUBLISH: Yes
+        run: |
+          npm version minor
+          echo "NEED_PUBLISH=Yes" >> $env:GITHUB_ENV
       - name: Apply version bump(patch) then release app
         if: contains(github.event.pull_request.labels.*.name, 'patch')
-        run: npm version patch
-        env:
-          NEED_PUBLISH: Yes
+        run: |
+          npm version patch
+          echo "NEED_PUBLISH=Yes" >> $env:GITHUB_ENV
 
-      - name: Show if need publish
-        run: echo $NEED_PUBLISH
+      - name: Show if need to publish app
+        run: echo "${{ env.NEED_PUBLISH }}"
 
       - name: Publish windows app
         if: ${{ env.NEED_PUBLISH == 'Yes' }}
