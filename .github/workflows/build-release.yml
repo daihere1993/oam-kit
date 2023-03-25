@@ -59,8 +59,6 @@ jobs:
         env:
           NEED_PUBLISH: Yes
 
-      - name: Show current tag
-        run: git describe --tags
       - name: Show if need publish
         run: echo $NEED_PUBLISH
 
