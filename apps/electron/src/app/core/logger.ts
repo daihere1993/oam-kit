@@ -1,5 +1,4 @@
 import * as path from 'path';
-import { app } from 'electron';
 import { getUserDataDir } from '@oam-kit/utility/backend';
 import { createLogger, format, LoggerOptions, transports } from 'winston';
 
