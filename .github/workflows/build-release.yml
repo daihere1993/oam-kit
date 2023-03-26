@@ -9,7 +9,12 @@ on:
 
 jobs:
   buid-release-app:
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true &&
+      (
+        contains(github.event.pull_request.labels.*.name, 'major') ||
+        contains(github.event.pull_request.labels.*.name, 'minor') ||
+        contains(github.event.pull_request.labels.*.name, 'patch')
+      )
     runs-on: windows-latest
     env:
       NEED_PUBLISH: No
@@ -40,9 +45,10 @@ jobs:
         run: git rev-parse HEAD
 
       - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 18.15.0
+          cache: 'yarn'
 
       - name: Installing project dependancies
         run: yarn install --network-timeout 1000000

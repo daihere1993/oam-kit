@@ -12,9 +12,10 @@ jobs:
         uses: actions/checkout@master
 
       - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 18.15.0
+          cache: 'yarn'
 
       - name: Installing project dependancies
         run: yarn install --network-timeout 1000000
