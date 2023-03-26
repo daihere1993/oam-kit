@@ -8,11 +8,19 @@ jobs:
   lint-ut:
     runs-on: windows-latest
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@master
-      - run: yarn install
-      - run: yarn lint
-      - run: yarn test
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18.15.0
+
+      - name: Installing project dependancies
+        run: yarn install --network-timeout 1000000
+
+      - name: Run eslint
+        run: yarn lint
+
+      - name: Run test
+        run: yarn test
