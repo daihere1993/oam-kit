@@ -65,24 +65,31 @@ export class ZipParserChannel {
     const src = req.data;
     const rules = this._store.getModel<ZipParser>('zipParser').get('rules');
     return await this._unzipByRules(src, rules);
-    
   }
 
   private async _unzipByRules(src: string, rules: Rule[]): Promise<Rule[]> {
     if (!rules)
       throw new Error(`Can not find any rules, please clean legacy data.`);
 
-    const dest = path.join(path.dirname(src), path.parse(src).name);
+    if (!fs.existsSync(src))
+      throw new Error(`Can not find the file ${src}`);
 
-    // can only parse '.zip' file
-    if (path.extname(src) != '.zip')
-      throw(new Error(`Don't support decompress '${path.extname(src)}' file, can only parse '.zip' file`));
+    let dest: string;
 
-    // unzip the zip file to the current folder
-    if (this.isCompressed(src)) {
-      console.time('decompress snapshot');
-      await this.decompress(src);
-      console.timeEnd('decompress snapshot');
+    if (this.isFolder(src)) {
+      dest = src;
+    } else {
+      // can only parse '.zip' file
+      if (path.extname(src) != '.zip')
+        throw(new Error(`Don't support decompress '${path.extname(src)}' file, can only parse '.zip' file`));
+  
+      dest = path.join(path.dirname(src), path.parse(src).name);
+      // unzip the zip file to the current folder
+      if (this.isCompressed(src)) {
+        console.time('decompress snapshot');
+        await this.decompress(src);
+        console.timeEnd('decompress snapshot');
+      }
     }
 
     // check if the zip file has snapshot_file_list.txt, if not, throw an error
@@ -208,5 +215,13 @@ export class ZipParserChannel {
 
   private isCompressed(file: string): boolean {
     return COMPRESSION_TYPES.has(path.extname(file));
+  }
+
+  private isFolder(src: string): boolean {
+    if (fs.existsSync(src)) {
+      return fs.lstatSync(src).isDirectory();
+    } else {
+      return false;
+    }
   }
 }
