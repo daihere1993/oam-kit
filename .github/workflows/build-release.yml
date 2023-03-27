@@ -56,17 +56,17 @@ jobs:
       - name: Apply version bump(major) then release app
         if: contains(github.event.pull_request.labels.*.name, 'major')
         run: |
-          npm version major -m "Upgrade app to v%s"
+          npm version major -m "Upgrade to v%s"
           echo "NEED_PUBLISH=Yes" >> $env:GITHUB_ENV
       - name: Apply version bump(minor) then release app
         if: contains(github.event.pull_request.labels.*.name, 'minor')
         run: |
-          npm version minor -m "Upgrade app to v%s"
+          npm version minor -m "Upgrade to v%s"
           echo "NEED_PUBLISH=Yes" >> $env:GITHUB_ENV
       - name: Apply version bump(patch) then release app
         if: contains(github.event.pull_request.labels.*.name, 'patch')
         run: |
-          npm version patch -m "Upgrade app to v%s"
+          npm version patch -m "Upgrade to v%s"
           echo "NEED_PUBLISH=Yes" >> $env:GITHUB_ENV
 
       - name: Show if need to publish app
