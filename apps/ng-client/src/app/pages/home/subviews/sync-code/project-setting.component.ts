@@ -6,7 +6,7 @@ import { NzSelectComponent } from 'ng-zorro-antd/select';
 import { Observable, Observer } from 'rxjs';
 import { IpcService } from '../../../../core/services/ipc.service';
 import { NotificationService } from '../../../../core/services/notification.service';
-import { Preferences, Project, RepositoryType } from '@oam-kit/shared-interfaces';
+import { Preferences, Project } from '@oam-kit/shared-interfaces';
 import { Model } from '@oam-kit/data-persistent';
 
 export enum DialogAction {
@@ -50,16 +50,6 @@ export interface DialogRes {
           <nz-form-label [nzSm]="8" nzRequired nzFor="name">Name</nz-form-label>
           <nz-form-control [nzSm]="13">
             <input nz-input name="name" data-test="project-name-input" formControlName="name" />
-          </nz-form-control>
-        </nz-form-item>
-
-        <nz-form-item>
-          <nz-form-label [nzSm]="8" nzRequired nzFor="versionControl">VersionControl</nz-form-label>
-          <nz-form-control [nzSm]="13">
-            <nz-select formControlName="versionControl" data-test="project-versionControl-input">
-              <nz-option nzLabel="svn" nzValue="svn"></nz-option>
-              <nz-option nzLabel="git" nzValue="git"></nz-option>
-            </nz-select>
           </nz-form-control>
         </nz-form-item>
 
@@ -165,7 +155,6 @@ export class ProjectSettingComponent implements OnInit {
     serverAddr: null,
     localPath: null,
     remotePath: null,
-    versionControl: RepositoryType.SVN,
   };
 
   @ViewChild(NzSelectComponent) selectComp: NzSelectComponent;
@@ -242,7 +231,6 @@ export class ProjectSettingComponent implements OnInit {
       serverAddr: [this.data.serverAddr, [Validators.required], [this.serverAddrValidator]],
       localPath: [this.data.localPath, [Validators.required]],
       remotePath: [this.data.remotePath, [Validators.required], [this.remotePathValidator]],
-      versionControl: [this.data.versionControl, [Validators.required]],
     });
   }
 

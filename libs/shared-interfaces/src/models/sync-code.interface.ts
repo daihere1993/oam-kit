@@ -18,5 +18,5 @@ export interface Project {
   localPath: string;
   remotePath: string;
   serverAddr: string;
-  versionControl: RepositoryType;
+  versionControl?: RepositoryType;
 }
