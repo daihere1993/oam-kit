@@ -97,7 +97,7 @@ export class ZipParserChannel {
       rule.parsingInfos.rootDir = dest;
       rule.parsingInfos.pathList = [];
       console.time(`decompress for rule=${rule.name}`);
-      const firstParts = await this.handleFirstRegex(dest, snapshotFileListContent, rule);
+      const firstParts = await this.handleFirstRegex(snapshotFileListContent, rule);
       for (const firstPart of firstParts) {
         if (rule.secondRegex) {
           const secondParts = await this.handleSecondRegex(dest, firstPart, rule);
@@ -114,12 +114,14 @@ export class ZipParserChannel {
     return rules;
   }
 
-  private async handleFirstRegex(src: string, snapshotFileListContent: string, rule: Rule): Promise<string[]> {
+  private async handleFirstRegex(snapshotFileListContent: string, rule: Rule): Promise<string[]> {
     const pathList = [];
     const results = snapshotFileListContent.match(new RegExp(rule.firstRegex, 'g'));
 
-    if (!results)
-      throw new Error(`Unable to find file by regext ${rule.firstRegex} for rule=${rule.name}`);
+    if (!results) {
+      logger.info(`Unable to find file by regex ${rule.firstRegex} for rule=${rule.name}`);
+      return [];
+    }
 
     for (let item of results) {
       if (this.isUnderSubfolder(item)) {
@@ -127,8 +129,10 @@ export class ZipParserChannel {
         const preRegex = /([^\s]+):[^:]+/.source;
         const postRegex = escapeStringRegexp(item);
         const regexRet = snapshotFileListContent.match(new RegExp(preRegex + postRegex));
-        if (!regexRet)
-          throw new Error(`Unable to find subfolder for rule=${rule.name}`);
+        if (!regexRet) {
+          logger.warn((`Unable to find subfolder for rule=${rule.name}`));
+          return [];
+        }
 
         let subfolder = regexRet[1];
         subfolder = this.isCompressed(subfolder) ?

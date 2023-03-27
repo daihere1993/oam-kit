@@ -39,7 +39,7 @@ describe('ZipParser: private method', () => {
       expect(ims2Rule.parsingInfos.pathList).toContain(
         'MRBTS-1900_TL SG7 129 AEQC_5G21A_GNB_0011_000800_000282_SMOKE38_20210312-1755.ims2'
       );
-    }, 30000);
+    });
     it('should get all soap files correctlly', async () => {
       const rules: Rule[] = [{ name: 'soap messages', firstRegex: /.+SOAPMessageTrace.+/, parsingInfos: { pathList: [] } }];
       // @ts-ignore
@@ -52,7 +52,7 @@ describe('ZipParser: private method', () => {
         .toContain('BTS1900_1011_part_10/BTS1900_1011_L1183908869_RMOD_L_1_SOAPMessageTrace.xml');
       expect(soapRule.parsingInfos.pathList)
         .toContain('BTS1900_1011_part_10/BTS1900_1011_L1183908869_RMOD_L_1_SOAPMessageTrace_old.xml');
-    }, 30000);
+    });
     it('should get all moam_runtime(1011).log.xz files correctlly', async () => {
       const rules: Rule[] = [
         {
@@ -70,7 +70,7 @@ describe('ZipParser: private method', () => {
       expect(moamLogRule.parsingInfos.pathList.length).toBe(1);
       expect(moamLogRule.parsingInfos.pathList)
         .toContain('BTS1900_1011_part_3/BTS1900_1011_runtime/runtime_BTSOM.log.xz');
-    }, 30000);
+    });
     it('should get all oam pm logs file correctly', async () => {
       const rules: Rule[] = [
         {
@@ -96,7 +96,7 @@ describe('ZipParser: private method', () => {
         .toContain('BTS1900_1011_part_7/BTS1900_1011_pm_4_syslog/runtime_BTSOM.log.xz');
       expect(oamPmLogs.parsingInfos.pathList)
         .toContain('BTS1900_1011_part_8/BTS1900_1011_pm_5_syslog/runtime_BTSOM.log.xz');
-    }, 30000);
+    });
     it('should get all radio side soap message file correctly', async () => {
       const rules: Rule[] = [
         {
@@ -116,7 +116,17 @@ describe('ZipParser: private method', () => {
         .toContain('BTS_part4/BTS_DH223848227_RMOD_L_1_UnitOAM_SOAP_Log/UnitOAM_SOAP_Runtime_Log');
       expect(radioSideSoapMessages.parsingInfos.pathList)
         .toContain('BTS_part4/BTS_DH223848227_RMOD_L_1_UnitOAM_SOAP_Log/UnitOAM_SOAP_Startup_LBTS_OM_L1230610640_Log');
-    }, 30000);
+    });
+
+    it('should return empty path list if the rule matches nothing', async () => {
+      await expect((async () => {
+        const rules: Rule[] = [{ name: 'django', firstRegex: /.+_django\.zip/, parsingInfos: { pathList: [] } }];
+        // @ts-ignore
+        const retRules = await zipParser._unzipByRules(src, rules);
+        expect(retRules.length).toBe(1);
+        expect(retRules[0].parsingInfos.pathList.length).toBe(0);
+      })()).resolves.not.toThrowError();
+    });
 
     it('should get all moam_runtime(2011).log.xz files correctlly', () => {});
     it('should get all moam_runtime(1011).log files correctlly when file has been decompressed', () => {});
