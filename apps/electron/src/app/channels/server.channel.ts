@@ -2,7 +2,10 @@ import { Channel, Path, Req } from '@oam-kit/decorators';
 import { Preferences, IpcRequest } from '@oam-kit/shared-interfaces';
 import { NodeSSH } from 'node-ssh';
 import { sftp_algorithms } from '../common/contants/electron-config';
+import Logger from '../core/logger';
 import { StoreService } from '../services/store.service';
+
+const logger = Logger.for('ServerChannel');
 
 @Channel('server')
 export class ServerChannel {
@@ -12,27 +15,34 @@ export class ServerChannel {
 
   @Path('/is_path_exist')
   public async isServerDirectoryExist(@Req req: IpcRequest) {
-    const { host, directory } = req.data;
-    const nsbAccount = this._storeService.getModel<Preferences>('preferences').get('profile').nsbAccount;
+    logger.debug('isServerDirectoryExist: start');
+
+    const { host, directory, username, privateKeyPath } = req.data;
+    const sshInfo = this._storeService.getModel<Preferences>('preferences').get('ssh');
     await this._ssh.connect({
       host: host,
-      username: nsbAccount.username,
-      password: nsbAccount.password,
+      username: username || sshInfo.username,
+      privateKeyPath: privateKeyPath || sshInfo.privateKeyPath,
       algorithms: sftp_algorithms,
     });
 
     const { stdout, stderr } = await this._ssh.execCommand('pwd', { cwd: directory });
 
     this._ssh.dispose();
+    
     if (stderr || stdout !== directory) {
+      logger.debug('isServerDirectoryExist: end with value false');
       return false;
     } else {
+      logger.debug('isServerDirectoryExist: end with value true');
       return true;
     }
   }
 
-  @Path('/is_connected')
-  public async isServerConnected(@Req req: IpcRequest) {
+  @Path('/check_server_connection_by_password')
+  public async checkConnectionByPassword(@Req req: IpcRequest) {
+    logger.debug('checkConnectionByPassword: start');
+
     const serverAddr = req.data.host;
     const nsbAccount = this._storeService.getModel<Preferences>('preferences').get('profile').nsbAccount;
     await this._ssh.connect({
@@ -43,6 +53,27 @@ export class ServerChannel {
     });
     const isConnected = this._ssh.isConnected();
     this._ssh.dispose();
+    logger.debug(`checkConnectionByPassword: end with value ${isConnected}`);
+    return isConnected;
+  }
+
+  @Path('/check_server_connection_by_private_key')
+  public async checkConnectionByPrivateKey(@Req req: IpcRequest) : Promise<boolean> {
+    logger.debug('checkConnectionByPrivateKey: start');
+
+    const username = req.data.username;
+    const serverAddr = req.data.serverAddr;
+    const privateKeyPath = req.data.privateKeyPath;
+    const sshInfo = this._storeService.getModel<Preferences>('preferences').get('ssh');
+    await this._ssh.connect({
+      host: serverAddr,
+      username: username || sshInfo.username,
+      privateKeyPath: privateKeyPath || sshInfo.privateKeyPath,
+      algorithms: sftp_algorithms,
+    });
+    const isConnected = this._ssh.isConnected();
+    this._ssh.dispose();
+    logger.debug(`checkConnectionByPrivateKey: end with value ${isConnected}`);
     return isConnected;
   }
 }

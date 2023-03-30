@@ -30,6 +30,8 @@ export abstract class StoreBase {
 
   public update(modelName: string, data: any) {
     this._data[modelName] = data;
+    const model = this.getExistedModelByName(modelName);
+    model.reset(data);
   }
 
   private isExistedModel(name: string) {

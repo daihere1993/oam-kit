@@ -15,13 +15,14 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 
 import { SyncCodeComponent } from './sync-code.component';
+import { SshConfigViewComponent } from './ssh-config-view.component';
 import { ProjectSelectorComponent } from './project-selector.component';
 import { ProjectSettingComponent } from './project-setting.component';
 import { SyncCodeRoutingModule } from './sync-code-routing.module';
-import { PathInputModule } from '../../../../core/components/path-field';
+import { PathInputModule } from '@ng-client/core/components/path-field';
 
 @NgModule({
-  declarations: [ProjectSelectorComponent, ProjectSettingComponent, SyncCodeComponent],
+  declarations: [ProjectSelectorComponent, ProjectSettingComponent, SyncCodeComponent, SshConfigViewComponent],
   imports: [
     CommonModule,
     FormsModule,

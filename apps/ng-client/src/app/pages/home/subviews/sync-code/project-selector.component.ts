@@ -30,7 +30,7 @@ import { Model } from '@oam-kit/data-persistent';
         color: #8f9bb3;
       }
       nz-select {
-        width: 200px;
+        width: 180px;
       }
       nz-divider {
         margin: 4px 0;
@@ -104,7 +104,7 @@ export class ProjectSelectorComponent implements OnInit {
   public edit(e: Event, project?: Project): void {
     const isAddAction = !project;
     const isEditSelectedProject = project?.name === this.selected?.name;
-    const nzComponentParams = isAddAction ? undefined : { data: project };
+    const nzComponentParams = isAddAction ? undefined : { project };
     this.modalService
       .create({
         nzWidth: 600,

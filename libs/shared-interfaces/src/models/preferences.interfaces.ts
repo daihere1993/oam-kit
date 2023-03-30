@@ -1,6 +1,10 @@
 export interface Preferences {
   profile: Profile;
-  serverList: string[];
+  ssh: {
+    username: string;
+    servers: string[];
+    privateKeyPath: string;
+  }
 }
 
 export interface Profile {

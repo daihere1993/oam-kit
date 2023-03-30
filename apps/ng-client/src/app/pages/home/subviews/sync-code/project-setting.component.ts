@@ -1,13 +1,13 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { NzModalRef } from 'ng-zorro-antd/modal';
-import { FormGroup, FormBuilder, Validators, FormControl, ValidationErrors } from '@angular/forms';
-import { StoreService } from '../../../../core/services/store.service';
+import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { NzSelectComponent } from 'ng-zorro-antd/select';
-import { Observable, Observer } from 'rxjs';
-import { IpcService } from '../../../../core/services/ipc.service';
-import { NotificationService } from '../../../../core/services/notification.service';
-import { Preferences, Project } from '@oam-kit/shared-interfaces';
+import { IpcResponseCode, Preferences, Project } from '@oam-kit/shared-interfaces';
 import { Model } from '@oam-kit/data-persistent';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { StoreService } from '@ng-client/core/services/store.service';
+import { IpcService } from '@ng-client/core/services/ipc.service';
+import { promiseTimeout } from '@oam-kit/utility/common';
 
 export enum DialogAction {
   CANCEL = 'cancel',
@@ -45,7 +45,7 @@ export interface DialogRes {
       }
     </style>
     <div class="container">
-      <form nz-from [formGroup]="form">
+      <form nz-from [formGroup]="form" spellcheck="false">
         <nz-form-item>
           <nz-form-label [nzSm]="8" nzRequired nzFor="name">Name</nz-form-label>
           <nz-form-control [nzSm]="13">
@@ -66,14 +66,21 @@ export interface DialogRes {
               <nz-option *ngFor="let server of serverList" [nzLabel]="server" [nzValue]="server"></nz-option>
             </nz-select>
             <ng-template #serverAddrErrorTpl let-control>
-              <p data-test="server-addr-validation-alert">
-                Can't connect to {{ form.value.serverAddr }}, please make sure it is working.
-              </p>
+              <ng-container *ngIf="control.hasError('serverAddrIsDisconnected')">
+                <p>
+                  Can't connect to {{ form.value.serverAddr }}, please make sure it is working.
+                </p>
+              </ng-container>
+              <ng-container *ngIf="control.hasError('exception')">
+                <p>
+                  There is an exception when validating {{ form.value.serverAddr }}
+                </p>
+              </ng-container>
             </ng-template>
             <ng-template #dropdownRender>
               <nz-divider></nz-divider>
               <div class="dropdown-render__containner">
-                <input #inputElement data-test="new-server-addr-input" nz-input type="text" />
+                <input #inputElement data-test="new-server-addr-input" nz-input type="text" placeholder="Linsee/eeloud server address" />
                 <a data-test="add-server-addr-button" class="dropdown-render__button" (click)="onAddServer(inputElement.value)">
                   <i nz-icon nzType="plus"></i>
                 </a>
@@ -97,7 +104,7 @@ export interface DialogRes {
               />
             </nz-input-group>
             <ng-template #folderSelector>
-              <app-path-field [value]="data.localPath" (valueChange)="onLocalPathChange($event)"></app-path-field>
+              <app-path-field [value]="project.localPath" (valueChange)="onLocalPathChange($event)"></app-path-field>
             </ng-template>
           </nz-form-control>
         </nz-form-item>
@@ -125,6 +132,11 @@ export interface DialogRes {
                   {{ form.value.remotePath }} does not exist in the {{ form.value.serverAddr }}
                 </p>
               </ng-container>
+              <ng-container *ngIf="control.hasError('exception')">
+                <p>
+                  there is an exception when validating {{ form.value.remotePath }} in the {{ form.value.serverAddr }}
+                </p>
+              </ng-container>
             </ng-template>
           </nz-form-control>
         </nz-form-item>
@@ -150,12 +162,7 @@ export interface DialogRes {
   `,
 })
 export class ProjectSettingComponent implements OnInit {
-  @Input() data: Project = {
-    name: null,
-    serverAddr: null,
-    localPath: null,
-    remotePath: null,
-  };
+  @Input() project: Project;
 
   @ViewChild(NzSelectComponent) selectComp: NzSelectComponent;
 
@@ -164,101 +171,88 @@ export class ProjectSettingComponent implements OnInit {
   public serverList: string[];
   public pModel: Model<Preferences>;
 
-  serverAddrValidator = (control: FormControl) => {
-    return new Observable((observer: Observer<ValidationErrors | null>) => {
-      const serverAddr = control.value;
-      if (serverAddr && this.data.serverAddr !== serverAddr) {
-        this.ipcService
-          .send('/server/is_connected', { host: serverAddr })
-          .then((res) => {
-            if (res.data) {
-              observer.next(null);
-            } else {
-              observer.next({ error: true });
-            }
-            observer.complete();
-          });
-      } else {
-        observer.next(null);
-        observer.complete();
-      }
-    });
+  private _serverAddrValidator = async (control: FormControl) => {
+    const res = await this._ipcService.send(
+      '/server/check_server_connection_by_private_key',
+      { serverAddr: control.value }
+    );
+    if (res.code === IpcResponseCode.success) {
+      return res.data ? null : { error: true, serverAddrIsDisconnected: true };
+    } else {
+      this._message.error(res.description);
+      return { error: true, exception: true };
+    }
   };
 
-  remotePathValidator = (control: FormControl) => {
-    return new Observable((observer: Observer<ValidationErrors | null>) => {
-      const remotePath = control.value;
-      if (!this.form?.value.serverAddr) {
-        observer.next({ error: true, serverAddrIsEmpty: true });
-        observer.complete();
-      } else if (remotePath && this.data.remotePath !== remotePath) {
-        this.ipcService
-          .send('/server/is_path_exist', {
-            host: this.form.value.serverAddr,
-            directory: remotePath,
-          })
-          .then((res) => {
-            if (res.data) {
-              observer.next(null);
-            } else {
-              observer.next({ error: true, notExisted: true });
-            }
-            observer.complete();
-          });
-      } else {
-        observer.next(null);
-        observer.complete();
-      }
-    });
+  _remotePathValidator = async (control: FormControl) => {
+    const serverAddr = this.form.value.serverAddr
+    if (!serverAddr) {
+      return { error: true, serverAddrIsEmpty: true };
+    }
+
+    await promiseTimeout(500);
+    const res = await this._ipcService.send('/server/is_path_exist', { host: serverAddr, directory: control.value });
+    if (res.code === IpcResponseCode.success) {
+      return res.data ? null : { error: true, notExisted: true };
+    } else {
+      this._message.error(res.description);
+      return { error: true, exception: true };
+    }
   };
 
   constructor(
-    private modal: NzModalRef,
-    private fb: FormBuilder,
-    private notification: NotificationService,
-    private store: StoreService,
-    private ipcService: IpcService
+    private _modal: NzModalRef,
+    private _fb: FormBuilder,
+    private _store: StoreService,
+    private _ipcService: IpcService,
+    private _message: NzMessageService,
   ) {}
 
   ngOnInit() {
-    this.isEdit = !!this.data.name;
-    this.pModel = this.store.getModel<Preferences>('preferences');
-    this.pModel.subscribe<string[]>('serverList', (data) => {
-      this.serverList = data;
+    this.project = this.project || this.createEmptyProject();
+    this.isEdit = !!this.project.name;
+    this.pModel = this._store.getModel<Preferences>('preferences');
+    const sshInfo = this.pModel.get('ssh');
+    this.serverList = sshInfo.servers;
+    this.form = this._fb.group({
+      name: [this.project.name, [Validators.required]],
+      serverAddr: [this.project.serverAddr, [Validators.required], [this._serverAddrValidator]],
+      localPath: [this.project.localPath, [Validators.required]],
+      remotePath: [this.project.remotePath, [Validators.required], [this._remotePathValidator]],
     });
-    this.form = this.fb.group({
-      name: [this.data.name, [Validators.required]],
-      serverAddr: [this.data.serverAddr, [Validators.required], [this.serverAddrValidator]],
-      localPath: [this.data.localPath, [Validators.required]],
-      remotePath: [this.data.remotePath, [Validators.required], [this.remotePathValidator]],
-    });
+  }
+
+  private createEmptyProject(): Project {
+    return {
+      name: null,
+      serverAddr: null,
+      localPath: null,
+      remotePath: null,
+    };
   }
 
   public save(): void {
-    this.modal.close({
+    this._modal.close({
       action: DialogAction.SAVE,
       content: this.form.value,
     });
-    this.notification.success('Success', '', { nzDuration: 1000 });
   }
 
   public delete(): void {
-    this.modal.close({
+    this._modal.close({
       action: DialogAction.DELETE,
       content: this.form.value,
     });
   }
 
   public close(): void {
-    this.modal.close({
+    this._modal.close({
       action: DialogAction.CANCEL,
     });
   }
 
   public onAddServer(value: string) {
-    this.pModel.set('serverList', (draft) => {
-      draft.push(value);
-    });
+    this.serverList.push(value);;
   }
 
   public shouldDisableSaveButton() {
@@ -270,8 +264,8 @@ export class ProjectSettingComponent implements OnInit {
   }
 
   private isDirty() {
-    for (const key in this.data) {
-      if (this.form?.value[key] !== (this.data as any)[key]) {
+    for (const key in this.project) {
+      if (this.form?.value[key] !== (this.project as any)[key]) {
         return true;
       }
     }
