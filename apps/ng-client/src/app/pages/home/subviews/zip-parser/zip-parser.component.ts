@@ -5,71 +5,10 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 
 @Component({
   selector: 'app-zip-parser-component',
+  styleUrls: ['./zip-parser.component.scss'],
   template: `
-    <style>
-      p {
-        margin: 0;
-      }
-      .container {
-        width: 500px;
-        min-height: 200px;
-        border: 1px dashed gray;
-        padding: 6px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        overflow-wrap: break-word;
-        cursor: pointer;
-      }
-      .container:hover {
-        border-color: #40a9ff;
-      }
-      .upload-drag-icon {
-        color: #40a9ff;
-        font-size: 48px;
-        margin-bottom: 6px;;
-      }
-      .upload-text {
-        font-size: 16px;
-        color: #000000d9;
-      }
-      .upload-hint {
-        font-size: 14px;
-        color: #00000073;
-      }
-      .parsed-content {
-        width: 100%;
-      }
-      ul, li {
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-      }
-      .rule-name-header {
-        font-size: 16px;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-      }
-      .rule-path-item {
-        color: gray;
-        font-size: 12px;
-        margin-left: 10px;
-        text-decoration: underline;
-        cursor: pointer;
-        overflow: overlay;
-      }
-      .result-hint {
-        font-size: 12px;
-        color: gray;
-        margin-left: 2px;
-      }
-      ::ng-deep .ant-collapse-content-box {
-        padding: 0 !important;
-      }
-    </style>
     <nz-spin [nzSpinning]="isParsing">
-      <div class="container" (drop)="onDrop($event)" (dragover)="onDrop($event)" (click)="onClick()">
+      <div class="container" (drop)="onDrop($event)" (dragover)="onDrop($event)">
 
         <div class="parsed-content" *ngIf="hasParsed; else uploadHint">
           <nz-collapse>
@@ -94,7 +33,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
         </div>
         <ng-template #uploadHint>
           <p class="upload-drag-icon">
-            <span nz-icon nzType="inbox"></span>
+            <span nz-icon nzType="tool"></span>
           </p>
           <p class="upload-text">Drag or copy snapshot to this area</p>
           <p class="upload-hint">
@@ -134,21 +73,6 @@ export class ZipParserComponent {
 
     if (e && e.dataTransfer) {
       this.startParsing(e.dataTransfer.files[0].path);
-    }
-  }
-
-  async onClick() {
-    if (this.hasParsed) {
-      return;
-    }
-
-    const res = await this._ipcService.send('/file/select_path', { isDirectory: false });
-    if (res.code === IpcResponseCode.success) {
-      if (res.data) {
-        await this.startParsing(res.data);
-      }
-    } else {
-      this._message.error(res.description);
     }
   }
 
