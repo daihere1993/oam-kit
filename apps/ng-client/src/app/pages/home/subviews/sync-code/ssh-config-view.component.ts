@@ -29,7 +29,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
         <nz-form-item>
           <nz-form-label nzFor="privateKeyPath" nzSpan="8" nzRequired>Private key path</nz-form-label>
           <nz-form-control nzSpan="12">
-            <input nz-input type="text" name="privateKeyPath" formControlName="privateKeyPath" />
+            <input nz-input type="text" (focus)="onFocusPrivateKeyPathInput()" name="privateKeyPath" formControlName="privateKeyPath" />
           </nz-form-control>
         </nz-form-item>
 
@@ -78,6 +78,22 @@ export class SshConfigViewComponent {
       this._message.error(`Can not connect to ${this.form.value.serverAddr}, please check if your ssh configuration is correct.`);
     }
     this._cd.markForCheck();
+  }
+
+  public async onFocusPrivateKeyPathInput() {
+    if (this.form.value.username) {
+      const res = await this._ipcService.send('/platform/get_platform');
+      if (res.code === IpcResponseCode.success) {
+        const platform = res.data;
+        if (platform === 'darwin') {
+          this.form.patchValue({ privateKeyPath: `/Users/${this.form.value.username}/.ssh/id_rsa` });
+        } else if (platform === 'linux') {
+          this.form.patchValue({ privateKeyPath: `/home/${this.form.value.username}/.ssh/id_rsa` });
+        } else if (platform === 'win32') {
+          this.form.patchValue({ privateKeyPath: `C:\\Users\\${this.form.value.username}\\.ssh\\id_rsa` });
+        }
+      }
+    }
   }
 
   public async saveConfig() {
