@@ -7,6 +7,7 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 
 import { KnifeGeneratorRoutingModule } from './knife-generator-routing.module';
 import { KnifeGeneratorComponent } from './knife-generator.component';
@@ -23,6 +24,7 @@ import { PathInputModule } from '../../../../core/components/path-field';
     NzButtonModule,
     NzSpinModule,
     NzAlertModule,
+    NzIconModule,
     ReactiveFormsModule,
     KnifeGeneratorRoutingModule,
     PathInputModule,

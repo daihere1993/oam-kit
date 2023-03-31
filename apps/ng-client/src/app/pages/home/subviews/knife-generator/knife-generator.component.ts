@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IpcService } from '../../../../core/services/ipc.service';
-import { IpcResponseCode } from '@oam-kit/shared-interfaces';
+import { IpcResponseCode, SyncCode } from '@oam-kit/shared-interfaces';
+import { StoreService } from '@ng-client/core/services/store.service';
 
 enum AlertType {
   SUCCESS = 'success',
@@ -22,56 +23,69 @@ class AlertInfo {
 
 @Component({
   selector: 'app-knife-generator',
+  styleUrls: ['./knife-generator.component.scss'],
   template: `
-    <form nz-form [formGroup]="form">
-      <nz-form-item>
-        <nz-form-label nzFor="targetProject" [nzSm]="6" nzRequired>Target Project</nz-form-label>
-        <nz-form-control [nzSm]="12">
-          <nz-input-group [nzSuffix]="folderSelector">
-            <input
-              nz-input
-              name="targetProject"
-              data-test="target-project-path-input"
-              formControlName="targetProject"
-              nz-tooltip
-              nzTooltipTrigger="focus"
-              nzTooltipPlacement="topLeft"
-            />
-          </nz-input-group>
-          <ng-template #folderSelector>
-            <app-path-field [value]="form.value.targetProject" (valueChange)="onTargetProjectPathChange($event)"></app-path-field>
-          </ng-template>
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item>
-        <nz-form-label nzFor="revision" nzSpan="6" nzRequired>Revision</nz-form-label>
-        <nz-form-control nzSpan="12">
-          <input nz-input name="revision" data-test="knife-revision" formControlName="revision" />
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item *ngIf="alertInfo.show">
-        <nz-form-control nzSpan="12" nzOffset="6">
-          <nz-alert nzCloseable nzShowIcon [nzType]="alertInfo.type" [nzMessage]="alertInfo.message" (nzOnClose)="afterClose()"></nz-alert>
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item nz-row>
-        <nz-form-control nzSpan="12" nzOffset="6">
-          <button nz-button [nzLoading]="ongoing" nzType="primary" (click)="start()">Start</button>
-        </nz-form-control>
-      </nz-form-item>
-    </form>
-  `,
+    <nz-spin [nzSpinning]="onLoading">
+      <div class="container">
+        <p class="main-icon-wrapper">
+          <span nz-icon nzType="file-zip" nzTheme="outline"></span>
+        </p>
+
+        <form nz-form [formGroup]="form" spellcheck="false">
+          <nz-form-item>
+            <nz-form-label nzFor="targetProject" nzSpan="6" nzRequired>Target Project</nz-form-label>
+            <nz-form-control nzSpan="16">
+              <nz-input-group [nzSuffix]="folderSelector">
+                <input
+                  nz-input
+                  name="targetProject"
+                  data-test="target-project-path-input"
+                  formControlName="targetProject"
+                  nz-tooltip
+                  nzTooltipTrigger="focus"
+                  nzTooltipPlacement="topLeft"
+                />
+              </nz-input-group>
+              <ng-template #folderSelector>
+                <app-path-field [value]="form.value.targetProject" (valueChange)="onTargetProjectPathChange($event)"></app-path-field>
+              </ng-template>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="revision" nzSpan="6" nzRequired>Revision</nz-form-label>
+            <nz-form-control nzSpan="14">
+              <input nz-input name="revision" data-test="knife-revision" formControlName="revision" />
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item *ngIf="alertInfo.show">
+            <nz-form-control nzSpan="20" nzOffset="2">
+              <nz-alert nzCloseable nzShowIcon [nzType]="alertInfo.type" [nzMessage]="alertInfo.message" (nzOnClose)="afterClose()"></nz-alert>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item nz-row>
+            <nz-form-control nzSpan="12" nzOffset="6">
+              <button nz-button nzType="primary" (click)="start()">Start</button>
+            </nz-form-control>
+          </nz-form-item>
+        </form>
+
+        <p class="feat-hint">Please make sure the revision you input is exactly same of the build you knife based on.</p>
+      </div>
+    </nz-spin>
+    `,
   styles: [],
 })
 export class KnifeGeneratorComponent implements OnInit {
   form: FormGroup;
-  ongoing = false;
+  onLoading = false;
   alertInfo = new AlertInfo(null, null, null);
-  constructor(private fb: FormBuilder, private ipcService: IpcService) {}
+  constructor(private fb: FormBuilder, private ipcService: IpcService, private _store: StoreService) {}
 
   ngOnInit() {
+    const projects = this._store.getModel<SyncCode>('syncCode').get('projects');
+    const defaultProjectPath = projects.length > 0 ? projects[0].localPath : '';
     this.form = this.fb.group({
-      targetProject: ['', [Validators.required]],
+      targetProject: [defaultProjectPath, [Validators.required]],
       revision: ['', [Validators.required]],
     });
   }
@@ -81,7 +95,7 @@ export class KnifeGeneratorComponent implements OnInit {
   }
 
   async start() {
-    this.ongoing = true;
+    this.onLoading = true;
     this.alertInfo.show = false;
     const res = await this.ipcService.send('/knife_generator', {
       projectPath: this.form.get('targetProject').value,
@@ -95,7 +109,7 @@ export class KnifeGeneratorComponent implements OnInit {
       this.alertInfo.message = res.description
     }
     this.alertInfo.show = true;
-    this.ongoing = false;
+    this.onLoading = false;
   }
 
   afterClose() {
