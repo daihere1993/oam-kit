@@ -9,7 +9,17 @@ enum Type {
 
 @Component({
   selector: 'app-path-field',
-  template: ` <i nz-icon style="cursor: pointer;" nzType="folder" nzTheme="outline" (click)="toSelectPath($event)"></i> `,
+  template: `
+    <style>
+      .icon {
+        cursor: pointer;
+      }
+      .icon:hover {
+        color: #40a9ff;
+      }
+    </style>
+    <i nz-icon class="icon" nzType="folder" nzTheme="outline" (click)="toSelectPath($event)"></i>
+  `,
   styles: [':host { display: block; }'],
 })
 export class PathInputComponent implements OnDestroy {

@@ -72,9 +72,7 @@ export interface DialogRes {
                 </p>
               </ng-container>
               <ng-container *ngIf="control.hasError('exception')">
-                <p>
-                  There is an exception when validating {{ form.value.serverAddr }}
-                </p>
+                <p>{{ control.errors['exception'] }}</p>
               </ng-container>
             </ng-template>
             <ng-template #dropdownRender>
@@ -133,9 +131,7 @@ export interface DialogRes {
                 </p>
               </ng-container>
               <ng-container *ngIf="control.hasError('exception')">
-                <p>
-                  there is an exception when validating {{ form.value.remotePath }} in the {{ form.value.serverAddr }}
-                </p>
+                <p>{{ control.errors['exception'] }}</p>
               </ng-container>
             </ng-template>
           </nz-form-control>
@@ -177,10 +173,9 @@ export class ProjectSettingComponent implements OnInit {
       { serverAddr: control.value }
     );
     if (res.code === IpcResponseCode.success) {
-      return res.data ? null : { error: true, serverAddrIsDisconnected: true };
+      return res.data ? null : { serverAddrIsDisconnected: true };
     } else {
-      this._message.error(res.description);
-      return { error: true, exception: true };
+      return { exception: res.description };
     }
   };
 
@@ -193,10 +188,9 @@ export class ProjectSettingComponent implements OnInit {
     await promiseTimeout(500);
     const res = await this._ipcService.send('/server/is_path_exist', { host: serverAddr, directory: control.value });
     if (res.code === IpcResponseCode.success) {
-      return res.data ? null : { error: true, notExisted: true };
+      return res.data ? null : { notExisted: true };
     } else {
-      this._message.error(res.description);
-      return { error: true, exception: true };
+      return {  exception: res.description };
     }
   };
 
