@@ -11,7 +11,7 @@ import { StoreService } from '@ng-client/core/services/store.service';
     <nz-spin [nzSpinning]="onLoading" class="spin-wrapper">
       <div class="container">
         <p class="main-icon-wrapper">
-          <span nz-icon nzType="cloud-server" nzTheme="outline"></span>
+          <span nz-icon nzType="cloud-sync" nzTheme="outline"></span>
         </p>
   
         <ng-template #sshConfigurationWrapper>
