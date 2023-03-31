@@ -220,13 +220,19 @@ export class ProjectSettingComponent implements OnInit {
       localPath: [this.project.localPath, [Validators.required]],
       remotePath: [this.project.remotePath, [Validators.required], [this._remotePathValidator]],
     });
+
+    // W/A to avoid _serverAddrValidator would be invoked three times if set init value at ngOnInit
+    setTimeout(() => {
+      if (!this.form.value.serverAddr && sshInfo.servers.length) {
+        this.form.controls['serverAddr'].setValue(sshInfo.servers[0]);
+      }
+    }, 200);
   }
 
   private createEmptyProject(): Project {
-    const sshInfo = this._store.getModel<Preferences>('preferences').get('ssh');
     return {
       name: null,
-      serverAddr: sshInfo.servers.length ?  sshInfo.servers[0] : null,
+      serverAddr: null,
       localPath: null,
       remotePath: null,
     };
