@@ -118,7 +118,7 @@ export class SyncCodeChannel {
   private async createLocalPatch(): Promise<void> {
     logger.info('createLocalPatch: start');
     await this._repo.beforePatchCreated(false);
-    this._repo.createDiff(this.localOriginalPatchPath, false);
+    await this._repo.createDiff(this.localOriginalPatchPath, false);
     logger.info('createLocalPatch: end');
   }
 
@@ -158,7 +158,7 @@ export class SyncCodeChannel {
   private async uploadPatchToServer(): Promise<any> {
     logger.info('uploadPatchToServer: start');
     if (this._syncType === SyncType.whole || this._syncType === SyncType.partial) {
-      this._ssh.putFile(this.localFinalPatchPath, this.remotePatchPath);
+      await this._ssh.putFile(this.localFinalPatchPath, this.remotePatchPath);
     }
     logger.info('uploadPatchToServer: end');
   }
