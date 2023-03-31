@@ -20,9 +20,9 @@ export class ServerChannel {
     const { host, directory, username, privateKeyPath } = req.data;
     const sshInfo = this._storeService.getModel<Preferences>('preferences').get('ssh');
     await this._ssh.connect({
-      host: host,
-      username: username || sshInfo.username,
-      privateKeyPath: privateKeyPath || sshInfo.privateKeyPath,
+      host: host.trim(),
+      username: (username || sshInfo.username).trim(),
+      privateKeyPath: (privateKeyPath || sshInfo.privateKeyPath).trim(),
       algorithms: sftp_algorithms,
     });
 
@@ -46,8 +46,8 @@ export class ServerChannel {
     const serverAddr = req.data.host;
     const nsbAccount = this._storeService.getModel<Preferences>('preferences').get('profile').nsbAccount;
     await this._ssh.connect({
-      host: serverAddr,
-      username: nsbAccount.username,
+      host: serverAddr.trim(),
+      username: nsbAccount.username.trim(),
       password: nsbAccount.password,
       algorithms: sftp_algorithms,
     });
@@ -66,9 +66,9 @@ export class ServerChannel {
     const privateKeyPath = req.data.privateKeyPath;
     const sshInfo = this._storeService.getModel<Preferences>('preferences').get('ssh');
     await this._ssh.connect({
-      host: serverAddr,
-      username: username || sshInfo.username,
-      privateKeyPath: privateKeyPath || sshInfo.privateKeyPath,
+      host: serverAddr.trim(),
+      username: (username || sshInfo.username).trim(),
+      privateKeyPath: (privateKeyPath || sshInfo.privateKeyPath).trim(),
       algorithms: sftp_algorithms,
     });
     const isConnected = this._ssh.isConnected();
