@@ -90,7 +90,9 @@ export class GitRepo extends Repository {
   diffChecker = new GitPatchChecker();
 
   getCreatePatchCmd(patchPath: string): string {
-    return `git diff > ${patchPath}`;
+    // Note: the patchPath mush be wrapped by ", if use ' then will throw error(in windows): 
+    // "the filename, directory name, or volume label syntax is incorrect"
+    return `git diff > "${patchPath}"`;
   }
 
   // need to 'git add -N {untracked new files}' after that patch could include those changes
