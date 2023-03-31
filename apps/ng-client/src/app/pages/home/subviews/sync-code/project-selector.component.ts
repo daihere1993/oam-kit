@@ -108,6 +108,7 @@ export class ProjectSelectorComponent implements OnInit {
     this.modalService
       .create({
         nzWidth: 600,
+        nzTitle: isAddAction ? 'New project' : 'Edit project',
         nzContent: ProjectSettingComponent,
         nzComponentParams,
       })

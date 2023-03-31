@@ -1,9 +1,11 @@
 import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { Preferences, Project } from '@oam-kit/shared-interfaces';
+import { Preferences, Project, SyncCode } from '@oam-kit/shared-interfaces';
 import { IpcResponseCode } from '@oam-kit/shared-interfaces';
 import { IpcService } from '@ng-client/core/services/ipc.service';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { StoreService } from '@ng-client/core/services/store.service';
+import { NzModalService } from 'ng-zorro-antd/modal';
+import { DialogAction, DialogRes, ProjectSettingComponent } from './project-setting.component';
 
 @Component({
   selector: 'app-sync-code',
@@ -60,10 +62,15 @@ export class SyncCodeComponent implements OnDestroy {
     private _ipcService: IpcService,
     private _message: NzMessageService,
     private _store: StoreService,
+    private _modalService: NzModalService,
   ) {
     this._store.getModel<Preferences>('preferences').subscribe('ssh', (sshInfo: { username: string, privateKeyPath: string }) => {
       this.isSSHConfigured = !!sshInfo.username && !!sshInfo.privateKeyPath;
       this._cd.markForCheck();
+      const projects = this._store.getModel<SyncCode>('syncCode').get('projects');
+      if (this.isSSHConfigured && projects.length === 0) {
+        this.displayModalToAddFirstProject();
+      }
     });
   }
 
@@ -92,5 +99,22 @@ export class SyncCodeComponent implements OnDestroy {
 
   public onSshConfigViewLoadingStatusChanged(value: boolean) {
     this.onLoading = value;
+  }
+
+  private displayModalToAddFirstProject() {
+    const model = this._store.getModel<SyncCode>('syncCode');
+    this._modalService
+      .create({
+        nzWidth: 600,
+        nzTitle: 'New project',
+        nzContent: ProjectSettingComponent
+      })
+      .afterClose.subscribe(({ content, action }: DialogRes) => {
+        if (action === DialogAction.SAVE) {
+          model.set('projects', (draft) => {
+            draft.push(content);
+          });
+        }
+      });
   }
 }

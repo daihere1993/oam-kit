@@ -223,9 +223,10 @@ export class ProjectSettingComponent implements OnInit {
   }
 
   private createEmptyProject(): Project {
+    const sshInfo = this._store.getModel<Preferences>('preferences').get('ssh');
     return {
       name: null,
-      serverAddr: null,
+      serverAddr: sshInfo.servers.length ?  sshInfo.servers[0] : null,
       localPath: null,
       remotePath: null,
     };
