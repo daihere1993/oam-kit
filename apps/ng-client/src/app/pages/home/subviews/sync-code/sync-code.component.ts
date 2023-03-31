@@ -1,112 +1,95 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { Step, Stepper, StepperStatus, StepStatus } from './stepper';
-import { Preferences, Project } from '@oam-kit/shared-interfaces';
-import { IpcResponseCode, SyncCodeStep } from '@oam-kit/shared-interfaces';
+import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Preferences, Project, SyncCode } from '@oam-kit/shared-interfaces';
+import { IpcResponseCode } from '@oam-kit/shared-interfaces';
 import { IpcService } from '@ng-client/core/services/ipc.service';
+import { NzMessageService } from 'ng-zorro-antd/message';
 import { StoreService } from '@ng-client/core/services/store.service';
-import { NotificationService } from '@ng-client/core/services/notification.service';
+import { NzModalService } from 'ng-zorro-antd/modal';
+import { DialogAction, DialogRes, ProjectSettingComponent } from './project-setting.component';
 
 @Component({
   selector: 'app-sync-code',
   template: `
-    <div class="container">
-      <div class="sync_form">
-        <app-project-selector (projectChange)="onSelectChange($event)"></app-project-selector>
-
-        <div class="sync_containner">
-          <button
-            data-test="sync-code-button"
-            class="sync_button"
-            nz-button
-            [disabled]="!currentProject"
-            nzType="primary"
-            [nzLoading]="isSyncOnGoing"
-            (click)="sync()"
-          >
-            {{ isSyncOnGoing ? 'On Going' : 'Sync Code' }}
+    <nz-spin [nzSpinning]="onLoading" class="spin-wrapper">
+      <div class="container">
+        <p class="main-icon-wrapper">
+          <span nz-icon nzType="cloud-sync" nzTheme="outline"></span>
+        </p>
+  
+        <ng-template #sshConfigurationWrapper>
+          <app-ssh-config-view (loading)="onSshConfigViewLoadingStatusChanged($event)"></app-ssh-config-view>
+        </ng-template>
+  
+        <div class="feat-wrapper" *ngIf="isSSHConfigured; else sshConfigurationWrapper">
+          <app-project-selector (projectChange)="onSelectChange($event)"></app-project-selector>
+  
+          <button nz-button nzType="primary" (click)="sync()">
+            <span nz-icon nzType="sync"></span>
           </button>
         </div>
+        <p class="feat-hint">{{ this.hintMessage }}</p>
       </div>
-
-      <nz-steps nzDirection="vertical" style="margin-top: 30px;" nzSize="small">
-        <nz-step
-          *ngFor="let step of syncStepper.steps; trackBy: trackFn"
-          [nzTitle]="step.title"
-          [nzStatus]="step.status"
-          [nzIcon]="step.status === 'process' ? 'loading' : null"
-          [nzDescription]="step.description"
-        ></nz-step>
-      </nz-steps>
-
-      <p *ngIf="lastSyncDate" class="last_sync_date">Last sync: {{ lastSyncDate | date: 'short' }}</p>
-    </div>
+    </nz-spin>
   `,
   styleUrls: ['./sync-code.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SyncCodeComponent implements OnInit, OnDestroy {
-  public syncStepper: Stepper;
+export class SyncCodeComponent implements OnDestroy {
+  public currentProject: Project;
+  public isSSHConfigured = false;
+  public onLoading = false;
   public lastSyncDate: Date;
-  public get isSyncOnGoing(): boolean {
-    return this.syncStepper.status === StepperStatus.ONGOING;
+
+  public get hintMessage() {
+    return this.isSSHConfigured ? this._featHints.sycnCode : this._featHints.sshConfig;
   }
 
-  public currentProject: Project;
+  private _featHints = {
+    sshConfig: 'Please configure SSH private key for you linsee/eecloud server first.',
+    sycnCode: 'Select a project you are working on, then click button to sync code.'
+  }
 
   private get isReady(): boolean {
-    if (!this.isProfileReady()) {
-      this.alertMessage = 'Please fill corresponding setting.';
-      return false;
-    } else if (!this.currentProject) {
-      this.alertMessage = 'Please add a project first.';
-      return false;
-    } else if (this.isSyncOnGoing) {
-      this.alertMessage = 'Sync is on going.';
+    if (!this.currentProject) {
+      this._message.warning('Please add a project first.');
       return false;
     }
     return true;
   }
 
-  private set alertMessage(message: string) {
-    if (message) {
-      this.notification.error('Error', message);
-    }
-  }
-
   constructor(
-    private ipcService: IpcService,
-    private notification: NotificationService,
-    private cd: ChangeDetectorRef,
-    private store: StoreService
-  ) {}
-
-  ngOnInit(): void {
-    this.initStepper();
+    private _cd: ChangeDetectorRef,
+    private _ipcService: IpcService,
+    private _message: NzMessageService,
+    private _store: StoreService,
+    private _modalService: NzModalService,
+  ) {
+    this._store.getModel<Preferences>('preferences').subscribe('ssh', (sshInfo: { username: string, privateKeyPath: string }) => {
+      this.isSSHConfigured = !!sshInfo.username && !!sshInfo.privateKeyPath;
+      this._cd.markForCheck();
+      const projects = this._store.getModel<SyncCode>('syncCode').get('projects');
+      if (this.isSSHConfigured && projects.length === 0) {
+        this.displayModalToAddFirstProject();
+      }
+    });
   }
 
   ngOnDestroy(): void {
-    this.ipcService.destroy();
+    this._ipcService.destroy();
   }
 
-  public sync() {
+  public async sync() {
     if (this.isReady) {
-      this.syncStepper.start();
+      this.onLoading = true;
+      const res = await this._ipcService.send('/sync_code', { project: this.currentProject });
+      if (res.code === IpcResponseCode.success) {
+        this._message.success('Sync code successfully.');
+      } else {
+        this._message.error(`Sync code failed with error: ${res.description}`);
+      }
 
-      this.ipcService
-        .send$('/sync_code', { project: this.currentProject })
-        .subscribe((response) => {
-          this.lastSyncDate = new Date();
-
-          if (response.code === IpcResponseCode.success) {
-            this.syncStepper.setStatusForSingleStep(response.data.step, StepStatus.FINISHED);
-          } else if (response.code === IpcResponseCode.failed) {
-            const { description } = response;
-            this.syncStepper.errorInfo = description;
-            this.syncStepper.setStatusForSingleStep(response.data.step, StepStatus.FAILED);
-            this.alertMessage = description;
-          }
-          this.cd.markForCheck();
-        });
+      this.onLoading = false;
+      this._cd.markForCheck();
     }
   }
 
@@ -114,32 +97,24 @@ export class SyncCodeComponent implements OnInit, OnDestroy {
     this.currentProject = project;
   }
 
-  private initStepper(): void {
-    this.syncStepper = new Stepper([
-      { title: 'Step 1', description: 'Connect to remote.', type: SyncCodeStep.CONNECT_TO_SERVER },
-      {
-        title: 'Step 2',
-        description: 'Create diff based on local project.',
-        type: SyncCodeStep.CREATE_DIFF,
-      },
-      { title: 'Step 3', description: 'Analyze diff.', type: SyncCodeStep.DIFF_ANALYZE },
-      { title: 'Step 4', description: 'Clean up remote workspace.', type: SyncCodeStep.CLEAN_UP },
-      { title: 'Step 5', description: 'Upload diff into remote.', type: SyncCodeStep.UPLOAD_DIFF },
-      {
-        title: 'Step 6',
-        description: 'Apply diff to remote project.',
-        type: SyncCodeStep.APPLY_DIFF,
-      },
-    ]);
+  public onSshConfigViewLoadingStatusChanged(value: boolean) {
+    this.onLoading = value;
   }
 
-  public trackFn(index: number, item: Step) {
-    return item.index;
-  }
-
-  private isProfileReady() {
-    const pModel = this.store.getModel<Preferences>('preferences');
-    const profile = pModel.get('profile');
-    return profile.nsbAccount.password && profile.nsbAccount.username;
+  private displayModalToAddFirstProject() {
+    const model = this._store.getModel<SyncCode>('syncCode');
+    this._modalService
+      .create({
+        nzWidth: 600,
+        nzTitle: 'New project',
+        nzContent: ProjectSettingComponent
+      })
+      .afterClose.subscribe(({ content, action }: DialogRes) => {
+        if (action === DialogAction.SAVE) {
+          model.set('projects', (draft) => {
+            draft.push(content);
+          });
+        }
+      });
   }
 }

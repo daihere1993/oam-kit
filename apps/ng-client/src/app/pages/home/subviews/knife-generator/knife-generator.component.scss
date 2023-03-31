@@ -1,0 +1,24 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 500px;
+  min-height: 140px;
+  border: 1px dashed gray;
+  padding: 6px;
+  overflow-wrap: break-word;
+  position: relative;
+
+  .main-icon-wrapper {
+    color: #40a9ff;
+    font-size: 48px;
+    margin-bottom: 6px;;
+    text-align: center;
+  }
+
+  .feat-hint {
+    font-size: 14px;
+    color: #00000073;
+    bottom: 2px;
+    text-align: center;
+  }
+}

@@ -1,17 +1,16 @@
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 import { promisify } from 'util';
 import { NodeSSH } from 'node-ssh';
 import { getUserDataDir, isRemotePathExist } from '@oam-kit/utility/backend';
 import { GitRepo, Repository, SvnRepo } from './repository';
 import { ChangedFile } from './changed-file';
-import { Channel, IpcEvent, Path, Req } from '@oam-kit/decorators';
-import { Preferences, Project, RepositoryType, IpcResponse, IpcResponseCode, IpcRequest, SyncCodeStep } from '@oam-kit/shared-interfaces';
+import { Channel, Path, Req } from '@oam-kit/decorators';
+import { Preferences, Project, RepositoryType, IpcRequest } from '@oam-kit/shared-interfaces';
 import { StoreService } from '../../services/store.service';
 import { sftp_algorithms } from '../../common/contants/electron-config';
-import { IpcMainEvent } from 'electron';
-import { IpcException } from '../../common/exceptions/ipc.exception';
-import Logger from '../../../app/core/logger';
+import { AsyncCallTimeoutError, asyncCallWithTimout } from '@oam-kit/utility/common';
+import Logger from '@electron/app/core/logger';
 
 const logger = Logger.for('SyncCodeChannel');
 const PATCH_PREFIX = 'oamkit';
@@ -32,7 +31,6 @@ export class SyncCodeChannel {
   private _changedFiles: ChangedFile[];
   private _revertFiles: ChangedFile[];
   private _ssh: NodeSSH = new NodeSSH();
-  private _nsbAccount: { username: string; password: string };
 
   private get localFinalPatchPath() {
     if (this._syncType === SyncType.partial) {
@@ -64,118 +62,113 @@ export class SyncCodeChannel {
     });
   }
 
-  private async nextStep(step: SyncCodeStep, event: IpcMainEvent, handler: () => Promise<void>) {
-    try {
-      logger.info(`${step}: start.`);
-      const res: IpcResponse = { code: IpcResponseCode.success, data: {step} };
-
-      if (this._syncType === SyncType.skip) {
-        logger.info(`${step}: skip this step due to nothing change`);
-        event.reply('/sync_code', res);
-        return Promise.resolve();
-      }
-
-      await handler.call(this);
-      event.reply('/sync_code', res);
-    } catch (error) {
-      const message = error.message || error;
-      const ipcError = new IpcException(message);
-      ipcError['step'] = step;
-      throw ipcError;
-    } finally {
-      logger.info(`${step}: done.`);
-    }
-  }
-  
   @Path('')
-  public async startSync(@Req request: IpcRequest, @IpcEvent event: IpcMainEvent) {
+  public async startSync(@Req request: IpcRequest) {
     this._changedFiles = [];
     this._revertFiles = [];
     this._syncType = SyncType.whole;
     this._project = request.data.project;
-    this._nsbAccount = this._storeService
-      .getModel<Preferences>('preferences')
-      .get('profile').nsbAccount;
     this._repo =
       this._project.versionControl === RepositoryType.SVN
         ? new SvnRepo(this._ssh, this._project.localPath, this._project.remotePath)
         : new GitRepo(this._ssh, this._project.localPath, this._project.remotePath);
 
-    try {
-      await this.nextStep(SyncCodeStep.CONNECT_TO_SERVER, event, this.connectServer);
-      await this.nextStep(SyncCodeStep.CREATE_DIFF, event, this.createLocalPatch);
-      await this.nextStep(SyncCodeStep.DIFF_ANALYZE, event, this.analyzePatches);
-      await this.nextStep(SyncCodeStep.CLEAN_UP, event, this.cleanup);
-      await this.nextStep(SyncCodeStep.UPLOAD_DIFF, event, this.uploadPatchToServer);
-      await this.nextStep(SyncCodeStep.APPLY_DIFF, event, this.applyPatchToServer);
-    } catch (error) {
-      const res: IpcResponse = { code: IpcResponseCode.failed, data: null, description: error.message };
-      if (error.step) {
-        res.data = { step: error.step };
-      }
-      event.reply('/sync_code', res);
-    }
+    await this.connectServer();
+    await this.projectValidation();
+    await this.createLocalPatch();
+    await this.analyzePatches();
+    await this.cleanup();
+    await this.uploadPatchToServer();
+    await this.applyPatchToServer();
   }
 
   private async connectServer() {
-    if (!this._ssh.isConnected()) {
-      await this._ssh.connect({
-        host: this._project.serverAddr,
-        username: this._nsbAccount.username,
-        password: this._nsbAccount.password,
-        algorithms: sftp_algorithms,
-      });
+    try {
+      logger.info('connectServer: start');
+      if (!this._ssh.isConnected()) {
+        const sshInfo = this._storeService.getModel<Preferences>('preferences').get('ssh');
+        const connectArgs = {
+          host: this._project.serverAddr,
+          username: sshInfo.username,
+          privateKeyPath: sshInfo.privateKeyPath,
+          algorithms: sftp_algorithms,
+        };
+        await asyncCallWithTimout(this._ssh.connect(connectArgs), 10000, 1, this._ssh.dispose.bind(this._ssh));
+      }
+      logger.info('connectServer: end');
+    } catch (error) {
+      if (error instanceof AsyncCallTimeoutError) {
+        throw new Error(`Connect to server(${this._project.serverAddr}) timeout`);
+      } else {
+        throw error;
+      }
     }
+  }
 
+  private async projectValidation() {
+    logger.info('projectValidation: start');
     // Check if remote prject path exists
-    await isRemotePathExist(this._ssh, this._project.remotePath);
+    const _isRemotePathExist = await isRemotePathExist(this._ssh, this._project.remotePath);
+    if (!_isRemotePathExist) {
+      throw new Error(`Remote path(${this._project.remotePath}) not exist`);
+    }
+    logger.info('projectValidation: end');
   }
 
   private async createLocalPatch(): Promise<void> {
+    logger.info('createLocalPatch: start');
     await this._repo.beforePatchCreated(false);
-    return this._repo.createDiff(this.localOriginalPatchPath, false);
+    await this._repo.createDiff(this.localOriginalPatchPath, false);
+    logger.info('createLocalPatch: end');
   }
 
   private async analyzePatches(): Promise<any> {
+    logger.info('analyzePatches: start');
     this._changedFiles = await this.getChangedFiles();
 
     // assemble new diff if is partial sychronization
     if (this._syncType === SyncType.partial) {
       const diff = this._repo.assemblePatch(this._changedFiles);
       await promisify(fs.writeFile)(this.assembledPatchPath, diff);
-      return;
     }
+    logger.info('analyzePatches: end');
   }
 
-
   private async cleanup(): Promise<void> {
+    logger.info('cleanup: start');
+
     let specificCmd: string;
     if (this._syncType === SyncType.whole && this._repo instanceof GitRepo) {
       specificCmd = 'git reset --hard';
     }
 
     const revertFiles = [].concat(this._revertFiles);
-    this._changedFiles.forEach(file => {
+    this._changedFiles.forEach((file) => {
       if (file.isNeedToRevert) {
         revertFiles.push(file);
       }
     });
 
     if (revertFiles.length) {
-      return this._repo.cleanup(revertFiles, true, specificCmd);
+      this._repo.cleanup(revertFiles, true, specificCmd);
     }
+    logger.info('cleanup: end');
   }
 
   private async uploadPatchToServer(): Promise<any> {
+    logger.info('uploadPatchToServer: start');
     if (this._syncType === SyncType.whole || this._syncType === SyncType.partial) {
-      return this._ssh.putFile(this.localFinalPatchPath, this.remotePatchPath);
+      await this._ssh.putFile(this.localFinalPatchPath, this.remotePatchPath);
     }
+    logger.info('uploadPatchToServer: end');
   }
 
   private async applyPatchToServer() {
+    logger.info('applyPatchToServer: start');
     if (this._syncType === SyncType.whole || this._syncType === SyncType.partial) {
-      return this._repo.applyPatch(this._changedFiles, this.patchName, true);
+      await this._repo.applyPatch(this._changedFiles, this.patchName, true);
     }
+    logger.info('applyPatchToServer: end');
   }
 
   private async getChangedFiles() {
@@ -185,7 +178,7 @@ export class SyncCodeChannel {
     // means remote repository is clean
     if (remoteChangeFiles.length === 0) {
       if (localChangedFiles.length === 0) {
-        this._syncType = SyncType.skip;  
+        this._syncType = SyncType.skip;
       } else {
         this._syncType = SyncType.whole;
       }

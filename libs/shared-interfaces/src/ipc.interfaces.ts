@@ -3,7 +3,7 @@ export interface IpcRequest {
 }
 
 export interface IpcResponse {
-  data: any;
+  data?: any;
   code: IpcResponseCode;
   description?: string;
 }

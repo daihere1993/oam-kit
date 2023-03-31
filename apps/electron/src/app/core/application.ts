@@ -64,7 +64,7 @@ export class Application {
               res.data = await route.handler.apply(channel.instance, params);
               res.code = IpcResponseCode.success;
             } catch (error) {
-              res.description = error.message;
+              res.description = error.message ? error.message : error;
               res.code = IpcResponseCode.failed;
             } finally {
               event.reply(route.path, res);
