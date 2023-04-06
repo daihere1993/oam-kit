@@ -7,6 +7,7 @@ import { RoutePathProperties } from './interfaces/route-path-properties.interfac
 import { ElectronContext } from './electron-context';
 import { Module } from './module';
 import { RouteParamtypes, ROUTE_ARGS_METADATA } from '@oam-kit/decorators';
+import { asyncCallWithTimout } from '@oam-kit/utility/common';
 
 export class Application {
   private get _module(): Module {
@@ -61,7 +62,7 @@ export class Application {
             const res: IpcResponse = { data: null, code: null, description: null };
             try {
               const params = self.reflectHandlerParams(event, req, channel.instance, route.handler.name);
-              res.data = await route.handler.apply(channel.instance, params);
+              res.data = await asyncCallWithTimout(route.handler.apply(channel.instance, params), 30000);
               res.code = IpcResponseCode.success;
             } catch (error) {
               res.description = error.message ? error.message : error;
