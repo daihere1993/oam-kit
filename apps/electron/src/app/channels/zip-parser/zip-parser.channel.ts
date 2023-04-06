@@ -210,7 +210,7 @@ export class ZipParserChannel {
   }
 
   private isUnderSubfolder(name: string): boolean {
-    return /^\s{4}/.test(name);
+    return /^\s{4}/.test(name) || /^\t/.test(name);
   }
 
   private isCompressed(file: string): boolean {

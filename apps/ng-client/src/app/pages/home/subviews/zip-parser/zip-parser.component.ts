@@ -81,11 +81,11 @@ export class ZipParserComponent {
     const res = await this._ipcService.send('/zip_parser/unzipByRules', path);
     if (res.code === IpcResponseCode.success) {
       this.rules = res.data;
+      this.isParsing = false;
     } else {
       this._message.error(res.description);
+      this.isParsing = null;
     }
-
-    this.isParsing = false;
   }
 
   async onLinkClick(rule: Rule, link: string) {
