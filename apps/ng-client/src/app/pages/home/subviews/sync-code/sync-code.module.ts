@@ -13,6 +13,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 
 import { SyncCodeComponent } from './sync-code.component';
 import { SshConfigViewComponent } from './ssh-config-view.component';
@@ -40,6 +41,7 @@ import { PathInputModule } from '@ng-client/core/components/path-field';
     NzModalModule,
     NzStepsModule,
     NzToolTipModule,
+    NzInputNumberModule,
   ]
 })
 export class SyncCodeModule { }
