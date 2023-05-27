@@ -19,4 +19,14 @@ module.exports = {
       config: {},
     },
   ],
+  publishers: [
+    {
+      name: '@electron-forge/publisher-github',
+      repository: {
+        owner: 'daihere1993',
+        name: 'oam-kit'
+      },
+      prerelease: true
+    }
+  ]
 };

@@ -6,6 +6,7 @@
     "lint": "nx run-many --target=lint",
     "test": "nx run-many --target=test",
     "client:dev": "nx run ng-client:serve",
+    "build": "yarn build-all && yarn make",
     "build:client": "nx build ng-client --prod --base-href ./",
     "build:electron": "nx run electron:tsc",
     "build-all": "yarn build:client && yarn build:electron",
@@ -13,7 +14,7 @@
     "pack": "yarn build-all && yarn pack-only",
     "make-only": "nx run electron:make",
     "make": "yarn build-all && yarn make-only",
-    "publish:win": "yarn build --platform windows --arch x64 --publishPolicy always"
+    "publish:win": "nx run electron:publish --platform windows --arch x64 --publishPolicy always"
   },
   "main": "./dist/apps/electron/main.js",
   "private": true,
