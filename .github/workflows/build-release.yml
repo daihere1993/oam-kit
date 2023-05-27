@@ -4,24 +4,22 @@ on:
   pull_request:
     branches:
       - master
-    types:
-      - closed
 
 jobs:
   buid-release-app:
-    if: github.event.pull_request.merged == true &&
-      (
-        contains(github.event.pull_request.labels.*.name, 'major') ||
-        contains(github.event.pull_request.labels.*.name, 'minor') ||
-        contains(github.event.pull_request.labels.*.name, 'patch')
-      )
+    # if: github.event.pull_request.merged == true &&
+    #   (
+    #     contains(github.event.pull_request.labels.*.name, 'major') ||
+    #     contains(github.event.pull_request.labels.*.name, 'minor') ||
+    #     contains(github.event.pull_request.labels.*.name, 'patch')
+    #   )
     runs-on: windows-latest
     env:
       NEED_PUBLISH: No
       # Add this env to fix publish issue of
       # "publishing will be skipped  reason=current build is a part of pull request solution=set env PUBLISH_FOR_PULL_REQUEST to true to force code signing"
       PUBLISH_FOR_PULL_REQUEST: true
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
       - name: Show github.ref
         run: echo ${{ github.ref }}
@@ -53,18 +51,18 @@ jobs:
       - name: Installing project dependancies
         run: yarn install --network-timeout 1000000
 
-      - name: Apply version bump(major) then release app
-        if: contains(github.event.pull_request.labels.*.name, 'major')
-        run: |
-          npm version major -m "Upgrade to v%s"
-          echo "NEED_PUBLISH=Yes" >> $env:GITHUB_ENV
-      - name: Apply version bump(minor) then release app
-        if: contains(github.event.pull_request.labels.*.name, 'minor')
-        run: |
-          npm version minor -m "Upgrade to v%s"
-          echo "NEED_PUBLISH=Yes" >> $env:GITHUB_ENV
+      # - name: Apply version bump(major) then release app
+      #   if: contains(github.event.pull_request.labels.*.name, 'major')
+      #   run: |
+      #     npm version major -m "Upgrade to v%s"
+      #     echo "NEED_PUBLISH=Yes" >> $env:GITHUB_ENV
+      # - name: Apply version bump(minor) then release app
+      #   if: contains(github.event.pull_request.labels.*.name, 'minor')
+      #   run: |
+      #     npm version minor -m "Upgrade to v%s"
+      #     echo "NEED_PUBLISH=Yes" >> $env:GITHUB_ENV
       - name: Apply version bump(patch) then release app
-        if: contains(github.event.pull_request.labels.*.name, 'patch')
+        # if: contains(github.event.pull_request.labels.*.name, 'patch')
         run: |
           npm version patch -m "Upgrade to v%s"
           echo "NEED_PUBLISH=Yes" >> $env:GITHUB_ENV
@@ -76,10 +74,10 @@ jobs:
         if: ${{ env.NEED_PUBLISH == 'Yes' }}
         run: yarn publish:win
 
-      - name: Push changes
-        if: ${{ env.NEED_PUBLISH == 'Yes' }}
-        uses: ad-m/github-push-action@master
-        with:
-          tags: true
-          branch: ${{ github.base_ref }}
-          github_token: ${{ secrets.GH_TOKEN }}
+      # - name: Push changes
+      #   if: ${{ env.NEED_PUBLISH == 'Yes' }}
+      #   uses: ad-m/github-push-action@master
+      #   with:
+      #     tags: true
+      #     branch: ${{ github.base_ref }}
+      #     github_token: ${{ secrets.GH_TOKEN }}

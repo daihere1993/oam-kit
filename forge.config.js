@@ -22,11 +22,13 @@ module.exports = {
   publishers: [
     {
       name: '@electron-forge/publisher-github',
-      repository: {
-        owner: 'daihere1993',
-        name: 'oam-kit'
-      },
-      prerelease: true
+      config: {
+        repository: {
+          owner: 'daihere1993',
+          name: 'oam-kit'
+        },
+        prerelease: true
+      }
     }
   ]
 };

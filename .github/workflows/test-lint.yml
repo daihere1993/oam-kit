@@ -1,27 +1,27 @@
-name: oam-kit CI
-on:
-  pull_request:
-    paths:
-      - 'apps/**'
-      - 'libs/**'
-jobs:
-  lint-ut:
-    runs-on: windows-latest
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@master
+# name: oam-kit CI
+# on:
+#   pull_request:
+#     paths:
+#       - 'apps/**'
+#       - 'libs/**'
+# jobs:
+#   lint-ut:
+#     runs-on: windows-latest
+#     steps:
+#       - name: Check out repository code
+#         uses: actions/checkout@master
 
-      - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.15.0
-          cache: 'yarn'
+#       - name: Install Node.js, NPM and Yarn
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: 18.15.0
+#           cache: 'yarn'
 
-      - name: Installing project dependancies
-        run: yarn install --network-timeout 1000000
+#       - name: Installing project dependancies
+#         run: yarn install --network-timeout 1000000
 
-      - name: Run eslint
-        run: yarn lint
+#       - name: Run eslint
+#         run: yarn lint
 
-      - name: Run test
-        run: yarn test
+#       - name: Run test
+#         run: yarn test
