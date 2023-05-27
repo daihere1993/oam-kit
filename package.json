@@ -1,6 +1,6 @@
 {
   "name": "oam-kit",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "license": "MIT",
   "scripts": {
     "lint": "nx run-many --target=lint",
@@ -14,7 +14,7 @@
     "pack": "yarn build-all && yarn pack-only",
     "make-only": "nx run electron:make",
     "make": "yarn build-all && yarn make-only",
-    "publish:win": "nx run electron:publish --platform windows --arch x64 --publishPolicy always"
+    "publish:win": "nx run electron:publish --platform win32 --arch x64 --publishPolicy always"
   },
   "main": "./dist/apps/electron/main.js",
   "private": true,
