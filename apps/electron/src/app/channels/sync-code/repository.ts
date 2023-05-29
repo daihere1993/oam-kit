@@ -15,7 +15,7 @@ export abstract class Repository {
     this.remoteRepoPath = remoteRepoPath;
   }
 
-  abstract getCreatePatchCmd(diffPath: string): string;
+  abstract getCreatePatchCmd(diffPath: string, index?: number): string;
   abstract beforePatchCreated(isRemote: boolean): Promise<any>;
   abstract applyPatch(changedFiles: ChangedFile[], diffPath: string, isRemote: boolean): Promise<any>;
   abstract cleanup(changedFiles: ChangedFile[], isRemote: boolean, specificCmd: string): Promise<void>;
@@ -33,15 +33,15 @@ export abstract class Repository {
 
   async getRemoteChangedFiles(): Promise<ChangedFile[]> {
     const patchFile = 'tmp.diff';
-    await this.createDiff(patchFile, true);
+    await this.createDiff(patchFile, 0, true);
     const patchContent = await this.execRemoteCommand(`cat ${patchFile}`);
     await this.removeFile(patchFile, true);
 
     return this.diffChecker.getChangedFiles(patchContent);
   }
 
-  async createDiff(file: string, isRemote = false): Promise<any> {
-    return this.execCommand(this.getCreatePatchCmd(file), isRemote);
+  async createDiff(file: string, index: number, isRemote = false): Promise<any> {
+    return this.execCommand(this.getCreatePatchCmd(file, index), isRemote);
   }
 
   async removeFile(filePath: string, isRemote = false) {
@@ -89,10 +89,12 @@ export abstract class Repository {
 export class GitRepo extends Repository {
   diffChecker = new GitPatchChecker();
 
-  getCreatePatchCmd(patchPath: string): string {
+  getCreatePatchCmd(patchPath: string, index: number): string {
+    const comparedCommit = index != 0 ? `HEAD^${index}` : '';
+
     // Note: the patchPath mush be wrapped by ", if use ' then will throw error(in windows): 
     // "the filename, directory name, or volume label syntax is incorrect"
-    return `git diff > "${patchPath}"`;
+    return `git diff ${comparedCommit}> "${patchPath}"`;
   }
 
   // need to 'git add -N {untracked new files}' after that patch could include those changes
@@ -179,7 +181,7 @@ export class GitRepo extends Repository {
 export class SvnRepo extends Repository {
   diffChecker = new SvnPatchChecker();
 
-  getCreatePatchCmd(patchPath: string): string {
+  getCreatePatchCmd(patchPath: string, index: number): string {
     return `svn di > ${patchPath}`;
   }
 
