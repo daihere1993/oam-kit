@@ -8,7 +8,6 @@ import { ChangedFile } from './changed-file';
 import { Channel, Path, Req } from '@oam-kit/decorators';
 import { Preferences, Project, RepositoryType, IpcRequest } from '@oam-kit/shared-interfaces';
 import { StoreService } from '../../services/store.service';
-import { sftp_algorithms } from '../../common/contants/electron-config';
 import { AsyncCallTimeoutError, asyncCallWithTimout } from '@oam-kit/utility/common';
 import Logger from '@electron/app/core/logger';
 
@@ -93,7 +92,6 @@ export class SyncCodeChannel {
           host: this._project.serverAddr,
           username: sshInfo.username,
           privateKeyPath: sshInfo.privateKeyPath,
-          algorithms: sftp_algorithms,
         };
         await asyncCallWithTimout(this._ssh.connect(connectArgs), 10000, 1, this._ssh.dispose.bind(this._ssh));
       }

@@ -1,7 +1,6 @@
 import { Channel, Path, Req } from '@oam-kit/decorators';
 import { Preferences, IpcRequest } from '@oam-kit/shared-interfaces';
 import { NodeSSH } from 'node-ssh';
-import { sftp_algorithms } from '../common/contants/electron-config';
 import Logger from '../core/logger';
 import { StoreService } from '../services/store.service';
 
@@ -23,7 +22,6 @@ export class ServerChannel {
       host: host.trim(),
       username: (username || sshInfo.username).trim(),
       privateKeyPath: (privateKeyPath || sshInfo.privateKeyPath).trim(),
-      algorithms: sftp_algorithms,
     });
 
     const { stdout, stderr } = await this._ssh.execCommand('pwd', { cwd: directory });
@@ -49,7 +47,6 @@ export class ServerChannel {
       host: serverAddr.trim(),
       username: nsbAccount.username.trim(),
       password: nsbAccount.password,
-      algorithms: sftp_algorithms,
     });
     const isConnected = this._ssh.isConnected();
     this._ssh.dispose();
@@ -69,7 +66,6 @@ export class ServerChannel {
       host: serverAddr.trim(),
       username: (username || sshInfo.username).trim(),
       privateKeyPath: (privateKeyPath || sshInfo.privateKeyPath).trim(),
-      algorithms: sftp_algorithms,
     });
     const isConnected = this._ssh.isConnected();
     this._ssh.dispose();
