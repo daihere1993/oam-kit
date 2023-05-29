@@ -31,7 +31,6 @@ export class SyncCodeChannel {
   private _changedFiles: ChangedFile[];
   private _revertFiles: ChangedFile[];
   private _ssh: NodeSSH = new NodeSSH();
-  private _diffIndex = 1;
 
   private get localFinalPatchPath() {
     if (this._syncType === SyncType.partial) {
@@ -69,7 +68,6 @@ export class SyncCodeChannel {
     this._revertFiles = [];
     this._syncType = SyncType.whole;
     this._project = request.data.project;
-    this._diffIndex = request.data.diffIndex - 1;
     this._repo =
       this._project.versionControl === RepositoryType.SVN
         ? new SvnRepo(this._ssh, this._project.localPath, this._project.remotePath)
@@ -93,6 +91,7 @@ export class SyncCodeChannel {
           host: this._project.serverAddr,
           username: sshInfo.username,
           privateKeyPath: sshInfo.privateKeyPath,
+          algorithms: sftp_algorithms,
         };
         await asyncCallWithTimout(this._ssh.connect(connectArgs), 10000, 1, this._ssh.dispose.bind(this._ssh));
       }
@@ -119,7 +118,7 @@ export class SyncCodeChannel {
   private async createLocalPatch(): Promise<void> {
     logger.info('createLocalPatch: start');
     await this._repo.beforePatchCreated(false);
-    await this._repo.createDiff(this.localOriginalPatchPath, this._diffIndex, false);
+    await this._repo.createDiff(this.localOriginalPatchPath, false);
     logger.info('createLocalPatch: end');
   }
 

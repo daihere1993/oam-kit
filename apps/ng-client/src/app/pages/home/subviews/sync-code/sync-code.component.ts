@@ -15,16 +15,14 @@ import { DialogAction, DialogRes, ProjectSettingComponent } from './project-sett
         <p class="main-icon-wrapper">
           <span nz-icon nzType="cloud-sync" nzTheme="outline"></span>
         </p>
-
+  
         <ng-template #sshConfigurationWrapper>
           <app-ssh-config-view (loading)="onSshConfigViewLoadingStatusChanged($event)"></app-ssh-config-view>
         </ng-template>
-
+  
         <div class="feat-wrapper" *ngIf="isSSHConfigured; else sshConfigurationWrapper">
-        <nz-input-number style="width:50px;" [(ngModel)]="diffIndex" [nzMin]="1" [nzMax]="10" [nzStep]="1"></nz-input-number>
-
           <app-project-selector (projectChange)="onSelectChange($event)"></app-project-selector>
-
+  
           <button nz-button nzType="primary" (click)="sync()">
             <span nz-icon nzType="sync"></span>
           </button>
@@ -41,7 +39,6 @@ export class SyncCodeComponent implements OnDestroy {
   public isSSHConfigured = false;
   public onLoading = false;
   public lastSyncDate: Date;
-  public diffIndex = 1;
 
   public get hintMessage() {
     return this.isSSHConfigured ? this._featHints.sycnCode : this._featHints.sshConfig;
@@ -84,7 +81,7 @@ export class SyncCodeComponent implements OnDestroy {
   public async sync() {
     if (this.isReady) {
       this.onLoading = true;
-      const res = await this._ipcService.send('/sync_code', { project: this.currentProject, diffIndex: this.diffIndex });
+      const res = await this._ipcService.send('/sync_code', { project: this.currentProject });
       if (res.code === IpcResponseCode.success) {
         this._message.success('Sync code successfully.');
       } else {

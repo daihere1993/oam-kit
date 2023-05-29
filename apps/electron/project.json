@@ -26,16 +26,20 @@
         }
       }
     },
-    "pack": {
-      "executor": "nx:run-commands",
+    "build": {
+      "executor": "@oam-kit/electron-plugin:build",
       "options": {
-        "command": "electron-forge package"
-      }
-    },
-    "make": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "electron-forge make"
+        "name": "electron",
+        "frontendProject": "ng-client",
+        "outputPath": "dist/executables",
+        "appId": "com.electron.oamkit",
+        "publish": [
+          {
+            "provider": "github",
+            "owner": "daihere1993",
+            "repo": "oam-kit"
+          }
+        ]
       }
     },
     "publish": {
