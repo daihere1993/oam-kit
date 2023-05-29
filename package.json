@@ -1,6 +1,6 @@
 {
   "name": "oam-kit",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "license": "MIT",
   "scripts": {
     "postinstall": "electron-builder install-app-deps && node ./decorate-angular-cli.js",
