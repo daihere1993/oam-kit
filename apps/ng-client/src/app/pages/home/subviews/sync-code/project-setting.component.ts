@@ -1,10 +1,9 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { NzModalRef } from 'ng-zorro-antd/modal';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { NzSelectComponent } from 'ng-zorro-antd/select';
 import { IpcResponseCode, Preferences, Project } from '@oam-kit/shared-interfaces';
 import { Model } from '@oam-kit/data-persistent';
-import { NzMessageService } from 'ng-zorro-antd/message';
 import { StoreService } from '@ng-client/core/services/store.service';
 import { IpcService } from '@ng-client/core/services/ipc.service';
 import { promiseTimeout } from '@oam-kit/utility/common';
@@ -63,7 +62,12 @@ export interface DialogRes {
               formControlName="serverAddr"
               [nzDropdownRender]="dropdownRender"
             >
-              <nz-option *ngFor="let server of serverList" [nzLabel]="server" [nzValue]="server"></nz-option>
+              <nz-option nzCustomContent *ngFor="let server of serverList" [nzLabel]="server" [nzValue]="server">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <span>{{server}}</span>
+                  <span nz-icon nzType="close" nzTheme="outline" style="color:red;" (click)="onRemoveServer($event, server)"></span>
+                </div>
+              </nz-option>
             </nz-select>
             <ng-template #serverAddrErrorTpl let-control>
               <ng-container *ngIf="control.hasError('serverAddrIsDisconnected')">
@@ -145,7 +149,7 @@ export interface DialogRes {
           class="dialog_btn"
           nzType="primary"
           (click)="save()"
-          [disabled]="shouldDisableSaveButton()"
+          [disabled]="!this.form.dirty"
         >
           Save
         </button>
@@ -199,7 +203,7 @@ export class ProjectSettingComponent implements OnInit {
     private _fb: FormBuilder,
     private _store: StoreService,
     private _ipcService: IpcService,
-    private _message: NzMessageService,
+    private _cd: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -213,6 +217,11 @@ export class ProjectSettingComponent implements OnInit {
       serverAddr: [this.project.serverAddr, [Validators.required], [this._serverAddrValidator]],
       localPath: [this.project.localPath, [Validators.required]],
       remotePath: [this.project.remotePath, [Validators.required], [this._remotePathValidator]],
+    });
+
+    this.pModel.subscribe('ssh', (sshInfo: { servers: string[] }) => {
+      this.serverList = sshInfo.servers;
+      this._cd.markForCheck();
     });
 
     // W/A to avoid _serverAddrValidator would be invoked three times if set init value at ngOnInit
@@ -253,23 +262,29 @@ export class ProjectSettingComponent implements OnInit {
   }
 
   public onAddServer(value: string) {
-    this.serverList.push(value);;
+    this.form.controls['serverAddr'].setValue(value);
+    this.pModel.set('ssh', (draft) => {
+      const index = draft.servers.indexOf(value);
+      if (index == -1) {
+        draft.servers.push(value);
+      }
+    });
   }
 
-  public shouldDisableSaveButton() {
-    return !(this.form.valid && this.isDirty());
+  public onRemoveServer(e: Event, value: string) {
+    if (this.project.serverAddr === value) {
+      this.project.serverAddr = '';
+    }
+    this.pModel.set('ssh', (draft) => {
+      const index = draft.servers.indexOf(value);
+      if (index != -1) {
+        draft.servers.splice(index, 1);
+      }
+    });
+    e.stopPropagation();
   }
 
   public onLocalPathChange(value: string) {
     this.form.controls['localPath'].setValue(value);
-  }
-
-  private isDirty() {
-    for (const key in this.project) {
-      if (this.form?.value[key] !== (this.project as any)[key]) {
-        return true;
-      }
-    }
-    return false;
   }
 }
