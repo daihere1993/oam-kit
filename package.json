@@ -8,7 +8,7 @@
     "test": "nx run-many --target=test",
     "tsc:electron": "nx tsc electron",
     "client:dev": "nx run ng-client:serve",
-    "build": "yarn run build:client && yarn run build:electron",
+    "build": "yarn run build:client && yarn run build:electron --skip-nx-cache",
     "build:client": "nx build ng-client --prod --base-href ./",
     "build:electron": "nx tsc electron && nx build electron",
     "publish:win": "yarn build --platform windows --arch x64 --publishPolicy always"
